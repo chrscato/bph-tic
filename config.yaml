@@ -1,0 +1,51 @@
+# Logging configuration
+logging:
+  level: INFO
+  format: json
+
+# AWS/S3 configuration
+aws:
+  profile: default
+  region: us-east-1
+  bucket: mrf-data
+  prefix: raw/
+
+# Endpoint configuration
+endpoints:
+  - name: payer1
+    base_url: https://payer1.com/mrf
+    auth:
+      type: basic
+      username: ${PAYER1_USERNAME}
+      password: ${PAYER1_PASSWORD}
+  - name: payer2
+    base_url: https://payer2.com/mrf
+    auth:
+      type: bearer
+      token: ${PAYER2_TOKEN}
+
+# CPT code whitelist
+cpt_whitelist:
+  - "99201"  # Office visit new patient
+  - "99202"
+  - "99203"
+  - "99204"
+  - "99205"
+  - "99211"  # Office visit established patient
+  - "99212"
+  - "99213"
+  - "99214"
+  - "99215"
+
+# Retry configuration
+retry:
+  max_attempts: 3
+  initial_delay: 1
+  max_delay: 10
+  exponential_base: 2
+
+# Processing configuration
+processing:
+  batch_size: 1000
+  max_workers: 4
+  temp_dir: /tmp/mrf-scraper 
