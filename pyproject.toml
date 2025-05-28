@@ -1,19 +1,15 @@
----
-
-### pyproject.toml
-```toml
 [tool.poetry]
 name = "tic-mrf-scraper"
 version = "0.1.0"
 description = "Stream & Parquet TiC MRF scraper"
 authors = ["Chris Cato <you@example.com>"]
-packages = [{ include = "tic_mrf_scraper" }]
+packages = [{ include = "tic_mrf_scraper", from = "src" }]
 
 [tool.poetry.dependencies]
 python = "^3.9"
 requests = "^2.31.0"
 ijson = "^3.2.0"
-pyarrow = {version = "^12.0.0", extras = ["parquet"]}
+pyarrow = {version = "^19.0.1", extras = ["parquet"]}
 s3fs = "^2024.4.0"
 boto3 = "^1.29.0"
 PyYAML = "^6.0"

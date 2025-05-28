@@ -8,7 +8,7 @@ setup(
     install_requires=[
         "requests>=2.31.0",
         "ijson>=3.2.0",
-        "pyarrow[parquet]>=12.0.0",
+        "pyarrow[parquet]>=19.0.1",
         "s3fs>=2024.4.0",
         "boto3>=1.29.0",
         "PyYAML>=6.0",

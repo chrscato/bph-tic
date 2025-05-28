@@ -26,7 +26,31 @@ def list_mrf_blobs(index_url: str) -> list[str]:
     resp.raise_for_status()
     
     data = resp.json()
-    return [blob["url"] for blob in data["blobs"]]
+    logger.info("index_response", data=data)
+    
+    # Check if data has the expected structure
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected dict response, got {type(data)}")
+    
+    # Handle Centene API structure
+    if "reporting_structure" in data:
+        urls = []
+        for structure in data["reporting_structure"]:
+            # Get in-network files
+            if "in_network_files" in structure:
+                for file_info in structure["in_network_files"]:
+                    if "location" in file_info:
+                        urls.append(file_info["location"])
+            # Get allowed amount files
+            if "allowed_amount_file" in structure and "location" in structure["allowed_amount_file"]:
+                urls.append(structure["allowed_amount_file"]["location"])
+        return urls
+    
+    # Handle standard blobs structure
+    if "blobs" in data:
+        return [blob["url"] for blob in data["blobs"]]
+    
+    raise ValueError(f"Response missing expected keys. Available keys: {list(data.keys())}")
 
 @retry(
     stop=stop_after_attempt(3),
