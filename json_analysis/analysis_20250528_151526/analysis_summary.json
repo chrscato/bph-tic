@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-05-28T15:15:26.970827",
+  "url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_centene-management-company-llc_fidelis-ex_in-network.json",
+  "root_keys": [
+    "reporting_entity_name",
+    "reporting_entity_type",
+    "version",
+    "last_updated_on",
+    "in_network"
+  ],
+  "in_network_count": 2791,
+  "first_item_keys": [
+    "negotiation_arrangement",
+    "name",
+    "billing_code_type",
+    "billing_code_type_version",
+    "billing_code",
+    "description",
+    "negotiated_rates"
+  ],
+  "whitelist_codes_found": {},
+  "example_code": null
+}

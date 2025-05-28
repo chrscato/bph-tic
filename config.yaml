@@ -1,12 +1,27 @@
 # endpoints: map payer name → index-API URL
 endpoints:
-  example_payer: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_fidelis_index.json"
+  centene_fidelis: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_fidelis_index.json"
+  # Add more real endpoints for testing
 
 cpt_whitelist:
   - "99213"
   - "99214"
+  - "99215"
   - "70450"
   - "72148"
 
+# Enhanced processing options
+processing:
+  file_types: ["in_network_rates"]  # Options: in_network_rates, allowed_amounts, provider_references
+  max_files_per_payer: 5  # Limit for testing
+  max_records_per_file: 100000  # Memory management
+  batch_size: 1000
+
 logging:
   level: "INFO"
+  structured: true
+
+# S3 settings (optional)
+s3:
+  bucket: ""
+  prefix: "tic-mrf-enhanced"

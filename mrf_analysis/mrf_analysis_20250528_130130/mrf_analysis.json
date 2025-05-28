@@ -1,0 +1,163 @@
+{
+  "timestamp": "2025-05-28T13:01:30.089488",
+  "url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_centene-management-company-llc_fidelis-ex_in-network.json",
+  "root_keys": [
+    "reporting_entity_name",
+    "reporting_entity_type",
+    "version",
+    "last_updated_on",
+    "in_network"
+  ],
+  "billing_code_analysis": {
+    "HCPCS": 2,
+    "CPT": 3
+  },
+  "whitelist_matches": [
+    {
+      "code": "70450",
+      "type": "CPT",
+      "description": "COMPUTED TOMOGRAPHY, HEAD OR BRAIN; WITHOUT CONTRA"
+    },
+    {
+      "code": "72148",
+      "type": "CPT",
+      "description": "MAGNETIC RESONANCE (EG, PROTON) IMAGING, SPINAL CA"
+    },
+    {
+      "code": "99213",
+      "type": "CPT",
+      "description": "OFFICE OR OTH OUTPATIENT VISIT FOR THE EVALUATION "
+    },
+    {
+      "code": "99214",
+      "type": "CPT",
+      "description": "OFFICE OR OTH OUTPATIENT VISIT FOR THE EVALUATION "
+    },
+    {
+      "code": "99215",
+      "type": "CPT",
+      "description": "OFFICE OR OTH OUTPATIENT VISIT FOR THE EVALUATION "
+    }
+  ],
+  "sample_records": [
+    {
+      "billing_code": "0240U",
+      "billing_type": "HCPCS",
+      "description": "NFCT DS RNA 3 TARGETS UPPER RESPIRATORY SPECIMEN",
+      "rate_analysis": {
+        "total_rates": 1,
+        "rates_with_providers": 1,
+        "rates_without_providers": 0,
+        "rates_with_negotiated_prices": 1,
+        "provider_types": {
+          "provider_groups": 1
+        },
+        "price_analysis": {
+          "total_prices": 1,
+          "prices_with_rates": 1,
+          "prices_without_rates": 0,
+          "rate_values": [
+            121.23
+          ]
+        }
+      }
+    },
+    {
+      "billing_code": "0241U",
+      "billing_type": "HCPCS",
+      "description": "NFCT DS RNA 4 TARGETS UPPER RESPIRATORY SPECIMEN",
+      "rate_analysis": {
+        "total_rates": 10,
+        "rates_with_providers": 10,
+        "rates_without_providers": 0,
+        "rates_with_negotiated_prices": 10,
+        "provider_types": {
+          "provider_groups": 10
+        },
+        "price_analysis": {
+          "total_prices": 10,
+          "prices_with_rates": 10,
+          "prices_without_rates": 0,
+          "rate_values": [
+            249.62,
+            192.55,
+            135.5,
+            212.52,
+            249.62,
+            297.52,
+            121.23,
+            297.52,
+            76.31,
+            249.62
+          ]
+        }
+      }
+    },
+    {
+      "billing_code": "10005",
+      "billing_type": "CPT",
+      "description": "FINE NEEDLE ASPIRATION BX W/US GDN 1ST LESION",
+      "rate_analysis": {
+        "total_rates": 1,
+        "rates_with_providers": 1,
+        "rates_without_providers": 0,
+        "rates_with_negotiated_prices": 1,
+        "provider_types": {
+          "provider_groups": 1
+        },
+        "price_analysis": {
+          "total_prices": 1,
+          "prices_with_rates": 1,
+          "prices_without_rates": 0,
+          "rate_values": [
+            152.18
+          ]
+        }
+      }
+    },
+    {
+      "billing_code": "10006",
+      "billing_type": "CPT",
+      "description": "FINE NEEDLE ASPIRATION BX W/US GDN EA ADDL",
+      "rate_analysis": {
+        "total_rates": 1,
+        "rates_with_providers": 1,
+        "rates_without_providers": 0,
+        "rates_with_negotiated_prices": 1,
+        "provider_types": {
+          "provider_groups": 1
+        },
+        "price_analysis": {
+          "total_prices": 1,
+          "prices_with_rates": 1,
+          "prices_without_rates": 0,
+          "rate_values": [
+            67.8
+          ]
+        }
+      }
+    },
+    {
+      "billing_code": "10040",
+      "billing_type": "CPT",
+      "description": "ACNE SURGERY (EG, MARSUPIALIZATION, OPENING OR REM",
+      "rate_analysis": {
+        "total_rates": 1,
+        "rates_with_providers": 1,
+        "rates_without_providers": 0,
+        "rates_with_negotiated_prices": 1,
+        "provider_types": {
+          "provider_groups": 1
+        },
+        "price_analysis": {
+          "total_prices": 1,
+          "prices_with_rates": 1,
+          "prices_without_rates": 0,
+          "rate_values": [
+            116.96
+          ]
+        }
+      }
+    }
+  ]
+}
