@@ -1,0 +1,169 @@
+# production_config.yaml - Production ETL Configuration
+
+# Payer endpoints - add more as you scale
+payer_endpoints:
+  centene_fidelis: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_fidelis_index.json"
+  # aetna: "https://health1.aetna.com/app/public/#/one/insurerCode=AETNA_AETNA&brandCode=ALICSI/machine-readable-transparency-in-coverage"
+  # anthem: "https://www.anthem.com/machine-readable-files/search/"
+  # Add more payers here
+
+# Target CPT/HCPCS codes for extraction
+cpt_whitelist:
+  # Office visits (high volume)
+  - "99213"  # Office visit - established patient
+  - "99214"  # Office visit - established patient
+  - "99215"  # Office visit - established patient
+  - "99202"  # Office visit - new patient
+  - "99203"  # Office visit - new patient
+  - "99204"  # Office visit - new patient
+  
+  # Preventive care
+  - "99385"  # Initial preventive exam
+  - "99395"  # Periodic preventive exam
+  - "99387"  # Preventive exam 18-39 years
+  
+  # Common procedures
+  - "90834"  # Psychotherapy 45 minutes
+  - "90837"  # Psychotherapy 60 minutes
+  - "96116"  # Neurobehavioral status exam
+  
+  # Imaging (high-cost procedures)
+  - "70450"  # CT head/brain without contrast
+  - "70460"  # CT head/brain with contrast
+  - "72148"  # MRI lumbar spine without contrast
+  - "72158"  # MRI lumbar spine with contrast
+  - "73721"  # MRI knee without contrast
+  - "74177"  # CT abdomen and pelvis with contrast
+  
+  # Lab tests
+  - "80053"  # Comprehensive metabolic panel
+  - "85025"  # Blood count; complete (CBC)
+  - "80061"  # Lipid panel
+  - "83036"  # Hemoglobin; glycosylated (A1C)
+  - "0240U"  # Respiratory pathogen panel
+  - "0241U"  # Respiratory pathogen panel
+  
+  # Surgical procedures
+  - "10060"  # Incision and drainage of abscess
+  - "10040"  # Acne surgery
+  - "11042"  # Debridement subcutaneous tissue
+  - "20610"  # Arthrocentesis, major joint
+  
+  # Specialty procedures
+  - "92004"  # Ophthalmological exam, new patient
+  - "92014"  # Ophthalmological exam, established patient
+  - "93000"  # Electrocardiogram
+  - "93306"  # Echocardiography
+  
+# Processing configuration
+processing:
+  # Resource limits
+  max_files_per_payer: 50          # Scale up for production
+  max_records_per_file: 500000     # Memory management
+  batch_size: 10000                # Parquet batch size
+  parallel_workers: 4              # CPU cores to use
+  
+  # Quality thresholds
+  min_completeness_pct: 75.0       # Minimum data completeness
+  min_accuracy_score: 0.80         # Minimum validation score
+  
+  # File type filters
+  file_types: 
+    - "in_network_rates"           # Primary focus
+    # - "allowed_amounts"          # Out-of-network (optional)
+    # - "provider_references"      # Provider lookups (optional)
+
+# Output configuration
+output:
+  local_directory: "production_data"
+  
+  # S3 configuration (set via environment variables)
+  s3:
+    bucket: "${S3_BUCKET}"         # Set S3_BUCKET environment variable
+    prefix: "healthcare-rates-v2"
+    region: "us-east-1"
+    
+  # Partitioning strategy
+  partitioning:
+    rates_by: ["payer_type", "year", "month"]
+    providers_by: ["state"]
+    organizations_by: ["state"]
+    analytics_by: ["geography", "service_code"]
+
+# Data versioning
+versioning:
+  schema_version: "v2.1.0"
+  processing_version: "tic-etl-v1.0"
+  retention_days: 90               # Keep old versions for 90 days
+  
+# Logging configuration
+logging:
+  level: "INFO"
+  structured: true
+  output_file: "production_data/etl_pipeline.log"
+  
+# Monitoring and alerting
+monitoring:
+  enable_metrics: true
+  error_threshold: 10              # Alert after 10 errors
+  processing_timeout_hours: 6      # Alert if processing takes >6 hours
+  
+# Integration settings
+integrations:
+  # NPPES NPI Registry
+  nppes:
+    enable: true
+    api_url: "https://npiregistry.cms.hhs.gov/api/"
+    cache_duration_days: 30
+    
+  # CMS Provider Data
+  cms:
+    enable: false                  # Enable when ready
+    provider_data_url: "https://data.cms.gov/provider-data/"
+    
+# Data quality rules
+quality_rules:
+  rates:
+    min_rate: 0.01                 # Minimum reasonable rate
+    max_rate: 50000.00             # Maximum reasonable rate
+    required_fields: ["service_code", "negotiated_rate", "payer_uuid"]
+    
+  providers:
+    npi_validation: true           # Validate NPI format
+    required_fields: ["npi", "organization_uuid"]
+    
+  organizations:
+    tin_validation: true           # Validate TIN format
+    required_fields: ["tin"]
+
+# Performance optimization
+performance:
+  # Memory management
+  chunk_size: 10000               # Records per processing chunk
+  memory_limit_gb: 8              # Maximum memory usage
+  
+  # Caching
+  enable_caching: true
+  cache_directory: ".cache"
+  
+  # Compression
+  parquet_compression: "snappy"   # Fast compression
+  
+# Business rules
+business_rules:
+  # Rate filtering
+  exclude_zero_rates: true
+  exclude_negative_rates: true
+  
+  # Geographic scope
+  us_only: true                   # US providers only
+  
+  # Provider validation
+  require_active_npi: true        # Only active NPIs
+  
+# Development/testing overrides
+development:
+  # Use smaller limits for testing
+  test_mode: false
+  sample_size: 1000               # Records to sample in test mode
+  mock_s3: false                  # Use local storage instead of S3 
