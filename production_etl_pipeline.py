@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Production ETL Pipeline for Healthcare Rates Data."""
+"""Production ETL Pipeline for Healthcare Rates Data with Full Index Processing and S3 Upload."""
 
 import os
 import uuid
@@ -8,6 +8,7 @@ import boto3
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional, Iterator
@@ -30,16 +31,14 @@ class ETLConfig:
     payer_endpoints: Dict[str, str]
     cpt_whitelist: List[str]
     
-    # Processing limits
-    max_files_per_payer: Optional[int] = None
-    max_records_per_file: Optional[int] = None
+    # Processing configuration
     batch_size: int = 10000
-    parallel_workers: int = 4
+    parallel_workers: int = 2
     
     # Output configuration
-    local_output_dir: str = "data"
+    local_output_dir: str = "production_data"
     s3_bucket: Optional[str] = None
-    s3_prefix: str = "healthcare-rates"
+    s3_prefix: str = "healthcare-rates-v2"
     
     # Data versioning
     schema_version: str = "v2.1.0"
@@ -118,7 +117,7 @@ class DataQualityValidator:
         return quality_flags
 
 class ProductionETLPipeline:
-    """Memory-efficient production ETL pipeline."""
+    """Memory-efficient production ETL pipeline with full index processing and S3 upload."""
     
     def __init__(self, config: ETLConfig):
         self.config = config
@@ -126,62 +125,91 @@ class ProductionETLPipeline:
         self.validator = DataQualityValidator()
         self.s3_client = boto3.client('s3') if config.s3_bucket else None
         
-        # Initialize output directories
-        self.setup_output_structure()
+        # Initialize local temp directory for S3 uploads
+        if self.s3_client:
+            self.temp_dir = tempfile.mkdtemp(prefix="etl_pipeline_")
+            logger.info("created_temp_directory", temp_dir=self.temp_dir)
+        else:
+            self.setup_local_output_structure()
+            self.temp_dir = None
         
         # Processing statistics
         self.stats = {
             "payers_processed": 0,
+            "total_files_found": 0,
             "files_processed": 0,
+            "files_succeeded": 0,
+            "files_failed": 0,
             "records_extracted": 0,
             "records_validated": 0,
+            "s3_uploads": 0,
             "processing_start": datetime.now(timezone.utc),
             "errors": []
         }
     
-    def setup_output_structure(self):
-        """Create local output directory structure."""
+    def setup_local_output_structure(self):
+        """Create local output directory structure (fallback if no S3)."""
         base_dir = Path(self.config.local_output_dir)
         for subdir in ["payers", "organizations", "providers", "rates", "analytics"]:
             (base_dir / subdir).mkdir(parents=True, exist_ok=True)
     
+    def cleanup_temp_directory(self):
+        """Clean up temporary directory."""
+        if self.temp_dir:
+            import shutil
+            shutil.rmtree(self.temp_dir, ignore_errors=True)
+            logger.info("cleaned_temp_directory", temp_dir=self.temp_dir)
+    
     def process_all_payers(self):
-        """Process all configured payers with parallel execution."""
-        logger.info("starting_production_etl", 
+        """Process all configured payers with full index processing."""
+        logger.info("starting_production_etl_full_index", 
                    payers=len(self.config.payer_endpoints),
+                   s3_enabled=bool(self.s3_client),
                    config=asdict(self.config))
         
-        # Process payers in parallel
-        with ThreadPoolExecutor(max_workers=self.config.parallel_workers) as executor:
-            future_to_payer = {
-                executor.submit(self.process_payer, payer_name, index_url): payer_name
-                for payer_name, index_url in self.config.payer_endpoints.items()
-            }
-            
-            for future in as_completed(future_to_payer):
-                payer_name = future_to_payer[future]
+        try:
+            # Process payers sequentially for better resource management
+            for payer_name, index_url in self.config.payer_endpoints.items():
                 try:
-                    payer_stats = future.result()
+                    payer_stats = self.process_payer(payer_name, index_url)
                     logger.info("completed_payer", payer=payer_name, stats=payer_stats)
                     self.stats["payers_processed"] += 1
+                    
+                    # Update overall stats
+                    self.stats["total_files_found"] += payer_stats.get("files_found", 0)
+                    self.stats["files_processed"] += payer_stats.get("files_processed", 0)
+                    self.stats["files_succeeded"] += payer_stats.get("files_succeeded", 0)
+                    self.stats["files_failed"] += payer_stats.get("files_failed", 0)
+                    self.stats["records_extracted"] += payer_stats.get("records_extracted", 0)
+                    self.stats["records_validated"] += payer_stats.get("records_validated", 0)
+                    
                 except Exception as e:
                     error_msg = f"Failed processing {payer_name}: {str(e)}"
                     logger.error("payer_processing_failed", payer=payer_name, error=str(e))
                     self.stats["errors"].append(error_msg)
-        
-        # Generate final outputs
-        self.generate_aggregated_tables()
-        self.upload_to_s3()
-        self.log_final_statistics()
+            
+            # Generate final outputs if not using S3
+            if not self.s3_client:
+                self.generate_aggregated_tables()
+            
+            self.log_final_statistics()
+            
+        finally:
+            # Always cleanup temp directory
+            self.cleanup_temp_directory()
     
     def process_payer(self, payer_name: str, index_url: str) -> Dict[str, Any]:
-        """Process a single payer's MRF data."""
-        logger.info("processing_payer", payer=payer_name, url=index_url)
+        """Process a single payer's COMPLETE MRF index with all files."""
+        logger.info("processing_payer_full_index", payer=payer_name, url=index_url)
         
         payer_stats = {
+            "files_found": 0,
             "files_processed": 0,
+            "files_succeeded": 0,
+            "files_failed": 0,
             "records_extracted": 0,
             "records_validated": 0,
+            "failed_files": [],
             "start_time": time.time()
         }
         
@@ -189,35 +217,70 @@ class ProductionETLPipeline:
             # Create payer record
             payer_uuid = self.create_payer_record(payer_name, index_url)
             
-            # Get MRF files list
+            # Get ALL MRF files from index (no limits!)
+            logger.info("fetching_complete_index", payer=payer_name)
             mrf_files = list_mrf_blobs_enhanced(index_url)
             
-            # Filter to in-network rates files
+            # Filter to in-network rates files only
             rate_files = [f for f in mrf_files if f["type"] == "in_network_rates"]
+            payer_stats["files_found"] = len(rate_files)
             
-            # Apply file limits
-            if self.config.max_files_per_payer:
-                rate_files = rate_files[:self.config.max_files_per_payer]
-            
-            logger.info("found_mrf_files", 
+            logger.info("found_rate_files", 
                        payer=payer_name, 
                        total_files=len(mrf_files),
                        rate_files=len(rate_files))
             
-            # Process each MRF file
-            for file_info in rate_files:
+            # Process ALL rate files (this is the key change!)
+            for file_index, file_info in enumerate(rate_files, 1):
+                payer_stats["files_processed"] += 1
+                
+                logger.info("processing_file",
+                           payer=payer_name,
+                           file_number=f"{file_index}/{len(rate_files)}",
+                           plan=file_info["plan_name"],
+                           progress_pct=f"{(file_index/len(rate_files)*100):.1f}%")
+                
                 try:
-                    file_stats = self.process_mrf_file(payer_uuid, payer_name, file_info)
-                    payer_stats["files_processed"] += 1
+                    file_stats = self.process_mrf_file_enhanced(
+                        payer_uuid, payer_name, file_info, file_index, len(rate_files)
+                    )
+                    
+                    payer_stats["files_succeeded"] += 1
                     payer_stats["records_extracted"] += file_stats["records_extracted"]
                     payer_stats["records_validated"] += file_stats["records_validated"]
                     
+                    logger.info("file_completed",
+                               payer=payer_name,
+                               file_number=f"{file_index}/{len(rate_files)}",
+                               records_extracted=file_stats["records_extracted"],
+                               records_validated=file_stats["records_validated"],
+                               processing_time=f"{file_stats.get('processing_time', 0):.1f}s")
+                    
                 except Exception as e:
+                    payer_stats["files_failed"] += 1
+                    error_info = {
+                        "file_index": file_index,
+                        "plan_name": file_info["plan_name"],
+                        "url": file_info["url"][:100] + "...",
+                        "error": str(e)
+                    }
+                    payer_stats["failed_files"].append(error_info)
+                    
                     logger.error("mrf_file_processing_failed", 
                                payer=payer_name,
-                               file_url=file_info["url"][:100],
+                               file_number=f"{file_index}/{len(rate_files)}",
+                               plan=file_info["plan_name"],
                                error=str(e))
-                    self.stats["errors"].append(f"{payer_name}: {str(e)}")
+                    
+                    # Continue processing other files (don't fail entire payer)
+                    continue
+            
+            logger.info("completed_payer",
+                       payer=payer_name,
+                       files_found=payer_stats["files_found"],
+                       files_succeeded=payer_stats["files_succeeded"],
+                       files_failed=payer_stats["files_failed"],
+                       total_records=payer_stats["records_validated"])
         
         except Exception as e:
             logger.error("payer_processing_failed", payer=payer_name, error=str(e))
@@ -226,6 +289,227 @@ class ProductionETLPipeline:
         payer_stats["processing_time"] = time.time() - payer_stats["start_time"]
         return payer_stats
     
+    def process_mrf_file_enhanced(self, payer_uuid: str, payer_name: str, 
+                                file_info: Dict[str, Any], file_index: int, total_files: int) -> Dict[str, Any]:
+        """Process a single MRF file with direct S3 upload and enhanced logging."""
+        logger.info("processing_mrf_file_enhanced", 
+                   payer=payer_name,
+                   file_progress=f"{file_index}/{total_files}",
+                   plan=file_info["plan_name"],
+                   file_type=file_info["type"])
+        
+        file_stats = {
+            "records_extracted": 0,
+            "records_validated": 0,
+            "organizations_created": set(),
+            "start_time": time.time(),
+            "s3_uploads": 0
+        }
+        
+        # Create S3-friendly filename
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        plan_safe_name = "".join(c if c.isalnum() or c in '-_' else '_' for c in file_info["plan_name"])
+        filename_base = f"{payer_name}_{plan_safe_name}_{timestamp}"
+        
+        # Batch collectors for S3 upload
+        rate_batch = []
+        org_batch = []
+        provider_batch = []
+        
+        # Use larger batch size for S3 efficiency
+        batch_size = self.config.batch_size
+        
+        # Process records with streaming parser
+        try:
+            for raw_record in stream_parse_enhanced(
+                file_info["url"], 
+                payer_name, 
+                file_info.get("provider_reference_url")
+            ):
+                file_stats["records_extracted"] += 1
+                
+                # Normalize and validate
+                normalized = normalize_tic_record(
+                    raw_record, 
+                    set(self.config.cpt_whitelist), 
+                    payer_name
+                )
+                
+                if not normalized:
+                    continue
+                
+                # Create structured records
+                rate_record = self.create_rate_record(
+                    payer_uuid, normalized, file_info, raw_record
+                )
+                
+                # Validate quality
+                quality_flags = self.validator.validate_rate_record(rate_record)
+                rate_record["quality_flags"] = quality_flags
+                
+                if quality_flags["is_validated"]:
+                    file_stats["records_validated"] += 1
+                    rate_batch.append(rate_record)
+                    
+                    # Create organization record if new
+                    org_uuid = rate_record["organization_uuid"]
+                    if org_uuid not in file_stats["organizations_created"]:
+                        org_record = self.create_organization_record(normalized, raw_record)
+                        org_batch.append(org_record)
+                        file_stats["organizations_created"].add(org_uuid)
+                    
+                    # Create provider records
+                    provider_records = self.create_provider_records(normalized, raw_record)
+                    provider_batch.extend(provider_records)
+                
+                # Write batches when full (this will upload to S3)
+                if len(rate_batch) >= batch_size:
+                    upload_stats = self.write_batches_to_s3(
+                        rate_batch, org_batch, provider_batch, 
+                        payer_name, filename_base, file_stats["s3_uploads"]
+                    )
+                    file_stats["s3_uploads"] += upload_stats["files_uploaded"]
+                    self.stats["s3_uploads"] += upload_stats["files_uploaded"]
+                    rate_batch, org_batch, provider_batch = [], [], []
+                    
+                    # Log progress
+                    if file_stats["records_validated"] % 50000 == 0:
+                        logger.info("batch_uploaded_to_s3",
+                                   payer=payer_name,
+                                   file_progress=f"{file_index}/{total_files}",
+                                   records_validated=file_stats["records_validated"],
+                                   s3_uploads=file_stats["s3_uploads"])
+            
+            # Write final batches
+            if rate_batch:
+                upload_stats = self.write_batches_to_s3(
+                    rate_batch, org_batch, provider_batch, 
+                    payer_name, filename_base, file_stats["s3_uploads"]
+                )
+                file_stats["s3_uploads"] += upload_stats["files_uploaded"]
+                self.stats["s3_uploads"] += upload_stats["files_uploaded"]
+        
+        except Exception as e:
+            logger.error("stream_processing_failed",
+                        payer=payer_name,
+                        plan=file_info["plan_name"],
+                        records_processed=file_stats["records_extracted"],
+                        error=str(e))
+            raise
+        
+        file_stats["processing_time"] = time.time() - file_stats["start_time"]
+        logger.info("completed_mrf_file_enhanced", 
+                   payer=payer_name,
+                   file_progress=f"{file_index}/{total_files}",
+                   plan=file_info["plan_name"],
+                   records_extracted=file_stats["records_extracted"],
+                   records_validated=file_stats["records_validated"],
+                   s3_uploads=file_stats["s3_uploads"],
+                   processing_time=f"{file_stats['processing_time']:.1f}s")
+        
+        return file_stats
+    
+    def write_batches_to_s3(self, rate_batch: List[Dict], org_batch: List[Dict], 
+                           provider_batch: List[Dict], payer_name: str, 
+                           filename_base: str, batch_number: int) -> Dict[str, Any]:
+        """Write batches directly to S3 with organized paths."""
+        upload_stats = {"files_uploaded": 0, "bytes_uploaded": 0}
+        
+        if not self.s3_client:
+            # Fallback to local storage
+            return self.write_batches_local(rate_batch, org_batch, provider_batch, payer_name)
+        
+        # Current date for partitioning
+        current_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        batch_timestamp = datetime.now(timezone.utc).strftime("%H%M%S")
+        
+        # Upload rates batch
+        if rate_batch:
+            rates_key = f"{self.config.s3_prefix}/rates/payer={payer_name}/date={current_date}/{filename_base}_rates_batch_{batch_number:04d}_{batch_timestamp}.parquet"
+            success = self.upload_batch_to_s3(rate_batch, rates_key, "rates")
+            if success:
+                upload_stats["files_uploaded"] += 1
+        
+        # Upload organizations batch
+        if org_batch:
+            orgs_key = f"{self.config.s3_prefix}/organizations/payer={payer_name}/date={current_date}/{filename_base}_orgs_batch_{batch_number:04d}_{batch_timestamp}.parquet"
+            success = self.upload_batch_to_s3(org_batch, orgs_key, "organizations")
+            if success:
+                upload_stats["files_uploaded"] += 1
+        
+        # Upload providers batch
+        if provider_batch:
+            providers_key = f"{self.config.s3_prefix}/providers/payer={payer_name}/date={current_date}/{filename_base}_providers_batch_{batch_number:04d}_{batch_timestamp}.parquet"
+            success = self.upload_batch_to_s3(provider_batch, providers_key, "providers")
+            if success:
+                upload_stats["files_uploaded"] += 1
+        
+        return upload_stats
+    
+    def upload_batch_to_s3(self, batch_data: List[Dict], s3_key: str, data_type: str) -> bool:
+        """Upload a single batch to S3."""
+        if not batch_data:
+            return True
+        
+        try:
+            # Create temporary parquet file
+            temp_file = Path(self.temp_dir) / f"temp_{data_type}_{int(time.time())}.parquet"
+            
+            # Convert to DataFrame and write to parquet
+            df = pd.DataFrame(batch_data)
+            df.to_parquet(temp_file, index=False, compression='snappy')
+            
+            # Upload to S3
+            self.s3_client.upload_file(str(temp_file), self.config.s3_bucket, s3_key)
+            
+            # Get file size for stats
+            file_size = temp_file.stat().st_size
+            
+            # Clean up temp file
+            temp_file.unlink()
+            
+            logger.info("uploaded_batch_to_s3",
+                       s3_key=s3_key,
+                       records=len(batch_data),
+                       file_size_mb=file_size / 1024 / 1024,
+                       data_type=data_type)
+            
+            return True
+            
+        except Exception as e:
+            logger.error("s3_upload_failed",
+                        s3_key=s3_key,
+                        data_type=data_type,
+                        records=len(batch_data),
+                        error=str(e))
+            return False
+    
+    def write_batches_local(self, rate_batch: List[Dict], org_batch: List[Dict], 
+                           provider_batch: List[Dict], payer_name: str) -> Dict[str, Any]:
+        """Fallback: write batches to local files."""
+        upload_stats = {"files_uploaded": 0, "bytes_uploaded": 0}
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        if rate_batch:
+            rates_file = (Path(self.config.local_output_dir) / "rates" / 
+                         f"rates_{payer_name}_{timestamp}.parquet")
+            self.append_to_parquet(rates_file, rate_batch)
+            upload_stats["files_uploaded"] += 1
+        
+        if org_batch:
+            orgs_file = (Path(self.config.local_output_dir) / "organizations" / 
+                        f"organizations_{payer_name}_{timestamp}.parquet")
+            self.append_to_parquet(orgs_file, org_batch)
+            upload_stats["files_uploaded"] += 1
+        
+        if provider_batch:
+            providers_file = (Path(self.config.local_output_dir) / "providers" / 
+                            f"providers_{payer_name}_{timestamp}.parquet")
+            self.append_to_parquet(providers_file, provider_batch)
+            upload_stats["files_uploaded"] += 1
+        
+        return upload_stats
+    
     def create_payer_record(self, payer_name: str, index_url: str) -> str:
         """Create and store payer master record."""
         payer_uuid = self.uuid_gen.payer_uuid(payer_name)
@@ -233,9 +517,9 @@ class ProductionETLPipeline:
         payer_record = {
             "payer_uuid": payer_uuid,
             "payer_name": payer_name,
-            "payer_type": "Commercial",  # Could be inferred from name
-            "parent_organization": "",   # TODO: Add mapping logic
-            "state_licenses": [],        # TODO: Extract from MRF data
+            "payer_type": "Commercial",
+            "parent_organization": "",
+            "state_licenses": [],
             "market_type": "Unknown",
             "is_active": True,
             "created_at": datetime.now(timezone.utc),
@@ -245,94 +529,7 @@ class ProductionETLPipeline:
             "last_scraped": datetime.now(timezone.utc)
         }
         
-        # Store payer record (append to payers file)
-        payers_file = Path(self.config.local_output_dir) / "payers" / "payers_staging.parquet"
-        self.append_to_parquet(payers_file, [payer_record])
-        
         return payer_uuid
-    
-    def process_mrf_file(self, payer_uuid: str, payer_name: str, file_info: Dict[str, Any]) -> Dict[str, Any]:
-        """Process a single MRF file with memory-efficient streaming."""
-        logger.info("processing_mrf_file", 
-                   payer=payer_name,
-                   plan=file_info["plan_name"],
-                   file_type=file_info["type"])
-        
-        file_stats = {
-            "records_extracted": 0,
-            "records_validated": 0,
-            "organizations_created": set(),
-            "start_time": time.time()
-        }
-        
-        # Batch collectors
-        rate_batch = []
-        org_batch = []
-        provider_batch = []
-        
-        # Process records with streaming parser
-        for raw_record in stream_parse_enhanced(
-            file_info["url"], 
-            payer_name, 
-            file_info.get("provider_reference_url")
-        ):
-            file_stats["records_extracted"] += 1
-            
-            # Apply record limits
-            if (self.config.max_records_per_file and 
-                file_stats["records_extracted"] > self.config.max_records_per_file):
-                break
-            
-            # Normalize and validate
-            normalized = normalize_tic_record(
-                raw_record, 
-                set(self.config.cpt_whitelist), 
-                payer_name
-            )
-            
-            if not normalized:
-                continue
-            
-            # Create structured records
-            rate_record = self.create_rate_record(
-                payer_uuid, normalized, file_info, raw_record
-            )
-            
-            # Validate quality
-            quality_flags = self.validator.validate_rate_record(rate_record)
-            rate_record["quality_flags"] = quality_flags
-            
-            if quality_flags["is_validated"]:
-                file_stats["records_validated"] += 1
-                rate_batch.append(rate_record)
-                
-                # Create organization record if new
-                org_uuid = rate_record["organization_uuid"]
-                if org_uuid not in file_stats["organizations_created"]:
-                    org_record = self.create_organization_record(normalized, raw_record)
-                    org_batch.append(org_record)
-                    file_stats["organizations_created"].add(org_uuid)
-                
-                # Create provider records
-                provider_records = self.create_provider_records(normalized, raw_record)
-                provider_batch.extend(provider_records)
-            
-            # Write batches when full
-            if len(rate_batch) >= self.config.batch_size:
-                self.write_batches(rate_batch, org_batch, provider_batch, payer_name)
-                rate_batch, org_batch, provider_batch = [], [], []
-        
-        # Write final batches
-        if rate_batch:
-            self.write_batches(rate_batch, org_batch, provider_batch, payer_name)
-        
-        file_stats["processing_time"] = time.time() - file_stats["start_time"]
-        logger.info("completed_mrf_file", 
-                   payer=payer_name,
-                   plan=file_info["plan_name"],
-                   stats=file_stats)
-        
-        return file_stats
     
     def create_rate_record(self, payer_uuid: str, normalized: Dict[str, Any], 
                           file_info: Dict[str, Any], raw_record: Dict[str, Any]) -> Dict[str, Any]:
@@ -378,7 +575,7 @@ class ProductionETLPipeline:
                 "market_type": "Commercial"
             },
             "contract_period": {
-                "effective_date": None,  # TODO: Extract from MRF
+                "effective_date": None,
                 "expiration_date": normalized.get("expiration_date"),
                 "last_updated_on": None
             },
@@ -388,7 +585,7 @@ class ProductionETLPipeline:
                 "coverage_type": "Organization"
             },
             "geographic_scope": {
-                "states": [],  # TODO: Extract from plan data
+                "states": [],
                 "zip_codes": [],
                 "counties": []
             },
@@ -413,10 +610,10 @@ class ProductionETLPipeline:
             "organization_uuid": org_uuid,
             "tin": tin,
             "organization_name": org_name or f"Organization-{tin}",
-            "organization_type": "Unknown",  # TODO: Classify from name/data
+            "organization_type": "Unknown",
             "parent_system": "",
             "npi_count": len(normalized.get("provider_npi", [])),
-            "primary_specialty": "",  # TODO: Extract from NPI data
+            "primary_specialty": "",
             "is_facility": normalized.get("billing_class") == "facility",
             "headquarters_address": {
                 "street": "",
@@ -429,7 +626,7 @@ class ProductionETLPipeline:
             "service_areas": [],
             "created_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc),
-            "data_quality_score": 0.8  # Base score
+            "data_quality_score": 0.8
         }
     
     def create_provider_records(self, normalized: Dict[str, Any], raw_record: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -466,7 +663,7 @@ class ProductionETLPipeline:
                 "secondary_specialties": [],
                 "provider_type": "Individual",
                 "gender": "Unknown",
-                "addresses": [],  # Will be populated from NPPES data
+                "addresses": [],
                 "is_active": True,
                 "enumeration_date": None,
                 "last_updated": None,
@@ -477,54 +674,34 @@ class ProductionETLPipeline:
         
         return provider_records
     
-    def write_batches(self, rate_batch: List[Dict], org_batch: List[Dict], 
-                     provider_batch: List[Dict], payer_name: str):
-        """Write batches to parquet files."""
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
-        if rate_batch:
-            rates_file = (Path(self.config.local_output_dir) / "rates" / 
-                         f"rates_{payer_name}_{timestamp}.parquet")
-            self.append_to_parquet(rates_file, rate_batch)
-        
-        if org_batch:
-            orgs_file = (Path(self.config.local_output_dir) / "organizations" / 
-                        f"organizations_{payer_name}_{timestamp}.parquet")
-            self.append_to_parquet(orgs_file, org_batch)
-        
-        if provider_batch:
-            providers_file = (Path(self.config.local_output_dir) / "providers" / 
-                            f"providers_{payer_name}_{timestamp}.parquet")
-            self.append_to_parquet(providers_file, provider_batch)
-    
     def append_to_parquet(self, file_path: Path, records: List[Dict]):
-        """Append records to parquet file."""
+        """Append records to parquet file (local fallback)."""
         if not records:
             return
         
-        # Convert to DataFrame
         df = pd.DataFrame(records)
         
-        # Write or append to parquet
         if file_path.exists():
-            # Read existing data and append
             existing_df = pd.read_parquet(file_path)
             combined_df = pd.concat([existing_df, df], ignore_index=True)
             combined_df.to_parquet(file_path, index=False)
         else:
             df.to_parquet(file_path, index=False)
         
-        logger.info("wrote_batch", file=str(file_path), records=len(records))
+        logger.info("wrote_local_batch", file=str(file_path), records=len(records))
     
     def generate_aggregated_tables(self):
-        """Generate final aggregated parquet tables."""
+        """Generate final aggregated parquet tables (for local storage only)."""
+        if self.s3_client:
+            logger.info("skipping_local_aggregation", reason="using_s3_storage")
+            return
+        
         logger.info("generating_aggregated_tables")
         
         # Combine all rate files
         self.combine_table_files("rates")
-        self.combine_table_files("organizations")
+        self.combine_table_files("organizations") 
         self.combine_table_files("providers")
-        self.combine_table_files("payers")
         
         # Generate analytics table
         self.generate_analytics_table()
@@ -609,9 +786,9 @@ class ProductionETLPipeline:
                         "p95": float(rates.quantile(0.95))
                     }
                 },
-                "payer_analysis": [],  # TODO: Implement payer breakdown
+                "payer_analysis": [],
                 "trend_analysis": {
-                    "rate_change_6m": 0.0,  # TODO: Implement trend analysis
+                    "rate_change_6m": 0.0,
                     "rate_change_12m": 0.0,
                     "volatility_score": float(rates.std() / rates.mean() if rates.mean() > 0 else 0)
                 },
@@ -631,66 +808,39 @@ class ProductionETLPipeline:
                        records=len(analytics_records),
                        file=str(analytics_file))
     
-    def upload_to_s3(self):
-        """Upload final parquet files to S3."""
-        if not self.s3_client or not self.config.s3_bucket:
-            logger.info("skipping_s3_upload", reason="not_configured")
-            return
-        
-        logger.info("uploading_to_s3", bucket=self.config.s3_bucket)
-        
-        base_dir = Path(self.config.local_output_dir)
-        current_date = datetime.now().strftime("%Y/%m/%d")
-        
-        # Upload final tables
-        for table_dir in ["rates", "organizations", "providers", "payers", "analytics"]:
-            table_path = base_dir / table_dir
-            final_files = list(table_path.glob("*_final.parquet"))
-            
-            for local_file in final_files:
-                # S3 key with date partitioning
-                s3_key = f"{self.config.s3_prefix}/{table_dir}/date={current_date}/{local_file.name}"
-                
-                try:
-                    self.s3_client.upload_file(
-                        str(local_file), 
-                        self.config.s3_bucket, 
-                        s3_key
-                    )
-                    logger.info("uploaded_to_s3", 
-                               local_file=str(local_file),
-                               s3_key=s3_key)
-                except Exception as e:
-                    logger.error("s3_upload_failed", 
-                               file=str(local_file),
-                               error=str(e))
-                    self.stats["errors"].append(f"S3 upload failed: {local_file}")
-    
     def log_final_statistics(self):
         """Log final processing statistics."""
         processing_time = datetime.now(timezone.utc) - self.stats["processing_start"]
         
-        # Calculate final statistics
-        rates_file = (Path(self.config.local_output_dir) / "rates" / "rates_final.parquet")
-        final_records = 0
-        if rates_file.exists():
-            df = pd.read_parquet(rates_file)
-            final_records = len(df)
-        
         final_stats = {
             **self.stats,
             "processing_time_seconds": processing_time.total_seconds(),
-            "final_rate_records": final_records,
-            "processing_rate_per_second": final_records / processing_time.total_seconds() if processing_time.total_seconds() > 0 else 0,
+            "processing_rate_per_second": self.stats["records_validated"] / processing_time.total_seconds() if processing_time.total_seconds() > 0 else 0,
             "completion_time": datetime.now(timezone.utc).isoformat()
         }
         
         logger.info("etl_pipeline_completed", final_stats=final_stats)
         
         # Save statistics to file
-        stats_file = Path(self.config.local_output_dir) / "processing_statistics.json"
-        with open(stats_file, 'w') as f:
-            json.dump(final_stats, f, indent=2, default=str)
+        if self.s3_client:
+            # Save stats to S3
+            stats_key = f"{self.config.s3_prefix}/processing_statistics/{datetime.now().strftime('%Y-%m-%d')}/processing_statistics_{int(time.time())}.json"
+            try:
+                temp_stats_file = Path(self.temp_dir) / "processing_statistics.json"
+                with open(temp_stats_file, 'w') as f:
+                    json.dump(final_stats, f, indent=2, default=str)
+                
+                self.s3_client.upload_file(str(temp_stats_file), self.config.s3_bucket, stats_key)
+                logger.info("uploaded_stats_to_s3", s3_key=stats_key)
+                
+                temp_stats_file.unlink()
+            except Exception as e:
+                logger.error("failed_to_upload_stats", error=str(e))
+        else:
+            # Save stats locally
+            stats_file = Path(self.config.local_output_dir) / "processing_statistics.json"
+            with open(stats_file, 'w') as f:
+                json.dump(final_stats, f, indent=2, default=str)
 
 
 def create_production_config() -> ETLConfig:
@@ -706,10 +856,8 @@ def create_production_config() -> ETLConfig:
             "0240U", "0241U",           # Lab tests
             "10005", "10006", "10040"   # Procedures
         ],
-        max_files_per_payer=10,         # Limit for testing
-        max_records_per_file=100000,    # Memory management
-        batch_size=5000,                # Parquet batch size
-        parallel_workers=2,             # Parallel payer processing
+        batch_size=10000,               # Large batches for S3 efficiency
+        parallel_workers=1,             # Sequential processing for memory management
         local_output_dir="production_data",
         s3_bucket=os.getenv("S3_BUCKET"),  # Set via environment
         s3_prefix="healthcare-rates-v2",
@@ -719,31 +867,63 @@ def create_production_config() -> ETLConfig:
 
 
 def main():
-    """Run the production ETL pipeline."""
+    """Run the production ETL pipeline with full index processing."""
     # Setup logging
     setup_logging("INFO")
     
     # Create configuration
     config = create_production_config()
     
-    # Initialize and run pipeline
-    pipeline = ProductionETLPipeline(config)
-    pipeline.process_all_payers()
+    if not config.s3_bucket:
+        print("⚠️  Warning: No S3_BUCKET environment variable set")
+        print("   Pipeline will use local storage instead")
+        print("   Set S3_BUCKET=your-bucket-name for S3 upload")
+        print()
     
     print(f"""
+🚀 Starting Production ETL Pipeline - Full Index Processing
+==========================================================
+S3 Bucket: {config.s3_bucket or 'Local storage only'}
+S3 Prefix: {config.s3_prefix}
+Target CPT codes: {len(config.cpt_whitelist)}
+Payers configured: {len(config.payer_endpoints)}
+Batch size: {config.batch_size:,} records
+
+This will process ALL files from each index (potentially hundreds of files).
+Processing may take several hours depending on data size.
+""")
+    
+    # Initialize and run pipeline
+    pipeline = ProductionETLPipeline(config)
+    
+    try:
+        pipeline.process_all_payers()
+        
+        print(f"""
 🎉 Production ETL Pipeline Complete!
 =====================================
-📊 Final Data Location: {config.local_output_dir}/
-📈 Processing Statistics: {config.local_output_dir}/processing_statistics.json
+📊 Files processed: {pipeline.stats['files_succeeded']:,} succeeded, {pipeline.stats['files_failed']:,} failed
+📈 Records processed: {pipeline.stats['records_validated']:,} validated records
+⏱️  Processing time: {(datetime.now(timezone.utc) - pipeline.stats['processing_start']).total_seconds()/60:.1f} minutes
+☁️  S3 uploads: {pipeline.stats['s3_uploads']:,} files uploaded
+🎯 Data location: {'S3: ' + config.s3_bucket + '/' + config.s3_prefix if config.s3_bucket else 'Local: ' + config.local_output_dir}
 
 Next Steps:
-1. Review data quality in processing_statistics.json
-2. Query final parquet files for validation
-3. Set up S3_BUCKET environment variable for cloud storage
-4. Add more payers to the configuration
+1. Query S3 data using Athena, Spark, or download for analysis
+2. Add more payers to the configuration
+3. Expand CPT whitelist as needed
+4. Set up automated scheduling (cron, Airflow, etc.)
 5. Integrate NPPES NPI registry data
 """)
+        
+    except KeyboardInterrupt:
+        print("\n⚠️ Pipeline interrupted by user")
+        pipeline.cleanup_temp_directory()
+    except Exception as e:
+        print(f"\n❌ Pipeline failed: {str(e)}")
+        pipeline.cleanup_temp_directory()
+        raise
 
 
 if __name__ == "__main__":
-    main() 
+    main()
