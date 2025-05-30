@@ -63,7 +63,7 @@ class TiCMRFParser:
         description = in_network_item.get("description", "")
         
         # DEBUG: Log what we're processing
-        logger.info("debug_parsing_item", 
+        logger.debug("debug_parsing_item", 
                    billing_code=billing_code, 
                    billing_code_type=billing_code_type,
                    has_negotiated_rates="negotiated_rates" in in_network_item,
@@ -71,7 +71,7 @@ class TiCMRFParser:
         
         # Handle negotiated_rates array
         negotiated_rates = in_network_item.get("negotiated_rates", [])
-        logger.info("debug_negotiated_rates", 
+        logger.debug("debug_negotiated_rates", 
                    billing_code=billing_code,
                    negotiated_rates_count=len(negotiated_rates))
         
@@ -80,7 +80,7 @@ class TiCMRFParser:
             return
         
         for i, rate_group in enumerate(negotiated_rates):
-            logger.info("debug_processing_rate_group",
+            logger.debug("debug_processing_rate_group",
                        billing_code=billing_code,
                        group_index=i,
                        group_keys=list(rate_group.keys()))
@@ -89,7 +89,7 @@ class TiCMRFParser:
             provider_refs = rate_group.get("provider_references", [])
             provider_groups = rate_group.get("provider_groups", [])
             
-            logger.info("debug_provider_info",
+            logger.debug("debug_provider_info",
                        billing_code=billing_code,
                        group_index=i,
                        has_provider_refs=bool(provider_refs),
@@ -99,20 +99,20 @@ class TiCMRFParser:
             
             # Handle negotiated_prices array within each rate group
             negotiated_prices = rate_group.get("negotiated_prices", [])
-            logger.info("debug_negotiated_prices",
+            logger.debug("debug_negotiated_prices",
                        billing_code=billing_code,
                        group_index=i,
                        prices_count=len(negotiated_prices))
             
             for j, price_item in enumerate(negotiated_prices):
-                logger.info("debug_processing_price",
+                logger.debug("debug_processing_price",
                            billing_code=billing_code,
                            group_index=i,
                            price_index=j,
                            price_keys=list(price_item.keys()))
                 
                 negotiated_rate = price_item.get("negotiated_rate")
-                logger.info("debug_price_details",
+                logger.debug("debug_price_details",
                            billing_code=billing_code,
                            group_index=i,
                            price_index=j,
@@ -132,7 +132,7 @@ class TiCMRFParser:
                 negotiated_type = price_item.get("negotiated_type", "")
                 expiration_date = price_item.get("expiration_date", "")
                 
-                logger.info("debug_yielding_record",
+                logger.debug("debug_yielding_record",
                            billing_code=billing_code,
                            group_index=i,
                            price_index=j,
@@ -144,7 +144,7 @@ class TiCMRFParser:
                 if provider_refs:
                     for provider_ref in provider_refs:
                         provider_info = self.provider_references.get(provider_ref, {})
-                        logger.info("debug_provider_ref",
+                        logger.debug("debug_provider_ref",
                                   billing_code=billing_code,
                                   group_index=i,
                                   price_index=j,
@@ -198,6 +198,10 @@ class TiCMRFParser:
                                 )
                         else:
                             # No provider info - create generic record
+                            logger.debug("debug_generic_record",
+                                      billing_code=billing_code,
+                                      group_index=i,
+                                      price_index=j)
                             yield self._create_rate_record(
                                 billing_code=billing_code,
                                 billing_code_type=billing_code_type,
@@ -205,14 +209,11 @@ class TiCMRFParser:
                                 negotiated_rate=negotiated_rate,
                                 service_codes=service_codes,
                                 billing_class=billing_class,
-                                negotiated_type=negotiated_type,
-                                expiration_date=expiration_date,
-                                provider_info={},
                                 payer=payer
                             )
                 else:
                     # No provider info - create generic record
-                    logger.info("debug_generic_record",
+                    logger.debug("debug_generic_record",
                               billing_code=billing_code,
                               group_index=i,
                               price_index=j)

@@ -16,13 +16,78 @@ from dataclasses import dataclass, asdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import time
+from tqdm import tqdm
+import logging
+import structlog
+import yaml
 
 from tic_mrf_scraper.fetch.blobs import list_mrf_blobs_enhanced, analyze_index_structure
 from tic_mrf_scraper.stream.parser import stream_parse_enhanced
 from tic_mrf_scraper.transform.normalize import normalize_tic_record
 from tic_mrf_scraper.utils.backoff_logger import setup_logging, get_logger
 
+# Configure logging levels - suppress all debug output
+logging.getLogger('tic_mrf_scraper.stream.parser').setLevel(logging.WARNING)
+logging.getLogger('tic_mrf_scraper.fetch.blobs').setLevel(logging.WARNING)
+logging.getLogger('tic_mrf_scraper.transform.normalize').setLevel(logging.WARNING)
+
+# Configure structlog
+structlog.configure(
+    processors=[
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.stdlib.add_log_level,
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.JSONRenderer()
+    ],
+    wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+    context_class=dict,
+    logger_factory=structlog.PrintLoggerFactory(),
+    cache_logger_on_first_use=True,
+)
+
+# Get logger for main pipeline
 logger = get_logger(__name__)
+
+# Global progress tracking
+class ProgressTracker:
+    def __init__(self):
+        self.current_payer = ""
+        self.files_completed = 0
+        self.total_files = 0
+        self.records_processed = 0
+        self.start_time = time.time()
+        self.pbar = None
+    
+    def update_progress(self, payer: str, files_completed: int, total_files: int, 
+                       records_processed: int):
+        if self.pbar is None:
+            self.pbar = tqdm(total=total_files, desc=f"Processing {payer}", 
+                           unit="files", leave=True)
+        
+        self.current_payer = payer
+        self.files_completed = files_completed
+        self.total_files = total_files
+        self.records_processed = records_processed
+        
+        # Calculate processing rate and ETA
+        elapsed_time = time.time() - self.start_time
+        if elapsed_time > 0:
+            rate = records_processed / elapsed_time
+            remaining_files = total_files - files_completed
+            eta = remaining_files / (files_completed / elapsed_time) if files_completed > 0 else 0
+            
+            # Update progress bar description
+            self.pbar.set_description(
+                f"{payer} | {records_processed:,} records | {rate:.1f} rec/s | ETA: {eta:.1f}s"
+            )
+            self.pbar.update(files_completed - self.pbar.n)
+    
+    def close(self):
+        if self.pbar:
+            self.pbar.close()
+
+progress = ProgressTracker()
 
 @dataclass
 class ETLConfig:
@@ -200,7 +265,7 @@ class ProductionETLPipeline:
     
     def process_payer(self, payer_name: str, index_url: str) -> Dict[str, Any]:
         """Process a single payer's COMPLETE MRF index with all files."""
-        logger.info("processing_payer_full_index", payer=payer_name, url=index_url)
+        logger.info(f"Starting processing for {payer_name}")
         
         payer_stats = {
             "files_found": 0,
@@ -217,28 +282,22 @@ class ProductionETLPipeline:
             # Create payer record
             payer_uuid = self.create_payer_record(payer_name, index_url)
             
-            # Get ALL MRF files from index (no limits!)
-            logger.info("fetching_complete_index", payer=payer_name)
+            # Get ALL MRF files from index
             mrf_files = list_mrf_blobs_enhanced(index_url)
             
             # Filter to in-network rates files only
             rate_files = [f for f in mrf_files if f["type"] == "in_network_rates"]
             payer_stats["files_found"] = len(rate_files)
             
-            logger.info("found_rate_files", 
-                       payer=payer_name, 
-                       total_files=len(mrf_files),
-                       rate_files=len(rate_files))
+            if not rate_files:
+                logger.warning(f"No rate files found for {payer_name}")
+                return payer_stats
             
-            # Process ALL rate files (this is the key change!)
+            logger.info(f"Found {len(rate_files)} rate files for {payer_name}")
+            
+            # Process ALL rate files
             for file_index, file_info in enumerate(rate_files, 1):
                 payer_stats["files_processed"] += 1
-                
-                logger.info("processing_file",
-                           payer=payer_name,
-                           file_number=f"{file_index}/{len(rate_files)}",
-                           plan=file_info["plan_name"],
-                           progress_pct=f"{(file_index/len(rate_files)*100):.1f}%")
                 
                 try:
                     file_stats = self.process_mrf_file_enhanced(
@@ -249,55 +308,39 @@ class ProductionETLPipeline:
                     payer_stats["records_extracted"] += file_stats["records_extracted"]
                     payer_stats["records_validated"] += file_stats["records_validated"]
                     
-                    logger.info("file_completed",
-                               payer=payer_name,
-                               file_number=f"{file_index}/{len(rate_files)}",
-                               records_extracted=file_stats["records_extracted"],
-                               records_validated=file_stats["records_validated"],
-                               processing_time=f"{file_stats.get('processing_time', 0):.1f}s")
+                    # Update progress
+                    progress.update_progress(
+                        payer=payer_name,
+                        files_completed=file_index,
+                        total_files=len(rate_files),
+                        records_processed=payer_stats["records_extracted"]
+                    )
                     
                 except Exception as e:
+                    error_msg = f"Failed processing file {file_info['url']}: {str(e)}"
+                    logger.error(error_msg)
                     payer_stats["files_failed"] += 1
-                    error_info = {
-                        "file_index": file_index,
-                        "plan_name": file_info["plan_name"],
-                        "url": file_info["url"][:100] + "...",
+                    payer_stats["failed_files"].append({
+                        "url": file_info["url"],
                         "error": str(e)
-                    }
-                    payer_stats["failed_files"].append(error_info)
-                    
-                    logger.error("mrf_file_processing_failed", 
-                               payer=payer_name,
-                               file_number=f"{file_index}/{len(rate_files)}",
-                               plan=file_info["plan_name"],
-                               error=str(e))
-                    
-                    # Continue processing other files (don't fail entire payer)
-                    continue
+                    })
             
-            logger.info("completed_payer",
-                       payer=payer_name,
-                       files_found=payer_stats["files_found"],
-                       files_succeeded=payer_stats["files_succeeded"],
-                       files_failed=payer_stats["files_failed"],
-                       total_records=payer_stats["records_validated"])
-        
+            # Log completion
+            elapsed = time.time() - payer_stats["start_time"]
+            logger.info(
+                f"Completed {payer_name}: {payer_stats['files_succeeded']}/{payer_stats['files_found']} "
+                f"files, {payer_stats['records_extracted']:,} records in {elapsed:.1f}s"
+            )
+            
+            return payer_stats
+            
         except Exception as e:
-            logger.error("payer_processing_failed", payer=payer_name, error=str(e))
+            logger.error(f"Failed processing payer {payer_name}: {str(e)}")
             raise
-        
-        payer_stats["processing_time"] = time.time() - payer_stats["start_time"]
-        return payer_stats
     
     def process_mrf_file_enhanced(self, payer_uuid: str, payer_name: str, 
                                 file_info: Dict[str, Any], file_index: int, total_files: int) -> Dict[str, Any]:
         """Process a single MRF file with direct S3 upload and enhanced logging."""
-        logger.info("processing_mrf_file_enhanced", 
-                   payer=payer_name,
-                   file_progress=f"{file_index}/{total_files}",
-                   plan=file_info["plan_name"],
-                   file_type=file_info["type"])
-        
         file_stats = {
             "records_extracted": 0,
             "records_validated": 0,
@@ -362,7 +405,7 @@ class ProductionETLPipeline:
                     provider_records = self.create_provider_records(normalized, raw_record)
                     provider_batch.extend(provider_records)
                 
-                # Write batches when full (this will upload to S3)
+                # Write batches when full
                 if len(rate_batch) >= batch_size:
                     upload_stats = self.write_batches_to_s3(
                         rate_batch, org_batch, provider_batch, 
@@ -371,14 +414,6 @@ class ProductionETLPipeline:
                     file_stats["s3_uploads"] += upload_stats["files_uploaded"]
                     self.stats["s3_uploads"] += upload_stats["files_uploaded"]
                     rate_batch, org_batch, provider_batch = [], [], []
-                    
-                    # Log progress
-                    if file_stats["records_validated"] % 50000 == 0:
-                        logger.info("batch_uploaded_to_s3",
-                                   payer=payer_name,
-                                   file_progress=f"{file_index}/{total_files}",
-                                   records_validated=file_stats["records_validated"],
-                                   s3_uploads=file_stats["s3_uploads"])
             
             # Write final batches
             if rate_batch:
@@ -390,23 +425,10 @@ class ProductionETLPipeline:
                 self.stats["s3_uploads"] += upload_stats["files_uploaded"]
         
         except Exception as e:
-            logger.error("stream_processing_failed",
-                        payer=payer_name,
-                        plan=file_info["plan_name"],
-                        records_processed=file_stats["records_extracted"],
-                        error=str(e))
+            logger.error(f"Failed processing file {file_info['url']}: {str(e)}")
             raise
         
         file_stats["processing_time"] = time.time() - file_stats["start_time"]
-        logger.info("completed_mrf_file_enhanced", 
-                   payer=payer_name,
-                   file_progress=f"{file_index}/{total_files}",
-                   plan=file_info["plan_name"],
-                   records_extracted=file_stats["records_extracted"],
-                   records_validated=file_stats["records_validated"],
-                   s3_uploads=file_stats["s3_uploads"],
-                   processing_time=f"{file_stats['processing_time']:.1f}s")
-        
         return file_stats
     
     def write_batches_to_s3(self, rate_batch: List[Dict], org_batch: List[Dict], 
@@ -844,85 +866,44 @@ class ProductionETLPipeline:
 
 
 def create_production_config() -> ETLConfig:
-    """Create production ETL configuration."""
+    """Create production ETL configuration from YAML file."""
+    # Read YAML configuration
+    with open('production_config.yaml', 'r') as f:
+        config = yaml.safe_load(f)
+    
     return ETLConfig(
-        payer_endpoints={
-            "centene_fidelis": "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_fidelis_index.json",
-            # Add more payers here
-        },
-        cpt_whitelist=[
-            "99213", "99214", "99215",  # Office visits
-            "70450", "72148",           # Imaging
-            "0240U", "0241U",           # Lab tests
-            "10005", "10006", "10040"   # Procedures
-        ],
-        batch_size=10000,               # Large batches for S3 efficiency
-        parallel_workers=1,             # Sequential processing for memory management
-        local_output_dir="production_data",
-        s3_bucket=os.getenv("S3_BUCKET"),  # Set via environment
-        s3_prefix="healthcare-rates-v2",
-        schema_version="v2.1.0",
-        processing_version="tic-etl-v1.0"
+        payer_endpoints=config['payer_endpoints'],
+        cpt_whitelist=config['cpt_whitelist'],
+        batch_size=config['processing']['batch_size'],
+        parallel_workers=config['processing']['parallel_workers'],
+        local_output_dir=config['output']['local_directory'],
+        s3_bucket=os.getenv("S3_BUCKET"),
+        s3_prefix=config['output']['s3']['prefix'],
+        schema_version=config['versioning']['schema_version'],
+        processing_version=config['versioning']['processing_version'],
+        min_completeness_pct=config['processing']['min_completeness_pct'],
+        min_accuracy_score=config['processing']['min_accuracy_score']
     )
 
 
 def main():
-    """Run the production ETL pipeline with full index processing."""
-    # Setup logging
-    setup_logging("INFO")
-    
-    # Create configuration
-    config = create_production_config()
-    
-    if not config.s3_bucket:
-        print("⚠️  Warning: No S3_BUCKET environment variable set")
-        print("   Pipeline will use local storage instead")
-        print("   Set S3_BUCKET=your-bucket-name for S3 upload")
-        print()
-    
-    print(f"""
-🚀 Starting Production ETL Pipeline - Full Index Processing
-==========================================================
-S3 Bucket: {config.s3_bucket or 'Local storage only'}
-S3 Prefix: {config.s3_prefix}
-Target CPT codes: {len(config.cpt_whitelist)}
-Payers configured: {len(config.payer_endpoints)}
-Batch size: {config.batch_size:,} records
-
-This will process ALL files from each index (potentially hundreds of files).
-Processing may take several hours depending on data size.
-""")
-    
-    # Initialize and run pipeline
-    pipeline = ProductionETLPipeline(config)
-    
+    """Main entry point for production ETL pipeline."""
     try:
+        # Load configuration
+        config = create_production_config()
+        
+        # Initialize pipeline
+        pipeline = ProductionETLPipeline(config)
+        
+        # Process all payers
         pipeline.process_all_payers()
         
-        print(f"""
-🎉 Production ETL Pipeline Complete!
-=====================================
-📊 Files processed: {pipeline.stats['files_succeeded']:,} succeeded, {pipeline.stats['files_failed']:,} failed
-📈 Records processed: {pipeline.stats['records_validated']:,} validated records
-⏱️  Processing time: {(datetime.now(timezone.utc) - pipeline.stats['processing_start']).total_seconds()/60:.1f} minutes
-☁️  S3 uploads: {pipeline.stats['s3_uploads']:,} files uploaded
-🎯 Data location: {'S3: ' + config.s3_bucket + '/' + config.s3_prefix if config.s3_bucket else 'Local: ' + config.local_output_dir}
-
-Next Steps:
-1. Query S3 data using Athena, Spark, or download for analysis
-2. Add more payers to the configuration
-3. Expand CPT whitelist as needed
-4. Set up automated scheduling (cron, Airflow, etc.)
-5. Integrate NPPES NPI registry data
-""")
-        
-    except KeyboardInterrupt:
-        print("\n⚠️ Pipeline interrupted by user")
-        pipeline.cleanup_temp_directory()
     except Exception as e:
-        print(f"\n❌ Pipeline failed: {str(e)}")
-        pipeline.cleanup_temp_directory()
+        logger.error(f"Pipeline failed: {str(e)}")
         raise
+    finally:
+        # Clean up progress tracker
+        progress.close()
 
 
 if __name__ == "__main__":

@@ -1,12 +1,15 @@
 {
   "payers_processed": 1,
-  "files_processed": 0,
-  "records_extracted": 0,
-  "records_validated": 0,
-  "processing_start": "2025-05-28 22:30:03.785884+00:00",
+  "total_files_found": 2,
+  "files_processed": 2,
+  "files_succeeded": 2,
+  "files_failed": 0,
+  "records_extracted": 424406,
+  "records_validated": 5169,
+  "s3_uploads": 6,
+  "processing_start": "2025-05-29 12:54:15.502912+00:00",
   "errors": [],
-  "processing_time_seconds": 83.943941,
-  "final_rate_records": 2058,
-  "processing_rate_per_second": 24.516361460799178,
-  "completion_time": "2025-05-28T22:31:27.753105+00:00"
+  "processing_time_seconds": 8.041502,
+  "processing_rate_per_second": 642.7903642876666,
+  "completion_time": "2025-05-29T12:54:23.544424+00:00"
 }
