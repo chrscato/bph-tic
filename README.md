@@ -17,6 +17,7 @@ This ETL pipeline processes healthcare rates data from various payer Machine Rea
 - Comprehensive logging and progress tracking
 - Analytics table generation
 - Configurable processing parameters
+- Optional limits to stop after a set number of files or records
 - Parallel processing support
 
 ## Prerequisites
@@ -66,6 +67,8 @@ cpt_whitelist:
 processing:
   batch_size: 10000
   parallel_workers: 2
+  max_files_per_payer: 5
+  max_records_per_file: 100000
   min_completeness_pct: 80.0
   min_accuracy_score: 0.85
 
@@ -78,6 +81,10 @@ versioning:
   schema_version: "v2.1.0"
   processing_version: "tic-etl-v1.0"
 ```
+
+`max_files_per_payer` and `max_records_per_file` can be used to limit how much
+data is processed during a run. When either limit is reached the pipeline stops
+processing additional files or records for that payer.
 
 ## Usage
 

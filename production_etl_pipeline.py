@@ -101,6 +101,8 @@ class ETLConfig:
     # Processing configuration
     batch_size: int = 10000
     parallel_workers: int = 2
+    max_files_per_payer: Optional[int] = None
+    max_records_per_file: Optional[int] = None
     
     # Output configuration
     local_output_dir: str = "production_data"
@@ -291,11 +293,14 @@ class ProductionETLPipeline:
             # Filter to in-network rates files only
             rate_files = [f for f in mrf_files if f["type"] == "in_network_rates"]
             payer_stats["files_found"] = len(rate_files)
-            
+
+            if self.config.max_files_per_payer:
+                rate_files = rate_files[: self.config.max_files_per_payer]
+
             if not rate_files:
                 logger.warning(f"No rate files found for {payer_name}")
                 return payer_stats
-            
+
             logger.info(f"Found {len(rate_files)} rate files for {payer_name}")
             
             # Process ALL rate files
@@ -373,6 +378,12 @@ class ProductionETLPipeline:
                 file_info.get("provider_reference_url"),
                 handler
             ):
+                if (
+                    self.config.max_records_per_file is not None
+                    and file_stats["records_extracted"] >= self.config.max_records_per_file
+                ):
+                    break
+
                 file_stats["records_extracted"] += 1
                 
                 # Normalize and validate
@@ -880,6 +891,8 @@ def create_production_config() -> ETLConfig:
         cpt_whitelist=config['cpt_whitelist'],
         batch_size=config['processing']['batch_size'],
         parallel_workers=config['processing']['parallel_workers'],
+        max_files_per_payer=config['processing'].get('max_files_per_payer'),
+        max_records_per_file=config['processing'].get('max_records_per_file'),
         local_output_dir=config['output']['local_directory'],
         s3_bucket=os.getenv("S3_BUCKET"),
         s3_prefix=config['output']['s3']['prefix'],

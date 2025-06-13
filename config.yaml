@@ -13,8 +13,8 @@ cpt_whitelist:
 # Enhanced processing options
 processing:
   file_types: ["in_network_rates"]  # Options: in_network_rates, allowed_amounts, provider_references
-  max_files_per_payer: 5  # Limit for testing
-  max_records_per_file: 100000  # Memory management
+  max_files_per_payer: 5  # Stop after 5 files per payer
+  max_records_per_file: 100000  # Stop after this many records
   batch_size: 1000
 
 logging:

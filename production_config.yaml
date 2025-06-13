@@ -164,8 +164,8 @@ cpt_whitelist:
 # Processing configuration - Scaled for orthopedic focus
 processing:
   # Resource limits
-  max_files_per_payer: 50          # Scale up for production
-  max_records_per_file: 500000     # Memory management
+  max_files_per_payer: 50          # Stop after this many files per payer
+  max_records_per_file: 500000     # Stop after this many records per file
   batch_size: 10000                # Parquet batch size
   parallel_workers: 4              # CPU cores to use
   
