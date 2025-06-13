@@ -18,7 +18,9 @@ import pyarrow.parquet as pq
 from tqdm import tqdm
 import boto3
 
-from tic_mrf_scraper.fetch.blobs import list_mrf_blobs_enhanced, analyze_index_structure
+from tic_mrf_scraper.fetch.blobs import analyze_index_structure
+from tic_mrf_scraper.payers import get_handler
+from tic_mrf_scraper.fetch.blobs import list_mrf_blobs_enhanced
 from tic_mrf_scraper.stream.parser import stream_parse_enhanced
 from tic_mrf_scraper.transform.normalize import normalize_tic_record
 from tic_mrf_scraper.utils.backoff_logger import setup_logging, get_logger
@@ -169,8 +171,9 @@ class ProductionETLPipelineQuiet:
     
     def process_payer(self, payer_name: str, index_url: str):
         """Process a single payer's MRF data with progress tracking."""
-        # Get MRF files list
-        mrf_files = list_mrf_blobs_enhanced(index_url)
+        # Get MRF files list using handler
+        handler = get_handler(payer_name)
+        mrf_files = handler.list_mrf_files(index_url)
         rate_files = [f for f in mrf_files if f["type"] == "in_network_rates"]
         
         if self.config.get('max_files_per_payer'):
@@ -193,23 +196,24 @@ class ProductionETLPipelineQuiet:
                 ))
                 
                 # Process file
-                self.process_mrf_file(payer_name, file_info)
+                self.process_mrf_file(payer_name, file_info, handler)
                 self.stats["files_processed"] += 1
                 
             except Exception as e:
                 logger.error(f"Failed processing file {file_info['url']}: {str(e)}")
                 self.stats["errors"].append(f"{payer_name} - {file_info['url']}: {str(e)}")
     
-    def process_mrf_file(self, payer_name: str, file_info: Dict[str, Any]):
+    def process_mrf_file(self, payer_name: str, file_info: Dict[str, Any], handler):
         """Process a single MRF file with progress tracking."""
         records_processed = 0
         batch_size = self.config.get('batch_size', 10000)
         
         # Process records with streaming parser
         for raw_record in stream_parse_enhanced(
-            file_info["url"], 
-            payer_name, 
-            file_info.get("provider_reference_url")
+            file_info["url"],
+            payer_name,
+            file_info.get("provider_reference_url"),
+            handler
         ):
             records_processed += 1
             
