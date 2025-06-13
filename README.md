@@ -215,6 +215,15 @@ my_payer = "tic_mrf_scraper.handlers.my_handler:MyHandler"
 ```
 
 3. Reinstall the package with `pip install -e .` to load the plugin.
+
+### Built-in payer modules
+
+Handlers included with the project live in `src/tic_mrf_scraper/payers`. The file name of the module
+is used as a **format identifier**. This identifier appears in `production_config.yaml` under
+`payer_endpoints` and determines which handler processes an index. Each module should declare a
+subclass of `PayerHandler` decorated with `@register_handler("<identifier>")`. Override
+`parse_in_network` whenever the payer's MRF format deviates from the default structure. See
+`src/tic_mrf_scraper/payers/example.py` for a minimal template.
 ## Running Tests
 
 1. Install development dependencies with `pip install -r requirements.txt` (or `poetry install`).

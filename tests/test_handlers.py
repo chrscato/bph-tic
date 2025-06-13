@@ -1,5 +1,10 @@
 from unittest.mock import MagicMock, patch
-from tic_mrf_scraper.payers import PayerHandler, register_handler, get_handler
+from tic_mrf_scraper.payers import (
+    PayerHandler,
+    register_handler,
+    get_handler,
+    _handler_registry,
+)
 from tic_mrf_scraper.stream.parser import stream_parse_enhanced
 import gzip, json
 from io import BytesIO
@@ -44,3 +49,8 @@ def test_parse_in_network_hook():
         records = list(stream_parse_enhanced("mock", "TEST", handler=dummy))
 
     assert records[0]["extra"] is True
+
+
+def test_registered_handlers_have_parse_method():
+    for name, cls in _handler_registry.items():
+        assert callable(getattr(cls, "parse_in_network", None))
