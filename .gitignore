@@ -49,6 +49,12 @@ logs/
 .coverage
 htmlcov/
 .pytest_cache/
+production_data/
+debug_output/
+json_analysis/
+mrf_analysis/
+structure_analysis/
+ortho_radiology_data/
 
 # AWS
 .aws/
