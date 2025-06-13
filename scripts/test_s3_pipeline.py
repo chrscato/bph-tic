@@ -112,7 +112,7 @@ if __name__ == "__main__":
         print("Next steps:")
         print("1. Check your S3 bucket for the test files")
         print("2. If everything looks good, run the full pipeline:")
-        print("   python production_etl_pipeline.py")
+        print("   python scripts/production_etl_pipeline.py")
         print("3. Monitor the logs for progress")
     else:
         print()
