@@ -78,7 +78,7 @@ versioning:
 Run the pipeline:
 
 ```bash
-python production_etl_pipeline.py
+python scripts/production_etl_pipeline.py
 ```
 
 ## Data Model

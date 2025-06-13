@@ -106,7 +106,7 @@ if [ "$QUIET_MODE" = false ]; then
 fi
 
 # Run the ETL pipeline with progress monitoring
-python production_etl_pipeline.py 2>&1 | tee "logs/etl_$(date +%Y%m%d_%H%M%S).log"
+python scripts/production_etl_pipeline.py 2>&1 | tee "logs/etl_$(date +%Y%m%d_%H%M%S).log"
 
 ETL_EXIT_CODE=$?
 
