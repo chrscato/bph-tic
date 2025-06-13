@@ -7,6 +7,7 @@ from typing import Iterator, Dict, Any, Optional, List
 
 from ..fetch.blobs import fetch_url
 from ..utils.backoff_logger import get_logger
+from ..payers import PayerHandler
 
 logger = get_logger(__name__)
 
@@ -258,8 +259,9 @@ class TiCMRFParser:
             "payer": payer
         }
 
-def stream_parse_enhanced(url: str, payer: str, 
-                         provider_ref_url: Optional[str] = None) -> Iterator[Dict[str, Any]]:
+def stream_parse_enhanced(url: str, payer: str,
+                         provider_ref_url: Optional[str] = None,
+                         handler: Optional[PayerHandler] = None) -> Iterator[Dict[str, Any]]:
     """Enhanced streaming parser for TiC MRF data.
     
     Args:
@@ -273,6 +275,8 @@ def stream_parse_enhanced(url: str, payer: str,
     logger.info("streaming_tic_mrf", url=url, payer=payer)
     
     parser = TiCMRFParser()
+    if handler is None:
+        handler = PayerHandler()
     
     # Load provider references if specified
     if provider_ref_url:
@@ -301,9 +305,9 @@ def stream_parse_enhanced(url: str, payer: str,
                 logger.info("processing_in_network_items", count=len(in_network_items))
                 
                 for item in in_network_items:
-                    # Parse each in-network item and yield individual rate records
-                    for rate_record in parser.parse_negotiated_rates(item, payer):
-                        yield rate_record
+                    for parsed_item in handler.parse_in_network(item):
+                        for rate_record in parser.parse_negotiated_rates(parsed_item, payer):
+                            yield rate_record
                         
             # Handle provider_references at top level (for reference files)
             elif "provider_references" in data:
