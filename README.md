@@ -45,6 +45,12 @@ export AWS_SECRET_ACCESS_KEY=your_secret_key
 export S3_BUCKET=your_bucket_name
 ```
 
+## Repository Structure
+
+- `src/tic_mrf_scraper/` - core Python package with the ETL modules
+- `scripts/` - helper scripts for debugging and validation
+- `tests/` - pytest suite verifying parser and writer logic
+
 ## Configuration
 
 The pipeline is configured using a YAML file (`production_config.yaml`). Here's the structure:
@@ -195,13 +201,36 @@ The pipeline implements robust error handling:
 - Parallel processing support
 - Progress tracking and ETA calculation
 
+## Payer Handler Plugins
+
+The pipeline supports a pluggable handler system for payer-specific logic. Each handler subclassing `BasePayerHandler` can modify records before they are written. Handlers are discovered via the `tic_mrf_scraper.payer_handlers` entry point group.
+
+To add your own handler:
+1. Create `src/tic_mrf_scraper/handlers/my_handler.py` and define `class MyHandler(BasePayerHandler)`.
+2. Register it in `pyproject.toml`:
+
+```toml
+[tool.poetry.plugins."tic_mrf_scraper.payer_handlers"]
+my_payer = "tic_mrf_scraper.handlers.my_handler:MyHandler"
+```
+
+3. Reinstall the package with `pip install -e .` to load the plugin.
+## Running Tests
+
+1. Install development dependencies with `pip install -r requirements.txt` (or `poetry install`).
+2. From the repository root run:
+```bash
+pytest
+```
+
+
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+3. Make your changes and run `pytest`
+4. Commit the updates
+5. Push the branch and open a Pull Request
 
 ## License
 
