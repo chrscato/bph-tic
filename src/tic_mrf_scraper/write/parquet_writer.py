@@ -14,20 +14,20 @@ logger = get_logger(__name__)
 class ParquetWriter:
     """Writer for MRF records to parquet files with direct S3 upload."""
     
-    def __init__(self, 
-                 output_path: str, 
+    def __init__(self,
+                 local_path: str,
                  batch_size: int = 1000,
                  s3_bucket: Optional[str] = None,
                  s3_prefix: Optional[str] = None):
         """Initialize writer.
-        
+
         Args:
-            output_path: Local path for temp files (or final path if no S3)
+            local_path: Local path for temp files (or final path if no S3)
             batch_size: Number of records per batch
             s3_bucket: S3 bucket name (if None, uses local storage only)
             s3_prefix: S3 prefix/folder path
         """
-        self.output_path = Path(output_path)
+        self.output_path = Path(local_path)
         self.batch_size = batch_size
         self.records: List[Dict[str, Any]] = []
         self.file_counter = 0
