@@ -53,9 +53,9 @@ def test_load_config():
         assert loaded_config["s3"]["prefix"] == "tic-mrf-enhanced"
 
 @patch("tic_mrf_scraper.__main__.load_config")
-@patch("tic_mrf_scraper.__main__.list_mrf_blobs_enhanced")
+@patch("tic_mrf_scraper.__main__.get_handler")
 @patch("tic_mrf_scraper.__main__.process_mrf_file")
-def test_main_with_enhanced_options(mock_process, mock_list_blobs, mock_load_config):
+def test_main_with_enhanced_options(mock_process, mock_get_handler, mock_load_config):
     """Test main function with enhanced processing options."""
     # Mock configuration
     config = {
@@ -72,12 +72,14 @@ def test_main_with_enhanced_options(mock_process, mock_list_blobs, mock_load_con
     }
     mock_load_config.return_value = config
     
-    # Mock blob listing
-    mock_list_blobs.return_value = [
+    # Mock handler
+    handler = MagicMock()
+    handler.list_mrf_files.return_value = [
         {"url": "https://example.com/file1.json", "type": "in_network_rates"},
         {"url": "https://example.com/file2.json", "type": "in_network_rates"},
         {"url": "https://example.com/file3.json", "type": "in_network_rates"}
     ]
+    mock_get_handler.return_value = handler
     
     # Mock processing
     mock_process.return_value = {"processed": 100, "skipped": 0}
@@ -86,10 +88,9 @@ def test_main_with_enhanced_options(mock_process, mock_list_blobs, mock_load_con
     with patch("sys.argv", ["script.py", "--config", "config.yaml", "--output", "output"]):
         main()
     
-    # Verify blob listing was called with correct options
-    mock_list_blobs.assert_called_once()
-    call_args = mock_list_blobs.call_args[1]
-    assert call_args["file_types"] == ["in_network_rates"]
+    # Verify handler was used to list files
+    mock_get_handler.assert_called_once_with("centene_fidelis")
+    handler.list_mrf_files.assert_called_once()
     
     # Verify processing was called for each blob (limited by max_files_per_payer)
     assert mock_process.call_count == 2  # Should only process 2 files due to max_files_per_payer

@@ -21,7 +21,9 @@ import logging
 import structlog
 import yaml
 
-from tic_mrf_scraper.fetch.blobs import list_mrf_blobs_enhanced, analyze_index_structure
+from tic_mrf_scraper.fetch.blobs import analyze_index_structure
+from tic_mrf_scraper.payers import get_handler
+from tic_mrf_scraper.fetch.blobs import list_mrf_blobs_enhanced
 from tic_mrf_scraper.stream.parser import stream_parse_enhanced
 from tic_mrf_scraper.transform.normalize import normalize_tic_record
 from tic_mrf_scraper.utils.backoff_logger import setup_logging, get_logger
@@ -282,8 +284,9 @@ class ProductionETLPipeline:
             # Create payer record
             payer_uuid = self.create_payer_record(payer_name, index_url)
             
-            # Get ALL MRF files from index
-            mrf_files = list_mrf_blobs_enhanced(index_url)
+            # Get ALL MRF files from index using handler
+            handler = get_handler(payer_name)
+            mrf_files = handler.list_mrf_files(index_url)
             
             # Filter to in-network rates files only
             rate_files = [f for f in mrf_files if f["type"] == "in_network_rates"]
@@ -301,7 +304,7 @@ class ProductionETLPipeline:
                 
                 try:
                     file_stats = self.process_mrf_file_enhanced(
-                        payer_uuid, payer_name, file_info, file_index, len(rate_files)
+                        payer_uuid, payer_name, file_info, handler, file_index, len(rate_files)
                     )
                     
                     payer_stats["files_succeeded"] += 1
@@ -338,8 +341,8 @@ class ProductionETLPipeline:
             logger.error(f"Failed processing payer {payer_name}: {str(e)}")
             raise
     
-    def process_mrf_file_enhanced(self, payer_uuid: str, payer_name: str, 
-                                file_info: Dict[str, Any], file_index: int, total_files: int) -> Dict[str, Any]:
+    def process_mrf_file_enhanced(self, payer_uuid: str, payer_name: str,
+                                file_info: Dict[str, Any], handler, file_index: int, total_files: int) -> Dict[str, Any]:
         """Process a single MRF file with direct S3 upload and enhanced logging."""
         file_stats = {
             "records_extracted": 0,
@@ -365,9 +368,10 @@ class ProductionETLPipeline:
         # Process records with streaming parser
         try:
             for raw_record in stream_parse_enhanced(
-                file_info["url"], 
-                payer_name, 
-                file_info.get("provider_reference_url")
+                file_info["url"],
+                payer_name,
+                file_info.get("provider_reference_url"),
+                handler
             ):
                 file_stats["records_extracted"] += 1
                 

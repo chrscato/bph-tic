@@ -5,8 +5,9 @@ import os
 import yaml
 from pathlib import Path
 from datetime import datetime
-from tic_mrf_scraper.fetch.blobs import list_mrf_blobs_enhanced, analyze_index_structure
+from tic_mrf_scraper.fetch.blobs import analyze_index_structure
 from tic_mrf_scraper.stream.parser import stream_parse_enhanced
+from tic_mrf_scraper.payers import get_handler
 from tic_mrf_scraper.transform.normalize import normalize_tic_record
 from tic_mrf_scraper.write.parquet_writer import ParquetWriter
 from tic_mrf_scraper.utils.backoff_logger import setup_logging, get_logger
@@ -20,6 +21,12 @@ except ImportError:
 
 logger = get_logger(__name__)
 
+
+def load_config(path: str) -> dict:
+    """Load YAML configuration from a file."""
+    with open(path, "r") as f:
+        return yaml.safe_load(f)
+
 def analyze_endpoint(index_url: str, payer_name: str):
     """Analyze an endpoint structure before processing."""
     logger.info("analyzing_endpoint", payer=payer_name, url=index_url)
@@ -30,7 +37,8 @@ def analyze_endpoint(index_url: str, payer_name: str):
     
     # Get detailed MRF information
     try:
-        mrfs = list_mrf_blobs_enhanced(index_url)
+        handler = get_handler(payer_name)
+        mrfs = handler.list_mrf_files(index_url)
         logger.info("found_mrfs", payer=payer_name, count=len(mrfs))
         
         # Analyze file types
@@ -52,9 +60,10 @@ def analyze_endpoint(index_url: str, payer_name: str):
     except Exception as e:
         logger.error("mrf_analysis_failed", payer=payer_name, error=str(e))
 
-def process_mrf_file(mrf_info: dict, 
-                    cpt_whitelist: set, 
-                    payer_name: str, 
+def process_mrf_file(mrf_info: dict,
+                    cpt_whitelist: set,
+                    payer_name: str,
+                    handler,
                     s3_bucket: str = None,
                     s3_prefix: str = None,
                     args=None) -> dict:
@@ -109,9 +118,10 @@ def process_mrf_file(mrf_info: dict,
         provider_ref_url = mrf_info.get("provider_reference_url")
         
         for raw_record in stream_parse_enhanced(
-            mrf_info["url"], 
+            mrf_info["url"],
             payer_name,
-            provider_ref_url
+            provider_ref_url,
+            handler
         ):
             stats["records_processed"] += 1
             
@@ -171,8 +181,7 @@ def main():
     args = parser.parse_args()
 
     # Load config
-    with open(args.config, 'r') as f:
-        cfg = yaml.safe_load(f)
+    cfg = load_config(args.config)
     
     setup_logging(cfg["logging"]["level"])
     
@@ -218,7 +227,8 @@ def main():
             
             # Get ALL MRF files from index (no limits!)
             logger.info("fetching_full_index", payer=payer_name)
-            mrfs = list_mrf_blobs_enhanced(index_url)
+            handler = get_handler(payer_name)
+            mrfs = handler.list_mrf_files(index_url)
             
             # Filter by file types
             filtered_mrfs = [mrf for mrf in mrfs if mrf["type"] in args.file_types]
@@ -244,9 +254,10 @@ def main():
                            type=mrf_info["type"])
                 
                 file_stats = process_mrf_file(
-                    mrf_info, 
-                    cpt_whitelist, 
+                    mrf_info,
+                    cpt_whitelist,
                     payer_name,
+                    handler,
                     s3_bucket,
                     s3_prefix,
                     args
