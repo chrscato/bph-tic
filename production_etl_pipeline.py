@@ -27,6 +27,11 @@ from tic_mrf_scraper.fetch.blobs import list_mrf_blobs_enhanced
 from tic_mrf_scraper.stream.parser import stream_parse_enhanced
 from tic_mrf_scraper.transform.normalize import normalize_tic_record
 from tic_mrf_scraper.utils.backoff_logger import setup_logging, get_logger
+from tic_mrf_scraper.diagnostics import (
+    identify_index,
+    detect_compression,
+    identify_in_network,
+)
 
 # Configure logging levels - suppress all debug output
 logging.getLogger('tic_mrf_scraper.stream.parser').setLevel(logging.WARNING)
@@ -283,7 +288,12 @@ class ProductionETLPipeline:
         try:
             # Create payer record
             payer_uuid = self.create_payer_record(payer_name, index_url)
-            
+
+            # Analyze index structure
+            index_info = identify_index(index_url)
+            payer_stats["index_analysis"] = index_info
+            logger.info("index_analysis", payer=payer_name, analysis=index_info)
+
             # Get ALL MRF files from index using handler
             handler = get_handler(payer_name)
             mrf_files = handler.list_mrf_files(index_url)
@@ -364,6 +374,18 @@ class ProductionETLPipeline:
         
         # Use larger batch size for S3 efficiency
         batch_size = self.config.batch_size
+
+        # Gather diagnostics before parsing
+        compression = detect_compression(file_info["url"])
+        in_net_info = identify_in_network(file_info["url"], sample_size=1)
+        file_stats["compression"] = compression
+        file_stats["in_network_sample"] = in_net_info
+        logger.info(
+            "file_diagnostics",
+            url=file_info["url"],
+            compression=compression,
+            in_network_keys=in_net_info.get("sample_keys"),
+        )
         
         # Process records with streaming parser
         try:
