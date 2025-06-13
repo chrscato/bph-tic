@@ -49,7 +49,8 @@ export S3_BUCKET=your_bucket_name
 ## Repository Structure
 
 - `src/tic_mrf_scraper/` - core Python package with the ETL modules
-- `scripts/` - helper scripts for debugging and validation
+- `scripts/` - helper scripts for debugging and validation (see
+  `scripts/identify_format.py` for inspecting MRF URLs)
 - `tests/` - pytest suite verifying parser and writer logic
 
 ## Configuration
