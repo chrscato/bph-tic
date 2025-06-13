@@ -239,6 +239,19 @@ subclass of `PayerHandler` decorated with `@register_handler("<identifier>")`. O
 pytest
 ```
 
+## Debugging/Inspection
+
+Helper scripts in the `scripts/` directory make it easier to examine raw JSON
+files. For example, `inspect_json_structure.py` can fetch any TiC JSON URL and
+report whether it looks like an index or an `in_network` file:
+
+```bash
+python scripts/inspect_json_structure.py --url https://example.com/file.json
+```
+
+The script prints a brief summary including detected structure type and sample
+keys. Use this when validating new payer endpoints or troubleshooting parsing
+issues.
 
 ## Contributing
 
