@@ -1,0 +1,2100 @@
+{
+  "metadata": {
+    "generated_at": "2025-07-23T21:24:50.668461+00:00",
+    "inspection_config": {
+      "ortho_data_dir": "ortho_radiology_data",
+      "nppes_data_dir": "nppes_data",
+      "output_dir": "data_inspection",
+      "sample_size": 5000,
+      "max_unique_values": 50,
+      "use_samples": true,
+      "sample_fraction": 0.01
+    }
+  },
+  "ortho_radiology_data": {
+    "rates": {
+      "dataset_name": "rates",
+      "full_shape": [
+        1508377,
+        18
+      ],
+      "sample_shape": [
+        15084,
+        18
+      ],
+      "basic_info": {
+        "full_memory_usage_mb": 2768.709443092346,
+        "dtypes": {
+          "rate_uuid": "object",
+          "payer_uuid": "object",
+          "organization_uuid": "object",
+          "service_code": "object",
+          "service_description": "object",
+          "billing_code_type": "object",
+          "negotiated_rate": "float64",
+          "billing_class": "object",
+          "rate_type": "object",
+          "service_codes": "object",
+          "plan_details": "object",
+          "contract_period": "object",
+          "provider_network": "object",
+          "geographic_scope": "object",
+          "data_lineage": "object",
+          "created_at": "datetime64[ns, UTC]",
+          "updated_at": "datetime64[ns, UTC]",
+          "quality_flags": "object"
+        },
+        "null_counts": {
+          "rate_uuid": 0,
+          "payer_uuid": 0,
+          "organization_uuid": 0,
+          "service_code": 0,
+          "service_description": 0,
+          "billing_code_type": 0,
+          "negotiated_rate": 0,
+          "billing_class": 0,
+          "rate_type": 0,
+          "service_codes": 0,
+          "plan_details": 0,
+          "contract_period": 0,
+          "provider_network": 0,
+          "geographic_scope": 0,
+          "data_lineage": 0,
+          "created_at": 0,
+          "updated_at": 0,
+          "quality_flags": 0
+        },
+        "null_percentages": {
+          "rate_uuid": 0.0,
+          "payer_uuid": 0.0,
+          "organization_uuid": 0.0,
+          "service_code": 0.0,
+          "service_description": 0.0,
+          "billing_code_type": 0.0,
+          "negotiated_rate": 0.0,
+          "billing_class": 0.0,
+          "rate_type": 0.0,
+          "service_codes": 0.0,
+          "plan_details": 0.0,
+          "contract_period": 0.0,
+          "provider_network": 0.0,
+          "geographic_scope": 0.0,
+          "data_lineage": 0.0,
+          "created_at": 0.0,
+          "updated_at": 0.0,
+          "quality_flags": 0.0
+        }
+      },
+      "columns": {
+        "rate_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 15084,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "e8e0c776-4025-5a2f-a1da-c8681e0a4964": 1,
+            "d85234c3-77b0-5cd7-a017-dcabfdd67d09": 1,
+            "ecf7f5b8-fed7-5ac2-947e-06397994a94b": 1,
+            "2b0f8f90-81f3-5be8-9d1c-917eaff6bd61": 1,
+            "2544fa64-6ea5-57cb-aed9-c0f9c263e9a0": 1
+          },
+          "note": "Too many unique values (15084), showing top 5 only"
+        },
+        "payer_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 3,
+          "unique_percentage": 0.01988862370723946,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "c4c4e558-8665-5067-86a9-773f407f8b70": 15006,
+            "db18448f-0a71-51f8-9a6d-351171089123": 75,
+            "2c6e3588-e634-527a-b886-0723b6c0c199": 3
+          }
+        },
+        "organization_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 10586,
+          "unique_percentage": 70.18032352161231,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "1400371a-ba7a-537e-8e67-f6cf6ea95cfb": 11,
+            "8c3c62d2-6cbe-5d3b-9757-41ee1f390efa": 9,
+            "6cdda4bc-706b-5248-bde0-0a1c3804692e": 9,
+            "120dc4ed-0af3-58b1-b27c-ededce5a91c0": 8,
+            "b733662d-ca51-50d6-8872-1de8a8ead0b2": 8
+          },
+          "note": "Too many unique values (10586), showing top 5 only"
+        },
+        "service_code": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 92,
+          "unique_percentage": 0.6099177936886768,
+          "type": "string",
+          "min_length": "5",
+          "max_length": "5",
+          "avg_length": 5.0,
+          "top_values": {
+            "99214": 2351,
+            "99213": 2205,
+            "99204": 1491,
+            "99203": 1315,
+            "99215": 1303
+          },
+          "note": "Too many unique values (92), showing top 5 only"
+        },
+        "service_description": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 80,
+          "unique_percentage": 0.5303632988597189,
+          "type": "string",
+          "min_length": "27",
+          "max_length": "100",
+          "avg_length": 98.67468841156192,
+          "top_values": {
+            "OFFICE OR OTH OUTPATIENT VISIT FOR THE EVALUATION AND MANAGEMENT OF AN ESTABLISHED PATIENT, WHICH RE": 7161,
+            "OFFICE OR OTH OUTPATIENT VISIT FOR THE EVALUATION AND MANAGEMENT OF A NEW PATIENT, WHICH REQUIRES TH": 4341,
+            "ARTHROCENTESIS, ASPIRATION AND/OR INJECTION, MAJ JOINT OR BURSA (EG, SHOULDER, HIP, KNEE, SUBACROMIA": 783,
+            "THERAPEUTIC PROCEDURE, 1 OR MORE AREAS, EACH 15 MINUTES; THERAPEUTIC EXERCISES TO DEVELOP STRENGTH A": 195,
+            "OFFICE CONSULTATION FOR A NEW OR ESTABLISHED PATIENT, WHICH REQUIRES THESE 3 KEY COMPONENTS: A DETAI": 176
+          },
+          "note": "Too many unique values (80), showing top 5 only"
+        },
+        "billing_code_type": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.006629541235746487,
+          "type": "string",
+          "min_length": "3",
+          "max_length": "3",
+          "avg_length": 3.0,
+          "top_values": {
+            "CPT": 15084
+          }
+        },
+        "negotiated_rate": {
+          "dtype": "float64",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 4806,
+          "unique_percentage": 31.861575178997615,
+          "type": "numeric",
+          "min": 1.0,
+          "max": 5181.28,
+          "mean": 130.63048793423494,
+          "median": 105.48,
+          "std": 154.41851549345822,
+          "percentiles": {
+            "p10": 48.25,
+            "p25": 71.05,
+            "p75": 154.76,
+            "p90": 203.89
+          }
+        },
+        "billing_class": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.006629541235746487,
+          "type": "string",
+          "min_length": "12",
+          "max_length": "12",
+          "avg_length": 12.0,
+          "top_values": {
+            "professional": 15084
+          }
+        },
+        "rate_type": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 2,
+          "unique_percentage": 0.013259082471492973,
+          "type": "string",
+          "min_length": "10",
+          "max_length": "12",
+          "avg_length": 10.00106072659772,
+          "top_values": {
+            "negotiated": 15076,
+            "fee schedule": 8
+          }
+        },
+        "service_codes": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "6",
+          "max_length": "41",
+          "avg_length": 7.391540705383187,
+          "top_values": "error"
+        },
+        "plan_details": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "88",
+          "max_length": "89",
+          "avg_length": 88.73123839830284,
+          "top_values": "error"
+        },
+        "contract_period": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "82",
+          "max_length": "82",
+          "avg_length": 82.0,
+          "top_values": "error"
+        },
+        "provider_network": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "89",
+          "max_length": "9564",
+          "avg_length": 149.1384248210024,
+          "top_values": "error"
+        },
+        "geographic_scope": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "110",
+          "max_length": "110",
+          "avg_length": 110.0,
+          "top_values": "error"
+        },
+        "data_lineage": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "351",
+          "max_length": "355",
+          "avg_length": 354.70021214531954,
+          "top_values": "error"
+        },
+        "created_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 15084,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 13:18:26.327031+00:00",
+          "max_date": "2025-05-29 13:33:00.985877+00:00",
+          "date_range_days": 0
+        },
+        "updated_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 15084,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 13:18:26.327031+00:00",
+          "max_date": "2025-05-29 13:33:00.985877+00:00",
+          "date_range_days": 0
+        },
+        "quality_flags": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "95",
+          "max_length": "95",
+          "avg_length": 95.0,
+          "top_values": "error"
+        }
+      },
+      "sample_data": [
+        {
+          "rate_uuid": "d85234c3-77b0-5cd7-a017-dcabfdd67d09",
+          "payer_uuid": "c4c4e558-8665-5067-86a9-773f407f8b70",
+          "organization_uuid": "4b893a18-1da4-5672-a3f2-80a31ae20ab9",
+          "service_code": "99202",
+          "service_description": "OFFICE OR OTH OUTPATIENT VISIT FOR THE EVALUATION AND MANAGEMENT OF A NEW PATIENT, WHICH REQUIRES TH",
+          "billing_code_type": "CPT",
+          "negotiated_rate": 71.85,
+          "billing_class": "professional",
+          "rate_type": "negotiated",
+          "service_codes": "['11']",
+          "plan_details": {
+            "market_type": "Commercial",
+            "plan_id": null,
+            "plan_name": "plan_13",
+            "plan_type": null
+          },
+          "contract_period": {
+            "effective_date": null,
+            "expiration_date": "9999-12-31",
+            "last_updated_on": null
+          },
+          "provider_network": {
+            "coverage_type": "Organization",
+            "npi_count": 1,
+            "npi_list": "['1932519204']"
+          },
+          "geographic_scope": {
+            "counties": "[]",
+            "states": "[]",
+            "zip_codes": "[]"
+          },
+          "data_lineage": {
+            "extraction_timestamp": "2025-05-29 13:27:32.621560+00:00",
+            "processing_version": "tic-etl-ortho-v1.0",
+            "source_file_hash": "2b55d817d7a8311cba30991866a50e9d",
+            "source_file_url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-30_centene-management-company-llc_ambetter-tx_in-network.json"
+          },
+          "created_at": "2025-05-29 13:27:32.621561+00:00",
+          "updated_at": "2025-05-29 13:27:32.621562+00:00",
+          "quality_flags": {
+            "confidence_score": 1.0,
+            "has_conflicts": false,
+            "is_validated": true,
+            "validation_notes": ""
+          }
+        },
+        {
+          "rate_uuid": "ecf7f5b8-fed7-5ac2-947e-06397994a94b",
+          "payer_uuid": "c4c4e558-8665-5067-86a9-773f407f8b70",
+          "organization_uuid": "43cd7b6b-aabe-57d3-b195-b10712e02e0d",
+          "service_code": "99212",
+          "service_description": "OFFICE OR OTH OUTPATIENT VISIT FOR THE EVALUATION AND MANAGEMENT OF AN ESTABLISHED PATIENT, WHICH RE",
+          "billing_code_type": "CPT",
+          "negotiated_rate": 34.29,
+          "billing_class": "professional",
+          "rate_type": "negotiated",
+          "service_codes": "['22']",
+          "plan_details": {
+            "market_type": "Commercial",
+            "plan_id": null,
+            "plan_name": "plan_13",
+            "plan_type": null
+          },
+          "contract_period": {
+            "effective_date": null,
+            "expiration_date": "9999-12-31",
+            "last_updated_on": null
+          },
+          "provider_network": {
+            "coverage_type": "Organization",
+            "npi_count": 12,
+            "npi_list": "['1790279941' '1447613112' '1417511676' '1447454004' '1659897908'\n '1245236348' '1730542432' '1790049732' '1235405812' '1154641546'\n '1558689901' '1710207378']"
+          },
+          "geographic_scope": {
+            "counties": "[]",
+            "states": "[]",
+            "zip_codes": "[]"
+          },
+          "data_lineage": {
+            "extraction_timestamp": "2025-05-29 13:28:13.571939+00:00",
+            "processing_version": "tic-etl-ortho-v1.0",
+            "source_file_hash": "2b55d817d7a8311cba30991866a50e9d",
+            "source_file_url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-30_centene-management-company-llc_ambetter-tx_in-network.json"
+          },
+          "created_at": "2025-05-29 13:28:13.571940+00:00",
+          "updated_at": "2025-05-29 13:28:13.571940+00:00",
+          "quality_flags": {
+            "confidence_score": 1.0,
+            "has_conflicts": false,
+            "is_validated": true,
+            "validation_notes": ""
+          }
+        },
+        {
+          "rate_uuid": "2b0f8f90-81f3-5be8-9d1c-917eaff6bd61",
+          "payer_uuid": "c4c4e558-8665-5067-86a9-773f407f8b70",
+          "organization_uuid": "3cebf081-85cd-53a1-9073-68885957ddca",
+          "service_code": "72131",
+          "service_description": "COMPUTED TOMOGRAPHY, LUMBAR SPINE; WITHOUT CONTRAST MATERIAL",
+          "billing_code_type": "CPT",
+          "negotiated_rate": 51.77,
+          "billing_class": "professional",
+          "rate_type": "negotiated",
+          "service_codes": "['21']",
+          "plan_details": {
+            "market_type": "Commercial",
+            "plan_id": null,
+            "plan_name": "plan_2",
+            "plan_type": null
+          },
+          "contract_period": {
+            "effective_date": null,
+            "expiration_date": "9999-12-31",
+            "last_updated_on": null
+          },
+          "provider_network": {
+            "coverage_type": "Organization",
+            "npi_count": 1,
+            "npi_list": "['1629067327']"
+          },
+          "geographic_scope": {
+            "counties": "[]",
+            "states": "[]",
+            "zip_codes": "[]"
+          },
+          "data_lineage": {
+            "extraction_timestamp": "2025-05-29 13:19:09.385252+00:00",
+            "processing_version": "tic-etl-ortho-v1.0",
+            "source_file_hash": "9f8f07fa3854c9aafaf2f02223d03f2a",
+            "source_file_url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_centene-management-company-llc_ambetter-ar_in-network.json"
+          },
+          "created_at": "2025-05-29 13:19:09.385252+00:00",
+          "updated_at": "2025-05-29 13:19:09.385253+00:00",
+          "quality_flags": {
+            "confidence_score": 1.0,
+            "has_conflicts": false,
+            "is_validated": true,
+            "validation_notes": ""
+          }
+        },
+        {
+          "rate_uuid": "2544fa64-6ea5-57cb-aed9-c0f9c263e9a0",
+          "payer_uuid": "c4c4e558-8665-5067-86a9-773f407f8b70",
+          "organization_uuid": "a8787e65-8b85-5733-82c8-f873adfc3ec4",
+          "service_code": "99214",
+          "service_description": "OFFICE OR OTH OUTPATIENT VISIT FOR THE EVALUATION AND MANAGEMENT OF AN ESTABLISHED PATIENT, WHICH RE",
+          "billing_code_type": "CPT",
+          "negotiated_rate": 94.2,
+          "billing_class": "professional",
+          "rate_type": "negotiated",
+          "service_codes": "['24']",
+          "plan_details": {
+            "market_type": "Commercial",
+            "plan_id": null,
+            "plan_name": "plan_18",
+            "plan_type": null
+          },
+          "contract_period": {
+            "effective_date": null,
+            "expiration_date": "9999-12-31",
+            "last_updated_on": null
+          },
+          "provider_network": {
+            "coverage_type": "Organization",
+            "npi_count": 1,
+            "npi_list": "['1043641798']"
+          },
+          "geographic_scope": {
+            "counties": "[]",
+            "states": "[]",
+            "zip_codes": "[]"
+          },
+          "data_lineage": {
+            "extraction_timestamp": "2025-05-29 13:31:10.075380+00:00",
+            "processing_version": "tic-etl-ortho-v1.0",
+            "source_file_hash": "864fa2158a9519c0fd84c293cfc5763d",
+            "source_file_url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-30_centene-management-company-llc_ambetter-ca_in-network.json"
+          },
+          "created_at": "2025-05-29 13:31:10.075381+00:00",
+          "updated_at": "2025-05-29 13:31:10.075382+00:00",
+          "quality_flags": {
+            "confidence_score": 1.0,
+            "has_conflicts": false,
+            "is_validated": true,
+            "validation_notes": ""
+          }
+        },
+        {
+          "rate_uuid": "fa043efc-e3a8-54ec-939a-4c4e3ca5d324",
+          "payer_uuid": "c4c4e558-8665-5067-86a9-773f407f8b70",
+          "organization_uuid": "47851b71-3e61-5171-890e-2516d8fc032a",
+          "service_code": "72141",
+          "service_description": "MAGNETIC RESONANCE (EG, PROTON) IMAGING, SPINAL CANAL AND CONTENTS, CERVICAL; WITHOUT CONTRAST MATER",
+          "billing_code_type": "CPT",
+          "negotiated_rate": 165.12,
+          "billing_class": "professional",
+          "rate_type": "negotiated",
+          "service_codes": "['49']",
+          "plan_details": {
+            "market_type": "Commercial",
+            "plan_id": null,
+            "plan_name": "plan_13",
+            "plan_type": null
+          },
+          "contract_period": {
+            "effective_date": null,
+            "expiration_date": "9999-12-31",
+            "last_updated_on": null
+          },
+          "provider_network": {
+            "coverage_type": "Organization",
+            "npi_count": 1,
+            "npi_list": "['1104153998']"
+          },
+          "geographic_scope": {
+            "counties": "[]",
+            "states": "[]",
+            "zip_codes": "[]"
+          },
+          "data_lineage": {
+            "extraction_timestamp": "2025-05-29 13:27:04.069190+00:00",
+            "processing_version": "tic-etl-ortho-v1.0",
+            "source_file_hash": "2b55d817d7a8311cba30991866a50e9d",
+            "source_file_url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-30_centene-management-company-llc_ambetter-tx_in-network.json"
+          },
+          "created_at": "2025-05-29 13:27:04.069191+00:00",
+          "updated_at": "2025-05-29 13:27:04.069191+00:00",
+          "quality_flags": {
+            "confidence_score": 1.0,
+            "has_conflicts": false,
+            "is_validated": true,
+            "validation_notes": ""
+          }
+        }
+      ]
+    },
+    "providers": {
+      "dataset_name": "providers",
+      "full_shape": [
+        367595,
+        15
+      ],
+      "sample_shape": [
+        3676,
+        15
+      ],
+      "basic_info": {
+        "full_memory_usage_mb": 354.07168674468994,
+        "dtypes": {
+          "provider_uuid": "object",
+          "npi": "object",
+          "organization_uuid": "object",
+          "provider_name": "object",
+          "credentials": "object",
+          "primary_specialty": "object",
+          "secondary_specialties": "object",
+          "provider_type": "object",
+          "gender": "object",
+          "addresses": "object",
+          "is_active": "bool",
+          "enumeration_date": "object",
+          "last_updated": "object",
+          "created_at": "datetime64[ns, UTC]",
+          "updated_at": "datetime64[ns, UTC]"
+        },
+        "null_counts": {
+          "provider_uuid": 0,
+          "npi": 0,
+          "organization_uuid": 0,
+          "provider_name": 0,
+          "credentials": 0,
+          "primary_specialty": 0,
+          "secondary_specialties": 0,
+          "provider_type": 0,
+          "gender": 0,
+          "addresses": 0,
+          "is_active": 0,
+          "enumeration_date": 367595,
+          "last_updated": 367595,
+          "created_at": 0,
+          "updated_at": 0
+        },
+        "null_percentages": {
+          "provider_uuid": 0.0,
+          "npi": 0.0,
+          "organization_uuid": 0.0,
+          "provider_name": 0.0,
+          "credentials": 0.0,
+          "primary_specialty": 0.0,
+          "secondary_specialties": 0.0,
+          "provider_type": 0.0,
+          "gender": 0.0,
+          "addresses": 0.0,
+          "is_active": 0.0,
+          "enumeration_date": 100.0,
+          "last_updated": 100.0,
+          "created_at": 0.0,
+          "updated_at": 0.0
+        }
+      },
+      "columns": {
+        "provider_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 3676,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "01886289-cb6e-55b6-9b46-2578b303a84d": 1,
+            "3fe3ab21-3921-5e81-ae0a-70fa19a6aeb3": 1,
+            "420c580a-3b16-545f-b26c-114c1e1b193c": 1,
+            "30bccd08-8cc6-5dc5-9460-c49823c81707": 1,
+            "257d4ef2-d61d-5314-a879-19c69e3b18a1": 1
+          },
+          "note": "Too many unique values (3676), showing top 5 only"
+        },
+        "npi": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 3676,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "10",
+          "max_length": "10",
+          "avg_length": 10.0,
+          "top_values": {
+            "1356372361": 1,
+            "1649560798": 1,
+            "1750549192": 1,
+            "1033150792": 1,
+            "1619383668": 1
+          },
+          "note": "Too many unique values (3676), showing top 5 only"
+        },
+        "organization_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 2189,
+          "unique_percentage": 59.54842219804135,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "00eaf361-a53f-5128-a8df-59461f407bfc": 40,
+            "cd0fccfc-5673-56b5-9214-46d72eaba72c": 33,
+            "2053e6cd-e752-5f29-a21a-b4164eee2f6f": 30,
+            "f602a3cc-7479-5c3e-a55d-d42e1aecc530": 30,
+            "c1746936-3853-56d4-a387-30b62485dc56": 30
+          },
+          "note": "Too many unique values (2189), showing top 5 only"
+        },
+        "provider_name": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "53",
+          "max_length": "53",
+          "avg_length": 53.0,
+          "top_values": "error"
+        },
+        "credentials": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "2",
+          "max_length": "2",
+          "avg_length": 2.0,
+          "top_values": "error"
+        },
+        "primary_specialty": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.02720348204570185,
+          "type": "string",
+          "min_length": "0",
+          "max_length": "0",
+          "avg_length": 0.0,
+          "top_values": {
+            "": 3676
+          }
+        },
+        "secondary_specialties": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "2",
+          "max_length": "2",
+          "avg_length": 2.0,
+          "top_values": "error"
+        },
+        "provider_type": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.02720348204570185,
+          "type": "string",
+          "min_length": "10",
+          "max_length": "10",
+          "avg_length": 10.0,
+          "top_values": {
+            "Individual": 3676
+          }
+        },
+        "gender": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.02720348204570185,
+          "type": "string",
+          "min_length": "7",
+          "max_length": "7",
+          "avg_length": 7.0,
+          "top_values": {
+            "Unknown": 3676
+          }
+        },
+        "addresses": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "2",
+          "max_length": "2",
+          "avg_length": 2.0,
+          "top_values": "error"
+        },
+        "is_active": {
+          "dtype": "bool",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.02720348204570185,
+          "type": "numeric",
+          "error": "numpy boolean subtract, the `-` operator, is not supported, use the bitwise_xor, the `^` operator, or the logical_xor function instead.",
+          "note": "Error processing numeric column"
+        },
+        "enumeration_date": {
+          "dtype": "object",
+          "null_count": "3676",
+          "null_percentage": 100.0,
+          "unique_count": 0,
+          "unique_percentage": 0.0,
+          "type": "string",
+          "min_length": null,
+          "max_length": null,
+          "avg_length": null,
+          "top_values": {}
+        },
+        "last_updated": {
+          "dtype": "object",
+          "null_count": "3676",
+          "null_percentage": 100.0,
+          "unique_count": 0,
+          "unique_percentage": 0.0,
+          "type": "string",
+          "min_length": null,
+          "max_length": null,
+          "avg_length": null,
+          "top_values": {}
+        },
+        "created_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 3676,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 13:18:24.117042+00:00",
+          "max_date": "2025-05-29 13:33:00.986337+00:00",
+          "date_range_days": 0
+        },
+        "updated_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 3676,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 13:18:24.117042+00:00",
+          "max_date": "2025-05-29 13:33:00.986338+00:00",
+          "date_range_days": 0
+        }
+      },
+      "sample_data": [
+        {
+          "provider_uuid": "3fe3ab21-3921-5e81-ae0a-70fa19a6aeb3",
+          "npi": "1649560798",
+          "organization_uuid": "a9a1ce80-5885-5498-a593-748fe90f7fa5",
+          "provider_name": {
+            "first": "",
+            "last": "",
+            "middle": "",
+            "suffix": ""
+          },
+          "credentials": "[]",
+          "primary_specialty": "",
+          "secondary_specialties": "[]",
+          "provider_type": "Individual",
+          "gender": "Unknown",
+          "addresses": "[]",
+          "is_active": true,
+          "enumeration_date": null,
+          "last_updated": null,
+          "created_at": "2025-05-29 13:22:53.576595+00:00",
+          "updated_at": "2025-05-29 13:22:53.576596+00:00"
+        },
+        {
+          "provider_uuid": "420c580a-3b16-545f-b26c-114c1e1b193c",
+          "npi": "1750549192",
+          "organization_uuid": "62c584fa-eaa8-5559-bc54-6b183ad249c3",
+          "provider_name": {
+            "first": "",
+            "last": "",
+            "middle": "",
+            "suffix": ""
+          },
+          "credentials": "[]",
+          "primary_specialty": "",
+          "secondary_specialties": "[]",
+          "provider_type": "Individual",
+          "gender": "Unknown",
+          "addresses": "[]",
+          "is_active": true,
+          "enumeration_date": null,
+          "last_updated": null,
+          "created_at": "2025-05-29 13:30:31.335103+00:00",
+          "updated_at": "2025-05-29 13:30:31.335104+00:00"
+        },
+        {
+          "provider_uuid": "30bccd08-8cc6-5dc5-9460-c49823c81707",
+          "npi": "1033150792",
+          "organization_uuid": "2acfb351-81a3-5188-8430-ee016d432951",
+          "provider_name": {
+            "first": "",
+            "last": "",
+            "middle": "",
+            "suffix": ""
+          },
+          "credentials": "[]",
+          "primary_specialty": "",
+          "secondary_specialties": "[]",
+          "provider_type": "Individual",
+          "gender": "Unknown",
+          "addresses": "[]",
+          "is_active": true,
+          "enumeration_date": null,
+          "last_updated": null,
+          "created_at": "2025-05-29 13:21:34.739077+00:00",
+          "updated_at": "2025-05-29 13:21:34.739078+00:00"
+        },
+        {
+          "provider_uuid": "257d4ef2-d61d-5314-a879-19c69e3b18a1",
+          "npi": "1619383668",
+          "organization_uuid": "be79aa18-0628-54da-9965-91174cc23d8d",
+          "provider_name": {
+            "first": "",
+            "last": "",
+            "middle": "",
+            "suffix": ""
+          },
+          "credentials": "[]",
+          "primary_specialty": "",
+          "secondary_specialties": "[]",
+          "provider_type": "Individual",
+          "gender": "Unknown",
+          "addresses": "[]",
+          "is_active": true,
+          "enumeration_date": null,
+          "last_updated": null,
+          "created_at": "2025-05-29 13:18:27.241680+00:00",
+          "updated_at": "2025-05-29 13:18:27.241680+00:00"
+        },
+        {
+          "provider_uuid": "8caff630-f39a-59b9-b77c-9f63f2c3abb4",
+          "npi": "1568017853",
+          "organization_uuid": "cb48e869-3187-5b96-be04-1f21eda6e725",
+          "provider_name": {
+            "first": "",
+            "last": "",
+            "middle": "",
+            "suffix": ""
+          },
+          "credentials": "[]",
+          "primary_specialty": "",
+          "secondary_specialties": "[]",
+          "provider_type": "Individual",
+          "gender": "Unknown",
+          "addresses": "[]",
+          "is_active": true,
+          "enumeration_date": null,
+          "last_updated": null,
+          "created_at": "2025-05-29 13:22:21.201180+00:00",
+          "updated_at": "2025-05-29 13:22:21.201181+00:00"
+        }
+      ]
+    },
+    "organizations": {
+      "dataset_name": "organizations",
+      "full_shape": [
+        50528,
+        13
+      ],
+      "sample_shape": [
+        505,
+        13
+      ],
+      "basic_info": {
+        "full_memory_usage_mb": 38.59621238708496,
+        "dtypes": {
+          "organization_uuid": "object",
+          "tin": "object",
+          "organization_name": "object",
+          "organization_type": "object",
+          "parent_system": "object",
+          "npi_count": "int64",
+          "primary_specialty": "object",
+          "is_facility": "bool",
+          "headquarters_address": "object",
+          "service_areas": "object",
+          "created_at": "datetime64[ns, UTC]",
+          "updated_at": "datetime64[ns, UTC]",
+          "data_quality_score": "float64"
+        },
+        "null_counts": {
+          "organization_uuid": 0,
+          "tin": 0,
+          "organization_name": 0,
+          "organization_type": 0,
+          "parent_system": 0,
+          "npi_count": 0,
+          "primary_specialty": 0,
+          "is_facility": 0,
+          "headquarters_address": 0,
+          "service_areas": 0,
+          "created_at": 0,
+          "updated_at": 0,
+          "data_quality_score": 0
+        },
+        "null_percentages": {
+          "organization_uuid": 0.0,
+          "tin": 0.0,
+          "organization_name": 0.0,
+          "organization_type": 0.0,
+          "parent_system": 0.0,
+          "npi_count": 0.0,
+          "primary_specialty": 0.0,
+          "is_facility": 0.0,
+          "headquarters_address": 0.0,
+          "service_areas": 0.0,
+          "created_at": 0.0,
+          "updated_at": 0.0,
+          "data_quality_score": 0.0
+        }
+      },
+      "columns": {
+        "organization_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 505,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "8d24e14d-a016-568f-a20c-c1a67f258acb": 1,
+            "7d337212-3677-5e29-8a61-a15421146625": 1,
+            "5a2a5ac5-200e-5df6-abb9-8b6cdae9e59d": 1,
+            "b867b549-539e-5d3b-b6a9-3ac39ceb824e": 1,
+            "7cd63b86-3472-5015-bcb4-9e2d63433f8a": 1
+          },
+          "note": "Too many unique values (505), showing top 5 only"
+        },
+        "tin": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 505,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "8",
+          "max_length": "9",
+          "avg_length": 8.972277227722772,
+          "top_values": {
+            "455574462": 1,
+            "43361191": 1,
+            "741703601": 1,
+            "112628100": 1,
+            "204887221": 1
+          },
+          "note": "Too many unique values (505), showing top 5 only"
+        },
+        "organization_name": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 505,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "21",
+          "max_length": "22",
+          "avg_length": 21.972277227722774,
+          "top_values": {
+            "Organization-455574462": 1,
+            "Organization-43361191": 1,
+            "Organization-741703601": 1,
+            "Organization-112628100": 1,
+            "Organization-204887221": 1
+          },
+          "note": "Too many unique values (505), showing top 5 only"
+        },
+        "organization_type": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.19801980198019803,
+          "type": "string",
+          "min_length": "7",
+          "max_length": "7",
+          "avg_length": 7.0,
+          "top_values": {
+            "Unknown": 505
+          }
+        },
+        "parent_system": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.19801980198019803,
+          "type": "string",
+          "min_length": "0",
+          "max_length": "0",
+          "avg_length": 0.0,
+          "top_values": {
+            "": 505
+          }
+        },
+        "npi_count": {
+          "dtype": "int64",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 17,
+          "unique_percentage": 3.3663366336633667,
+          "type": "numeric",
+          "min": 1.0,
+          "max": 66.0,
+          "mean": 1.996039603960396,
+          "median": 1.0,
+          "std": 3.767022760034625,
+          "percentiles": {
+            "p10": 1.0,
+            "p25": 1.0,
+            "p75": 2.0,
+            "p90": 4.0
+          }
+        },
+        "primary_specialty": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.19801980198019803,
+          "type": "string",
+          "min_length": "0",
+          "max_length": "0",
+          "avg_length": 0.0,
+          "top_values": {
+            "": 505
+          }
+        },
+        "is_facility": {
+          "dtype": "bool",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.19801980198019803,
+          "type": "numeric",
+          "error": "numpy boolean subtract, the `-` operator, is not supported, use the bitwise_xor, the `^` operator, or the logical_xor function instead.",
+          "note": "Error processing numeric column"
+        },
+        "headquarters_address": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "76",
+          "max_length": "76",
+          "avg_length": 76.0,
+          "top_values": "error"
+        },
+        "service_areas": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "2",
+          "max_length": "2",
+          "avg_length": 2.0,
+          "top_values": "error"
+        },
+        "created_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 505,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 13:18:26.323314+00:00",
+          "max_date": "2025-05-29 13:33:00.985549+00:00",
+          "date_range_days": 0
+        },
+        "updated_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 505,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 13:18:26.323314+00:00",
+          "max_date": "2025-05-29 13:33:00.985549+00:00",
+          "date_range_days": 0
+        },
+        "data_quality_score": {
+          "dtype": "float64",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.19801980198019803,
+          "type": "numeric",
+          "min": 0.8,
+          "max": 0.8,
+          "mean": 0.8000000000000002,
+          "median": 0.8,
+          "std": 1.1113238905620795e-16,
+          "percentiles": {
+            "p10": 0.8,
+            "p25": 0.8,
+            "p75": 0.8,
+            "p90": 0.8
+          }
+        }
+      },
+      "sample_data": [
+        {
+          "organization_uuid": "7d337212-3677-5e29-8a61-a15421146625",
+          "tin": "43361191",
+          "organization_name": "Organization-43361191",
+          "organization_type": "Unknown",
+          "parent_system": "",
+          "npi_count": 2,
+          "primary_specialty": "",
+          "is_facility": false,
+          "headquarters_address": {
+            "city": "",
+            "lat": null,
+            "lng": null,
+            "state": "",
+            "street": "",
+            "zip": ""
+          },
+          "service_areas": "[]",
+          "created_at": "2025-05-29 13:31:41.683035+00:00",
+          "updated_at": "2025-05-29 13:31:41.683035+00:00",
+          "data_quality_score": 0.8
+        },
+        {
+          "organization_uuid": "5a2a5ac5-200e-5df6-abb9-8b6cdae9e59d",
+          "tin": "741703601",
+          "organization_name": "Organization-741703601",
+          "organization_type": "Unknown",
+          "parent_system": "",
+          "npi_count": 8,
+          "primary_specialty": "",
+          "is_facility": false,
+          "headquarters_address": {
+            "city": "",
+            "lat": null,
+            "lng": null,
+            "state": "",
+            "street": "",
+            "zip": ""
+          },
+          "service_areas": "[]",
+          "created_at": "2025-05-29 13:19:22.250980+00:00",
+          "updated_at": "2025-05-29 13:19:22.250980+00:00",
+          "data_quality_score": 0.8
+        },
+        {
+          "organization_uuid": "b867b549-539e-5d3b-b6a9-3ac39ceb824e",
+          "tin": "112628100",
+          "organization_name": "Organization-112628100",
+          "organization_type": "Unknown",
+          "parent_system": "",
+          "npi_count": 1,
+          "primary_specialty": "",
+          "is_facility": false,
+          "headquarters_address": {
+            "city": "",
+            "lat": null,
+            "lng": null,
+            "state": "",
+            "street": "",
+            "zip": ""
+          },
+          "service_areas": "[]",
+          "created_at": "2025-05-29 13:18:29.732974+00:00",
+          "updated_at": "2025-05-29 13:18:29.732974+00:00",
+          "data_quality_score": 0.8
+        },
+        {
+          "organization_uuid": "7cd63b86-3472-5015-bcb4-9e2d63433f8a",
+          "tin": "204887221",
+          "organization_name": "Organization-204887221",
+          "organization_type": "Unknown",
+          "parent_system": "",
+          "npi_count": 4,
+          "primary_specialty": "",
+          "is_facility": false,
+          "headquarters_address": {
+            "city": "",
+            "lat": null,
+            "lng": null,
+            "state": "",
+            "street": "",
+            "zip": ""
+          },
+          "service_areas": "[]",
+          "created_at": "2025-05-29 13:26:46.045995+00:00",
+          "updated_at": "2025-05-29 13:26:46.045996+00:00",
+          "data_quality_score": 0.8
+        },
+        {
+          "organization_uuid": "cf8afd5b-da7b-5618-af6a-94321472e147",
+          "tin": "823050224",
+          "organization_name": "Organization-823050224",
+          "organization_type": "Unknown",
+          "parent_system": "",
+          "npi_count": 2,
+          "primary_specialty": "",
+          "is_facility": false,
+          "headquarters_address": {
+            "city": "",
+            "lat": null,
+            "lng": null,
+            "state": "",
+            "street": "",
+            "zip": ""
+          },
+          "service_areas": "[]",
+          "created_at": "2025-05-29 13:29:20.436677+00:00",
+          "updated_at": "2025-05-29 13:29:20.436677+00:00",
+          "data_quality_score": 0.8
+        }
+      ]
+    },
+    "payers": {
+      "error": "File not found"
+    },
+    "analytics": {
+      "dataset_name": "analytics",
+      "full_shape": [
+        98,
+        8
+      ],
+      "sample_shape": null,
+      "basic_info": {
+        "full_memory_usage_mb": 0.08788490295410156,
+        "dtypes": {
+          "analytics_uuid": "object",
+          "service_code": "object",
+          "geographic_scope": "object",
+          "market_statistics": "object",
+          "payer_analysis": "object",
+          "trend_analysis": "object",
+          "computation_date": "datetime64[ns, UTC]",
+          "data_freshness": "datetime64[ns, UTC]"
+        },
+        "null_counts": {
+          "analytics_uuid": 0,
+          "service_code": 0,
+          "geographic_scope": 0,
+          "market_statistics": 0,
+          "payer_analysis": 0,
+          "trend_analysis": 0,
+          "computation_date": 0,
+          "data_freshness": 0
+        },
+        "null_percentages": {
+          "analytics_uuid": 0.0,
+          "service_code": 0.0,
+          "geographic_scope": 0.0,
+          "market_statistics": 0.0,
+          "payer_analysis": 0.0,
+          "trend_analysis": 0.0,
+          "computation_date": 0.0,
+          "data_freshness": 0.0
+        }
+      },
+      "columns": {
+        "analytics_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 98,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "81c041a5-c494-505a-aa49-a69a4dd7912e": 1,
+            "29d56092-1d52-5268-9faf-a771bf374edc": 1,
+            "c143d100-3580-5002-af8b-ba04386964d0": 1,
+            "e2c75dbb-ed57-5335-a609-53998b423ba9": 1,
+            "62db72dc-7ec3-5910-809c-b48ed0948084": 1
+          },
+          "note": "Too many unique values (98), showing top 5 only"
+        },
+        "service_code": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 98,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "5",
+          "max_length": "5",
+          "avg_length": 5.0,
+          "top_values": {
+            "20552": 1,
+            "20553": 1,
+            "20610": 1,
+            "20611": 1,
+            "22551": 1
+          },
+          "note": "Too many unique values (98), showing top 5 only"
+        },
+        "geographic_scope": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "66",
+          "max_length": "66",
+          "avg_length": 66.0,
+          "top_values": "error"
+        },
+        "market_statistics": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "238",
+          "max_length": "260",
+          "avg_length": 245.87755102040816,
+          "top_values": "error"
+        },
+        "payer_analysis": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "2",
+          "max_length": "2",
+          "avg_length": 2.0,
+          "top_values": "error"
+        },
+        "trend_analysis": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "85",
+          "max_length": "90",
+          "avg_length": 87.18367346938776,
+          "top_values": "error"
+        },
+        "computation_date": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 98,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 13:39:17.906483+00:00",
+          "max_date": "2025-05-29 13:39:33.002747+00:00",
+          "date_range_days": 0
+        },
+        "data_freshness": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 98,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 13:39:17.907021+00:00",
+          "max_date": "2025-05-29 13:39:33.002751+00:00",
+          "date_range_days": 0
+        }
+      },
+      "sample_data": [
+        {
+          "analytics_uuid": "81c041a5-c494-505a-aa49-a69a4dd7912e",
+          "service_code": "20552",
+          "geographic_scope": {
+            "identifier": "US",
+            "level": "National",
+            "name": "United States"
+          },
+          "market_statistics": {
+            "mean_rate": 52.893619718309864,
+            "median_rate": 53.7,
+            "payer_count": 2,
+            "percentiles": {
+              "p10": 41.09,
+              "p25": 46.68,
+              "p75": 60.01,
+              "p90": 63.19,
+              "p95": 71.8
+            },
+            "provider_count": 2916,
+            "rate_observations": 3550,
+            "std_dev": 10.653205148416157
+          },
+          "payer_analysis": "[]",
+          "trend_analysis": {
+            "rate_change_12m": 0.0,
+            "rate_change_6m": 0.0,
+            "volatility_score": 0.20140813211784034
+          },
+          "computation_date": "2025-05-29 13:39:17.906483+00:00",
+          "data_freshness": "2025-05-29 13:39:17.907021+00:00"
+        },
+        {
+          "analytics_uuid": "29d56092-1d52-5268-9faf-a771bf374edc",
+          "service_code": "20553",
+          "geographic_scope": {
+            "identifier": "US",
+            "level": "National",
+            "name": "United States"
+          },
+          "market_statistics": {
+            "mean_rate": 62.01544353662095,
+            "median_rate": 60.03,
+            "payer_count": 2,
+            "percentiles": {
+              "p10": 45.62,
+              "p25": 53.8,
+              "p75": 69.04,
+              "p90": 85.64,
+              "p95": 93.72999999999989
+            },
+            "provider_count": 4664,
+            "rate_observations": 6854,
+            "std_dev": 16.824986614577625
+          },
+          "payer_analysis": "[]",
+          "trend_analysis": {
+            "rate_change_12m": 0.0,
+            "rate_change_6m": 0.0,
+            "volatility_score": 0.2713031731304517
+          },
+          "computation_date": "2025-05-29 13:39:18.050936+00:00",
+          "data_freshness": "2025-05-29 13:39:18.050940+00:00"
+        },
+        {
+          "analytics_uuid": "c143d100-3580-5002-af8b-ba04386964d0",
+          "service_code": "20610",
+          "geographic_scope": {
+            "identifier": "US",
+            "level": "National",
+            "name": "United States"
+          },
+          "market_statistics": {
+            "mean_rate": 73.02956074618747,
+            "median_rate": 66.26,
+            "payer_count": 2,
+            "percentiles": {
+              "p10": 48.25,
+              "p25": 57.29,
+              "p75": 87.31,
+              "p90": 105.23,
+              "p95": 121.59
+            },
+            "provider_count": 15811,
+            "rate_observations": 56983,
+            "std_dev": 25.602972962634336
+          },
+          "payer_analysis": "[]",
+          "trend_analysis": {
+            "rate_change_12m": 0.0,
+            "rate_change_6m": 0.0,
+            "volatility_score": 0.3505836910565144
+          },
+          "computation_date": "2025-05-29 13:39:18.245349+00:00",
+          "data_freshness": "2025-05-29 13:39:18.245355+00:00"
+        },
+        {
+          "analytics_uuid": "e2c75dbb-ed57-5335-a609-53998b423ba9",
+          "service_code": "20611",
+          "geographic_scope": {
+            "identifier": "US",
+            "level": "National",
+            "name": "United States"
+          },
+          "market_statistics": {
+            "mean_rate": 109.17345189846415,
+            "median_rate": 97.44,
+            "payer_count": 2,
+            "percentiles": {
+              "p10": 62.04,
+              "p25": 85.33,
+              "p75": 133.77,
+              "p90": 168.29,
+              "p95": 192.02
+            },
+            "provider_count": 8297,
+            "rate_observations": 18752,
+            "std_dev": 42.69864292560185
+          },
+          "payer_analysis": "[]",
+          "trend_analysis": {
+            "rate_change_12m": 0.0,
+            "rate_change_6m": 0.0,
+            "volatility_score": 0.39110829769597616
+          },
+          "computation_date": "2025-05-29 13:39:18.412700+00:00",
+          "data_freshness": "2025-05-29 13:39:18.412706+00:00"
+        },
+        {
+          "analytics_uuid": "62db72dc-7ec3-5910-809c-b48ed0948084",
+          "service_code": "22551",
+          "geographic_scope": {
+            "identifier": "US",
+            "level": "National",
+            "name": "United States"
+          },
+          "market_statistics": {
+            "mean_rate": 848.028968663229,
+            "median_rate": 329.59,
+            "payer_count": 1,
+            "percentiles": {
+              "p10": 193.2,
+              "p25": 252.67,
+              "p75": 1576.76,
+              "p90": 2286.5,
+              "p95": 2508.08
+            },
+            "provider_count": 1909,
+            "rate_observations": 2521,
+            "std_dev": 1091.3784269078299
+          },
+          "payer_analysis": "[]",
+          "trend_analysis": {
+            "rate_change_12m": 0.0,
+            "rate_change_6m": 0.0,
+            "volatility_score": 1.2869588979114701
+          },
+          "computation_date": "2025-05-29 13:39:18.548796+00:00",
+          "data_freshness": "2025-05-29 13:39:18.548800+00:00"
+        }
+      ]
+    }
+  },
+  "nppes_data": {
+    "dataset_name": "nppes",
+    "full_shape": [
+      1041,
+      11
+    ],
+    "sample_shape": null,
+    "basic_info": {
+      "full_memory_usage_mb": 0.9960403442382812,
+      "dtypes": {
+        "npi": "object",
+        "provider_name": "object",
+        "credentials": "object",
+        "gender": "object",
+        "enumeration_date": "datetime64[ns, UTC]",
+        "last_updated": "datetime64[ns, UTC]",
+        "addresses": "object",
+        "primary_specialty": "object",
+        "secondary_specialties": "object",
+        "provider_type": "object",
+        "metadata": "object"
+      },
+      "null_counts": {
+        "npi": 0,
+        "provider_name": 0,
+        "credentials": 0,
+        "gender": 0,
+        "enumeration_date": 0,
+        "last_updated": 0,
+        "addresses": 0,
+        "primary_specialty": 16,
+        "secondary_specialties": 0,
+        "provider_type": 0,
+        "metadata": 0
+      },
+      "null_percentages": {
+        "npi": 0.0,
+        "provider_name": 0.0,
+        "credentials": 0.0,
+        "gender": 0.0,
+        "enumeration_date": 0.0,
+        "last_updated": 0.0,
+        "addresses": 0.0,
+        "primary_specialty": 1.536983669548511,
+        "secondary_specialties": 0.0,
+        "provider_type": 0.0,
+        "metadata": 0.0
+      }
+    },
+    "columns": {
+      "npi": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": 1041,
+        "unique_percentage": 100.0,
+        "type": "string",
+        "min_length": "10",
+        "max_length": "10",
+        "avg_length": 10.0,
+        "top_values": {
+          "1730321399": 1,
+          "1922327527": 1,
+          "1780147256": 1,
+          "1134516743": 1,
+          "1013271535": 1
+        },
+        "note": "Too many unique values (1041), showing top 5 only"
+      },
+      "provider_name": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": "error",
+        "unique_percentage": "error",
+        "unique_error": "unhashable type: 'dict'",
+        "note": "Cannot compute value counts due to unhashable types",
+        "type": "string",
+        "min_length": "53",
+        "max_length": "88",
+        "avg_length": 67.6926032660903,
+        "top_values": "error"
+      },
+      "credentials": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": "error",
+        "unique_percentage": "error",
+        "unique_error": "unhashable type: 'numpy.ndarray'",
+        "note": "Cannot compute value counts due to unhashable types",
+        "type": "string",
+        "min_length": "2",
+        "max_length": "24",
+        "avg_length": 7.064361191162344,
+        "top_values": "error"
+      },
+      "gender": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": 3,
+        "unique_percentage": 0.2881844380403458,
+        "type": "string",
+        "min_length": "1",
+        "max_length": "7",
+        "avg_length": 1.005763688760807,
+        "top_values": {
+          "F": 576,
+          "M": 464,
+          "Unknown": 1
+        }
+      },
+      "enumeration_date": {
+        "dtype": "datetime64[ns, UTC]",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": 839,
+        "unique_percentage": 80.59558117195004,
+        "type": "datetime",
+        "min_date": "2005-05-24 00:00:00+00:00",
+        "max_date": "2024-11-06 00:00:00+00:00",
+        "date_range_days": 7106
+      },
+      "last_updated": {
+        "dtype": "datetime64[ns, UTC]",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": 808,
+        "unique_percentage": 77.61767531219981,
+        "type": "datetime",
+        "min_date": "2007-07-08 00:00:00+00:00",
+        "max_date": "2025-07-21 00:00:00+00:00",
+        "date_range_days": 6588
+      },
+      "addresses": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": "error",
+        "unique_percentage": "error",
+        "unique_error": "unhashable type: 'numpy.ndarray'",
+        "note": "Cannot compute value counts due to unhashable types",
+        "type": "string",
+        "min_length": "178",
+        "max_length": "229",
+        "avg_length": 194.40826128722384,
+        "top_values": "error"
+      },
+      "primary_specialty": {
+        "dtype": "object",
+        "null_count": "16",
+        "null_percentage": 1.536983669548511,
+        "unique_count": 114,
+        "unique_percentage": 10.951008645533141,
+        "type": "string",
+        "min_length": "0",
+        "max_length": "80",
+        "avg_length": 26.953170731707317,
+        "top_values": {
+          "Psychiatry & Neurology, Psychiatry": 93,
+          "Radiology, Diagnostic Radiology": 70,
+          "Physician Assistant": 70,
+          "Nurse Practitioner, Family": 57,
+          "Family Medicine": 50
+        },
+        "note": "Too many unique values (114), showing top 5 only"
+      },
+      "secondary_specialties": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": "error",
+        "unique_percentage": "error",
+        "unique_error": "unhashable type: 'numpy.ndarray'",
+        "note": "Cannot compute value counts due to unhashable types",
+        "type": "string",
+        "min_length": "2",
+        "max_length": "219",
+        "avg_length": 19.423631123919307,
+        "top_values": "error"
+      },
+      "provider_type": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": 2,
+        "unique_percentage": 0.19212295869356388,
+        "type": "string",
+        "min_length": "10",
+        "max_length": "12",
+        "avg_length": 10.001921229586936,
+        "top_values": {
+          "Individual": 1040,
+          "Organization": 1
+        }
+      },
+      "metadata": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": "error",
+        "unique_percentage": "error",
+        "unique_error": "unhashable type: 'dict'",
+        "note": "Cannot compute value counts due to unhashable types",
+        "type": "string",
+        "min_length": "163",
+        "max_length": "164",
+        "avg_length": 163.4745437079731,
+        "top_values": "error"
+      }
+    },
+    "sample_data": [
+      {
+        "npi": "1699775759",
+        "provider_name": {
+          "first": "RAJA",
+          "last": "VARMA",
+          "middle": "GUNTURI",
+          "suffix": ""
+        },
+        "credentials": "['MD']",
+        "gender": "M",
+        "enumeration_date": "2005-07-29 00:00:00+00:00",
+        "last_updated": "2021-04-22 00:00:00+00:00",
+        "addresses": "[{'city': 'PATCHOGUE', 'country': 'United States', 'fax': '631-627-8707', 'phone': '631-627-8700', 'purpose': 'LOCATION', 'state': 'NY', 'street': '73 S OCEAN AVE STE C', 'type': 'DOM', 'zip': '117723702'}]",
+        "primary_specialty": "Internal Medicine, Cardiovascular Disease",
+        "secondary_specialties": "[]",
+        "provider_type": "Individual",
+        "metadata": {
+          "api_version": "2.1",
+          "data_source": "NPI_Registry_API",
+          "fetch_status": "success",
+          "fetched_at": "2025-07-16 12:34:25.062618+00:00"
+        }
+      },
+      {
+        "npi": "1356682017",
+        "provider_name": {
+          "first": "RASHI",
+          "last": "KOCHHAR",
+          "middle": "",
+          "suffix": ""
+        },
+        "credentials": "['M.D']",
+        "gender": "F",
+        "enumeration_date": "2013-03-06 00:00:00+00:00",
+        "last_updated": "2024-10-07 00:00:00+00:00",
+        "addresses": "[{'city': 'ALBANY', 'country': 'United States', 'fax': '518-464-9650', 'phone': '518-464-9999', 'purpose': 'LOCATION', 'state': 'NY', 'street': '1 PINE WEST PLZ STE 101', 'type': 'DOM', 'zip': '122055531'}]",
+        "primary_specialty": "Pediatrics, Sleep Medicine",
+        "secondary_specialties": "['Pediatrics, Pediatric Pulmonology']",
+        "provider_type": "Individual",
+        "metadata": {
+          "api_version": "2.1",
+          "data_source": "NPI_Registry_API",
+          "fetch_status": "success",
+          "fetched_at": "2025-07-16 12:34:25.062673+00:00"
+        }
+      },
+      {
+        "npi": "1720676802",
+        "provider_name": {
+          "first": "BAILEY",
+          "last": "WALTERS",
+          "middle": "",
+          "suffix": ""
+        },
+        "credentials": "['DNP-P']",
+        "gender": "F",
+        "enumeration_date": "2021-01-05 00:00:00+00:00",
+        "last_updated": "2024-07-17 00:00:00+00:00",
+        "addresses": "[{'city': 'KATONAH', 'country': 'United States', 'fax': '', 'phone': '716-316-6792', 'purpose': 'LOCATION', 'state': 'NY', 'street': '800 CROSS RIVER RD', 'type': 'DOM', 'zip': '105363549'}]",
+        "primary_specialty": "Nurse Practitioner, Psych/Mental Health",
+        "secondary_specialties": "['Registered Nurse']",
+        "provider_type": "Individual",
+        "metadata": {
+          "api_version": "2.1",
+          "data_source": "NPI_Registry_API",
+          "fetch_status": "success",
+          "fetched_at": "2025-07-16 12:34:25.062707+00:00"
+        }
+      },
+      {
+        "npi": "1659799641",
+        "provider_name": {
+          "first": "CHRISTINE",
+          "last": "LAGROTTA",
+          "middle": "ANNE",
+          "suffix": ""
+        },
+        "credentials": "['M.D.']",
+        "gender": "F",
+        "enumeration_date": "2014-04-07 00:00:00+00:00",
+        "last_updated": "2021-09-08 00:00:00+00:00",
+        "addresses": "[{'city': 'NEW YORK', 'country': 'United States', 'fax': '', 'phone': '914-391-0923', 'purpose': 'LOCATION', 'state': 'NY', 'street': '10 JONES ST APT 2G', 'type': 'DOM', 'zip': '100145650'}]",
+        "primary_specialty": "Psychiatry & Neurology, Addiction Psychiatry",
+        "secondary_specialties": "[]",
+        "provider_type": "Individual",
+        "metadata": {
+          "api_version": "2.1",
+          "data_source": "NPI_Registry_API",
+          "fetch_status": "success",
+          "fetched_at": "2025-07-16 12:34:25.062732+00:00"
+        }
+      },
+      {
+        "npi": "1225095581",
+        "provider_name": {
+          "first": "WILLIAM",
+          "last": "OH",
+          "middle": "K",
+          "suffix": ""
+        },
+        "credentials": "['M.D.']",
+        "gender": "M",
+        "enumeration_date": "2006-04-28 00:00:00+00:00",
+        "last_updated": "2024-12-11 00:00:00+00:00",
+        "addresses": "[{'city': 'GREENWICH', 'country': 'United States', 'fax': '', 'phone': '203-863-3700', 'purpose': 'LOCATION', 'state': 'CT', 'street': '77 LAFAYETTE PL', 'type': 'DOM', 'zip': '068305437'}]",
+        "primary_specialty": "Internal Medicine, Medical Oncology",
+        "secondary_specialties": "['Internal Medicine, Medical Oncology']",
+        "provider_type": "Individual",
+        "metadata": {
+          "api_version": "2.1",
+          "data_source": "NPI_Registry_API",
+          "fetch_status": "success",
+          "fetched_at": "2025-07-16 12:34:25.062757+00:00"
+        }
+      }
+    ]
+  },
+  "join_compatibility": {
+    "potential_joins": [
+      {
+        "join_type": "providers_to_nppes",
+        "join_key": "npi",
+        "providers_unique_npis": 367595,
+        "nppes_unique_npis": 1041,
+        "sample_intersection_count": 0,
+        "estimated_intersection_count": 0,
+        "estimated_match_rate": 0.0
+      },
+      {
+        "join_type": "rates_to_providers",
+        "join_key": "created_at",
+        "rates_unique_values": 1508377,
+        "providers_unique_values": 367595,
+        "note": "Potential join column found"
+      },
+      {
+        "join_type": "rates_to_providers",
+        "join_key": "updated_at",
+        "rates_unique_values": 1508377,
+        "providers_unique_values": 367595,
+        "note": "Potential join column found"
+      },
+      {
+        "join_type": "rates_to_providers",
+        "join_key": "organization_uuid",
+        "rates_unique_values": 50528,
+        "providers_unique_values": 45323,
+        "note": "Potential join column found"
+      }
+    ],
+    "join_challenges": [
+      {
+        "dataset": "providers",
+        "column": "enumeration_date",
+        "null_percentage": 100.0,
+        "issue": "High null percentage (sample-based)"
+      },
+      {
+        "dataset": "providers",
+        "column": "last_updated",
+        "null_percentage": 100.0,
+        "issue": "High null percentage (sample-based)"
+      }
+    ],
+    "recommendations": []
+  },
+  "join_strategy": {
+    "recommended_joins": [
+      {
+        "name": "providers_nppes_join",
+        "type": "left_join",
+        "left_table": "providers",
+        "right_table": "nppes",
+        "join_key": "npi",
+        "expected_matches": 1011,
+        "data_preparation": [
+          "No duplicates found"
+        ]
+      },
+      {
+        "name": "rates_providers_join",
+        "type": "inner_join",
+        "left_table": "rates",
+        "right_table": "providers",
+        "join_key": "organization_uuid",
+        "expected_matches": 45323,
+        "data_preparation": [
+          "Check for organization_uuid consistency"
+        ]
+      }
+    ],
+    "data_preparation_steps": [],
+    "potential_issues": [],
+    "estimated_results": {}
+  },
+  "summary": {
+    "total_datasets": 5,
+    "total_records": 1927639,
+    "total_memory_mb": 3162.4612674713135
+  }
+}

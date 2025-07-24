@@ -1,0 +1,2370 @@
+{
+  "metadata": {
+    "generated_at": "2025-07-23T22:04:49.921323+00:00",
+    "inspection_config": {
+      "ortho_data_dir": "production_data",
+      "nppes_data_dir": "nppes_data",
+      "output_dir": "data_inspection_production",
+      "sample_size": 5000000,
+      "max_unique_values": 50,
+      "use_samples": true,
+      "sample_fraction": 0.05
+    }
+  },
+  "ortho_radiology_data": {
+    "rates": {
+      "dataset_name": "rates",
+      "full_shape": [
+        4221,
+        18
+      ],
+      "sample_shape": null,
+      "basic_info": {
+        "full_memory_usage_mb": 7.74754524230957,
+        "dtypes": {
+          "rate_uuid": "object",
+          "payer_uuid": "object",
+          "organization_uuid": "object",
+          "service_code": "object",
+          "service_description": "object",
+          "billing_code_type": "object",
+          "negotiated_rate": "float64",
+          "billing_class": "object",
+          "rate_type": "object",
+          "service_codes": "object",
+          "plan_details": "object",
+          "contract_period": "object",
+          "provider_network": "object",
+          "geographic_scope": "object",
+          "data_lineage": "object",
+          "created_at": "datetime64[ns, UTC]",
+          "updated_at": "datetime64[ns, UTC]",
+          "quality_flags": "object"
+        },
+        "null_counts": {
+          "rate_uuid": 0,
+          "payer_uuid": 0,
+          "organization_uuid": 0,
+          "service_code": 0,
+          "service_description": 0,
+          "billing_code_type": 0,
+          "negotiated_rate": 0,
+          "billing_class": 0,
+          "rate_type": 0,
+          "service_codes": 0,
+          "plan_details": 0,
+          "contract_period": 0,
+          "provider_network": 0,
+          "geographic_scope": 0,
+          "data_lineage": 0,
+          "created_at": 0,
+          "updated_at": 0,
+          "quality_flags": 0
+        },
+        "null_percentages": {
+          "rate_uuid": 0.0,
+          "payer_uuid": 0.0,
+          "organization_uuid": 0.0,
+          "service_code": 0.0,
+          "service_description": 0.0,
+          "billing_code_type": 0.0,
+          "negotiated_rate": 0.0,
+          "billing_class": 0.0,
+          "rate_type": 0.0,
+          "service_codes": 0.0,
+          "plan_details": 0.0,
+          "contract_period": 0.0,
+          "provider_network": 0.0,
+          "geographic_scope": 0.0,
+          "data_lineage": 0.0,
+          "created_at": 0.0,
+          "updated_at": 0.0,
+          "quality_flags": 0.0
+        }
+      },
+      "columns": {
+        "rate_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 4221,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "bf2ecdf9-3228-5b47-8a2e-e62d7eb9c386": 1,
+            "07e8e88a-6024-51cc-b909-9a4b0f599391": 1,
+            "4cdf340e-ef04-5867-9c2a-fbfaea19708a": 1,
+            "cec13218-2c54-5e2a-9ad7-13a6fbb17035": 1,
+            "9a189db4-11bf-57aa-a452-1bd01ad15503": 1
+          },
+          "note": "Too many unique values (4221), showing top 5 only"
+        },
+        "payer_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.02369106846718787,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "db18448f-0a71-51f8-9a6d-351171089123": 4221
+          }
+        },
+        "organization_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1871,
+          "unique_percentage": 44.3259891021085,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "cd0fccfc-5673-56b5-9214-46d72eaba72c": 26,
+            "c1746936-3853-56d4-a387-30b62485dc56": 25,
+            "39ffa955-29cb-5a96-aecc-d6f0032fbc7b": 16,
+            "97dcc77e-9fc9-50f0-a11a-7bdcab073737": 14,
+            "2053e6cd-e752-5f29-a21a-b4164eee2f6f": 14
+          },
+          "note": "Too many unique values (1871), showing top 5 only"
+        },
+        "service_code": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 10,
+          "unique_percentage": 0.23691068467187867,
+          "type": "string",
+          "min_length": "5",
+          "max_length": "5",
+          "avg_length": 5.0,
+          "top_values": {
+            "99213": 1857,
+            "99214": 1806,
+            "99215": 360,
+            "10040": 77,
+            "10005": 58,
+            "0241U": 39,
+            "72148": 9,
+            "10006": 8,
+            "70450": 6,
+            "0240U": 1
+          }
+        },
+        "service_description": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 8,
+          "unique_percentage": 0.18952854773750297,
+          "type": "string",
+          "min_length": "42",
+          "max_length": "100",
+          "avg_length": 98.58611703387822,
+          "top_values": {
+            "OFFICE OR OTH OUTPATIENT VISIT FOR THE EVALUATION AND MANAGEMENT OF AN ESTABLISHED PATIENT, WHICH RE": 4023,
+            "ACNE SURGERY (EG, MARSUPIALIZATION, OPENING OR REMOVAL OF MULTIPLE MILIA, COMEDONES, CYSTS, PUSTULES": 77,
+            "FINE NEEDLE ASPIRATION BX W/US GDN 1ST LESION": 58,
+            "NFCT DS RNA 4 TARGETS UPPER RESPIRATORY SPECIMEN": 39,
+            "MAGNETIC RESONANCE (EG, PROTON) IMAGING, SPINAL CANAL AND CONTENTS, LUMBAR; WITHOUT CONTRAST MATERIA": 9,
+            "FINE NEEDLE ASPIRATION BX W/US GDN EA ADDL": 8,
+            "COMPUTED TOMOGRAPHY, HEAD OR BRAIN; WITHOUT CONTRAST MATERIAL": 6,
+            "NFCT DS RNA 3 TARGETS UPPER RESPIRATORY SPECIMEN": 1
+          }
+        },
+        "billing_code_type": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 2,
+          "unique_percentage": 0.04738213693437574,
+          "type": "string",
+          "min_length": "3",
+          "max_length": "5",
+          "avg_length": 3.01895285477375,
+          "top_values": {
+            "CPT": 4181,
+            "HCPCS": 40
+          }
+        },
+        "negotiated_rate": {
+          "dtype": "float64",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 373,
+          "unique_percentage": 8.836768538261076,
+          "type": "numeric",
+          "min": 22.85,
+          "max": 456.0,
+          "mean": 85.64588012319356,
+          "median": 74.55,
+          "std": 40.76526025796193,
+          "percentiles": {
+            "p10": 51.45,
+            "p25": 51.45,
+            "p75": 102.66,
+            "p90": 140.08
+          }
+        },
+        "billing_class": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.02369106846718787,
+          "type": "string",
+          "min_length": "12",
+          "max_length": "12",
+          "avg_length": 12.0,
+          "top_values": {
+            "professional": 4221
+          }
+        },
+        "rate_type": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.02369106846718787,
+          "type": "string",
+          "min_length": "10",
+          "max_length": "10",
+          "avg_length": 10.0,
+          "top_values": {
+            "negotiated": 4221
+          }
+        },
+        "service_codes": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "6",
+          "max_length": "11",
+          "avg_length": 6.408670931058991,
+          "top_values": "error"
+        },
+        "plan_details": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "88",
+          "max_length": "88",
+          "avg_length": 88.0,
+          "top_values": "error"
+        },
+        "contract_period": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "82",
+          "max_length": "82",
+          "avg_length": 82.0,
+          "top_values": "error"
+        },
+        "provider_network": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "89",
+          "max_length": "12161",
+          "avg_length": 265.9585406301824,
+          "top_values": "error"
+        },
+        "geographic_scope": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "110",
+          "max_length": "110",
+          "avg_length": 110.0,
+          "top_values": "error"
+        },
+        "data_lineage": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "344",
+          "max_length": "348",
+          "avg_length": 347.77280265339965,
+          "top_values": "error"
+        },
+        "created_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 4221,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 12:54:18.178123+00:00",
+          "max_date": "2025-05-29 12:54:21.739872+00:00",
+          "date_range_days": 0
+        },
+        "updated_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 4221,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 12:54:18.178124+00:00",
+          "max_date": "2025-05-29 12:54:21.739872+00:00",
+          "date_range_days": 0
+        },
+        "quality_flags": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "95",
+          "max_length": "95",
+          "avg_length": 95.0,
+          "top_values": "error"
+        }
+      },
+      "sample_data": [
+        {
+          "rate_uuid": "07e8e88a-6024-51cc-b909-9a4b0f599391",
+          "payer_uuid": "db18448f-0a71-51f8-9a6d-351171089123",
+          "organization_uuid": "b80c7d56-1b11-57a6-8d05-769f3e7727d5",
+          "service_code": "0240U",
+          "service_description": "NFCT DS RNA 3 TARGETS UPPER RESPIRATORY SPECIMEN",
+          "billing_code_type": "HCPCS",
+          "negotiated_rate": 121.23,
+          "billing_class": "professional",
+          "rate_type": "negotiated",
+          "service_codes": "['11']",
+          "plan_details": {
+            "market_type": "Commercial",
+            "plan_id": null,
+            "plan_name": "plan_0",
+            "plan_type": null
+          },
+          "contract_period": {
+            "effective_date": null,
+            "expiration_date": "9999-12-31",
+            "last_updated_on": null
+          },
+          "provider_network": {
+            "coverage_type": "Organization",
+            "npi_count": 104,
+            "npi_list": "['1598363459' '1124229893' '1336111780' '1619156874' '1700903531'\n '1134561194' '1629144084' '1548399173' '1477605897' '1639198633'\n '1982268165' '1326093097' '1053445346' '1891826152' '1467509075'\n '1235288465' '1447367537' '1487649182' '1922104744' '1376847400'\n '1609901263' '1114097243' '1427391275' '1073906749' '1184688350'\n '1780767343' '1407892920' '1629140553' '1548289309' '1598859803'\n '1306331269' '1255438222' '1821033168' '1740847516' '1194864728'\n '1255894457' '1316948763' '1487677126' '1518117142' '1265547780'\n '1437121753' '1952494098' '1558413211' '1790959302' '1477762409'\n '1881789097' '1194998203' '1508039520' '1245306554' '1689752370'\n '1013274083' '1871766808' '1184098329' '1689743932' '1427372952'\n '1174576524' '1245431477' '1841290285' '1376748186' '1720226079'\n '1306929278' '1992264733' '1295819423' '1609829712' '1427664572'\n '1588907539' '1922084920' '1427072677' '1235421967' '1548516834'\n '1740361492' '1851376107' '1760503387' '1184039463' '1285614107'\n '1265588180' '1558082149' '1861456204' '1376627661' '1972034635'\n '1457435679' '1457421596' '1396876165' '1720027980' '1851165062'\n '1194897389' '1982791158' '1083886147' '1457323776' '1841467677'\n '1205327624' '1093786832' '1649364910' '1952452997' '1154888766'\n '1013413004' '1942384169' '1073699344' '1255712808' '1285696849'\n '1912369935' '1619029626' '1588669519' '1093284309']"
+          },
+          "geographic_scope": {
+            "counties": "[]",
+            "states": "[]",
+            "zip_codes": "[]"
+          },
+          "data_lineage": {
+            "extraction_timestamp": "2025-05-29 12:54:18.178114+00:00",
+            "processing_version": "tic-etl-v1.0",
+            "source_file_hash": "b12780c076f7dbcbe5ce998b37e68cd7",
+            "source_file_url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_centene-management-company-llc_fidelis-ex_in-network.json"
+          },
+          "created_at": "2025-05-29 12:54:18.178123+00:00",
+          "updated_at": "2025-05-29 12:54:18.178124+00:00",
+          "quality_flags": {
+            "confidence_score": 1.0,
+            "has_conflicts": false,
+            "is_validated": true,
+            "validation_notes": ""
+          }
+        },
+        {
+          "rate_uuid": "4cdf340e-ef04-5867-9c2a-fbfaea19708a",
+          "payer_uuid": "db18448f-0a71-51f8-9a6d-351171089123",
+          "organization_uuid": "b80c7d56-1b11-57a6-8d05-769f3e7727d5",
+          "service_code": "0241U",
+          "service_description": "NFCT DS RNA 4 TARGETS UPPER RESPIRATORY SPECIMEN",
+          "billing_code_type": "HCPCS",
+          "negotiated_rate": 249.62,
+          "billing_class": "professional",
+          "rate_type": "negotiated",
+          "service_codes": "['11']",
+          "plan_details": {
+            "market_type": "Commercial",
+            "plan_id": null,
+            "plan_name": "plan_0",
+            "plan_type": null
+          },
+          "contract_period": {
+            "effective_date": null,
+            "expiration_date": "9999-12-31",
+            "last_updated_on": null
+          },
+          "provider_network": {
+            "coverage_type": "Organization",
+            "npi_count": 26,
+            "npi_list": "['1922059344' '1770510471' '1417983560' '1063077071' '1275995805'\n '1902249014' '1164432563' '1225187743' '1164867123' '1972532877'\n '1710180302' '1063078335' '1689201931' '1275537250' '1003436007'\n '1831251214' '1467015065' '1538251012' '1649260001' '1811254469'\n '1487762969' '1801389606' '1992094726' '1336526805' '1073507521'\n '1033132139']"
+          },
+          "geographic_scope": {
+            "counties": "[]",
+            "states": "[]",
+            "zip_codes": "[]"
+          },
+          "data_lineage": {
+            "extraction_timestamp": "2025-05-29 12:54:18.181596+00:00",
+            "processing_version": "tic-etl-v1.0",
+            "source_file_hash": "b12780c076f7dbcbe5ce998b37e68cd7",
+            "source_file_url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_centene-management-company-llc_fidelis-ex_in-network.json"
+          },
+          "created_at": "2025-05-29 12:54:18.181601+00:00",
+          "updated_at": "2025-05-29 12:54:18.181602+00:00",
+          "quality_flags": {
+            "confidence_score": 1.0,
+            "has_conflicts": false,
+            "is_validated": true,
+            "validation_notes": ""
+          }
+        },
+        {
+          "rate_uuid": "cec13218-2c54-5e2a-9ad7-13a6fbb17035",
+          "payer_uuid": "db18448f-0a71-51f8-9a6d-351171089123",
+          "organization_uuid": "f8392cb9-aecc-53cb-98bc-21227781116b",
+          "service_code": "0241U",
+          "service_description": "NFCT DS RNA 4 TARGETS UPPER RESPIRATORY SPECIMEN",
+          "billing_code_type": "HCPCS",
+          "negotiated_rate": 192.55,
+          "billing_class": "professional",
+          "rate_type": "negotiated",
+          "service_codes": "['11']",
+          "plan_details": {
+            "market_type": "Commercial",
+            "plan_id": null,
+            "plan_name": "plan_0",
+            "plan_type": null
+          },
+          "contract_period": {
+            "effective_date": null,
+            "expiration_date": "9999-12-31",
+            "last_updated_on": null
+          },
+          "provider_network": {
+            "coverage_type": "Organization",
+            "npi_count": 6,
+            "npi_list": "['1336582600' '1205397403' '1043271851' '1750885752' '1508944422'\n '1285052688']"
+          },
+          "geographic_scope": {
+            "counties": "[]",
+            "states": "[]",
+            "zip_codes": "[]"
+          },
+          "data_lineage": {
+            "extraction_timestamp": "2025-05-29 12:54:18.182424+00:00",
+            "processing_version": "tic-etl-v1.0",
+            "source_file_hash": "b12780c076f7dbcbe5ce998b37e68cd7",
+            "source_file_url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_centene-management-company-llc_fidelis-ex_in-network.json"
+          },
+          "created_at": "2025-05-29 12:54:18.182427+00:00",
+          "updated_at": "2025-05-29 12:54:18.182428+00:00",
+          "quality_flags": {
+            "confidence_score": 1.0,
+            "has_conflicts": false,
+            "is_validated": true,
+            "validation_notes": ""
+          }
+        },
+        {
+          "rate_uuid": "9a189db4-11bf-57aa-a452-1bd01ad15503",
+          "payer_uuid": "db18448f-0a71-51f8-9a6d-351171089123",
+          "organization_uuid": "8e758a37-9221-5dbb-937f-4b5faa9e7649",
+          "service_code": "0241U",
+          "service_description": "NFCT DS RNA 4 TARGETS UPPER RESPIRATORY SPECIMEN",
+          "billing_code_type": "HCPCS",
+          "negotiated_rate": 192.55,
+          "billing_class": "professional",
+          "rate_type": "negotiated",
+          "service_codes": "['11']",
+          "plan_details": {
+            "market_type": "Commercial",
+            "plan_id": null,
+            "plan_name": "plan_0",
+            "plan_type": null
+          },
+          "contract_period": {
+            "effective_date": null,
+            "expiration_date": "9999-12-31",
+            "last_updated_on": null
+          },
+          "provider_network": {
+            "coverage_type": "Organization",
+            "npi_count": 24,
+            "npi_list": "['1184773822' '1295984250' '1265515787' '1154423978' '1063482347'\n '1528122652' '1134281074' '1073696597' '1184677718' '1639170905'\n '1649328709' '1851495543' '1275678971' '1578721452' '1013008820'\n '1639245186' '1619403920' '1952487894' '1114328028' '1417074337'\n '1699726711' '1871554709' '1891738811' '1942328703']"
+          },
+          "geographic_scope": {
+            "counties": "[]",
+            "states": "[]",
+            "zip_codes": "[]"
+          },
+          "data_lineage": {
+            "extraction_timestamp": "2025-05-29 12:54:18.182718+00:00",
+            "processing_version": "tic-etl-v1.0",
+            "source_file_hash": "b12780c076f7dbcbe5ce998b37e68cd7",
+            "source_file_url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_centene-management-company-llc_fidelis-ex_in-network.json"
+          },
+          "created_at": "2025-05-29 12:54:18.182720+00:00",
+          "updated_at": "2025-05-29 12:54:18.182721+00:00",
+          "quality_flags": {
+            "confidence_score": 1.0,
+            "has_conflicts": false,
+            "is_validated": true,
+            "validation_notes": ""
+          }
+        },
+        {
+          "rate_uuid": "51ad4f3f-3358-537c-afb9-10a76b6b9042",
+          "payer_uuid": "db18448f-0a71-51f8-9a6d-351171089123",
+          "organization_uuid": "9f0ffe09-a268-59d1-b03f-9f933da4f390",
+          "service_code": "0241U",
+          "service_description": "NFCT DS RNA 4 TARGETS UPPER RESPIRATORY SPECIMEN",
+          "billing_code_type": "HCPCS",
+          "negotiated_rate": 192.55,
+          "billing_class": "professional",
+          "rate_type": "negotiated",
+          "service_codes": "['11']",
+          "plan_details": {
+            "market_type": "Commercial",
+            "plan_id": null,
+            "plan_name": "plan_0",
+            "plan_type": null
+          },
+          "contract_period": {
+            "effective_date": null,
+            "expiration_date": "9999-12-31",
+            "last_updated_on": null
+          },
+          "provider_network": {
+            "coverage_type": "Organization",
+            "npi_count": 7,
+            "npi_list": "['1396819074' '1932273695' '1629479563' '1629032321' '1265506950'\n '1265506919' '1265506935']"
+          },
+          "geographic_scope": {
+            "counties": "[]",
+            "states": "[]",
+            "zip_codes": "[]"
+          },
+          "data_lineage": {
+            "extraction_timestamp": "2025-05-29 12:54:18.183625+00:00",
+            "processing_version": "tic-etl-v1.0",
+            "source_file_hash": "b12780c076f7dbcbe5ce998b37e68cd7",
+            "source_file_url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_centene-management-company-llc_fidelis-ex_in-network.json"
+          },
+          "created_at": "2025-05-29 12:54:18.183628+00:00",
+          "updated_at": "2025-05-29 12:54:18.183629+00:00",
+          "quality_flags": {
+            "confidence_score": 1.0,
+            "has_conflicts": false,
+            "is_validated": true,
+            "validation_notes": ""
+          }
+        }
+      ]
+    },
+    "providers": {
+      "dataset_name": "providers",
+      "full_shape": [
+        19727,
+        16
+      ],
+      "sample_shape": [
+        986,
+        16
+      ],
+      "basic_info": {
+        "full_memory_usage_mb": 22.363245010375977,
+        "dtypes": {
+          "provider_uuid": "object",
+          "npi": "object",
+          "organization_uuid": "object",
+          "provider_name": "object",
+          "credentials": "object",
+          "primary_specialty": "object",
+          "secondary_specialties": "object",
+          "provider_type": "object",
+          "gender": "object",
+          "addresses": "object",
+          "is_active": "bool",
+          "enumeration_date": "datetime64[ns, UTC]",
+          "last_updated": "datetime64[ns, UTC]",
+          "created_at": "datetime64[ns, UTC]",
+          "updated_at": "datetime64[ns, UTC]",
+          "enrichment_metadata": "object"
+        },
+        "null_counts": {
+          "provider_uuid": 0,
+          "npi": 0,
+          "organization_uuid": 0,
+          "provider_name": 0,
+          "credentials": 0,
+          "primary_specialty": 331,
+          "secondary_specialties": 0,
+          "provider_type": 0,
+          "gender": 0,
+          "addresses": 0,
+          "is_active": 0,
+          "enumeration_date": 161,
+          "last_updated": 161,
+          "created_at": 0,
+          "updated_at": 0,
+          "enrichment_metadata": 161
+        },
+        "null_percentages": {
+          "provider_uuid": 0.0,
+          "npi": 0.0,
+          "organization_uuid": 0.0,
+          "provider_name": 0.0,
+          "credentials": 0.0,
+          "primary_specialty": 1.6779033811527349,
+          "secondary_specialties": 0.0,
+          "provider_type": 0.0,
+          "gender": 0.0,
+          "addresses": 0.0,
+          "is_active": 0.0,
+          "enumeration_date": 0.8161403153038982,
+          "last_updated": 0.8161403153038982,
+          "created_at": 0.0,
+          "updated_at": 0.0,
+          "enrichment_metadata": 0.8161403153038982
+        }
+      },
+      "columns": {
+        "provider_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 986,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "6ae0cf40-2949-5aae-9988-ce15bf07aff9": 1,
+            "630e386d-50ce-5e1d-ac4f-49064e0ca4f9": 1,
+            "297e460b-aa5b-5a29-8ee5-3749ceb9a06c": 1,
+            "4dd73be8-a323-5a2a-95f2-780a934145ee": 1,
+            "e5db1461-8431-5b68-877d-ec6626db03d1": 1
+          },
+          "note": "Too many unique values (986), showing top 5 only"
+        },
+        "npi": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 986,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "1",
+          "max_length": "10",
+          "avg_length": 9.990872210953347,
+          "top_values": {
+            "1215620463": 1,
+            "1669115754": 1,
+            "1568633204": 1,
+            "1104270917": 1,
+            "1417958810": 1
+          },
+          "note": "Too many unique values (986), showing top 5 only"
+        },
+        "organization_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 291,
+          "unique_percentage": 29.513184584178497,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "cd0fccfc-5673-56b5-9214-46d72eaba72c": 168,
+            "2053e6cd-e752-5f29-a21a-b4164eee2f6f": 111,
+            "4c88adc4-a5cb-51d3-b513-54fd77195e50": 40,
+            "97dcc77e-9fc9-50f0-a11a-7bdcab073737": 32,
+            "c1746936-3853-56d4-a387-30b62485dc56": 31
+          },
+          "note": "Too many unique values (291), showing top 5 only"
+        },
+        "provider_name": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "53",
+          "max_length": "84",
+          "avg_length": 67.76166328600405,
+          "top_values": "error"
+        },
+        "credentials": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "2",
+          "max_length": "24",
+          "avg_length": 7.224137931034483,
+          "top_values": "error"
+        },
+        "primary_specialty": {
+          "dtype": "object",
+          "null_count": "22",
+          "null_percentage": 2.231237322515213,
+          "unique_count": 116,
+          "unique_percentage": 11.76470588235294,
+          "type": "string",
+          "min_length": "0",
+          "max_length": "80",
+          "avg_length": 27.54045643153527,
+          "top_values": {
+            "Radiology, Diagnostic Radiology": 70,
+            "Psychiatry & Neurology, Psychiatry": 70,
+            "Physician Assistant": 61,
+            "Nurse Practitioner, Psych/Mental Health": 61,
+            "Nurse Practitioner, Family": 52
+          },
+          "note": "Too many unique values (116), showing top 5 only"
+        },
+        "secondary_specialties": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "2",
+          "max_length": "301",
+          "avg_length": 19.99898580121704,
+          "top_values": "error"
+        },
+        "provider_type": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 2,
+          "unique_percentage": 0.2028397565922921,
+          "type": "string",
+          "min_length": "10",
+          "max_length": "12",
+          "avg_length": 10.002028397565923,
+          "top_values": {
+            "Individual": 985,
+            "Organization": 1
+          }
+        },
+        "gender": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 3,
+          "unique_percentage": 0.3042596348884381,
+          "type": "string",
+          "min_length": "1",
+          "max_length": "7",
+          "avg_length": 1.054766734279919,
+          "top_values": {
+            "F": 567,
+            "M": 410,
+            "Unknown": 9
+          }
+        },
+        "addresses": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "2",
+          "max_length": "224",
+          "avg_length": 192.80730223123732,
+          "top_values": "error"
+        },
+        "is_active": {
+          "dtype": "bool",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.10141987829614604,
+          "type": "numeric",
+          "error": "numpy boolean subtract, the `-` operator, is not supported, use the bitwise_xor, the `^` operator, or the logical_xor function instead.",
+          "note": "Error processing numeric column"
+        },
+        "enumeration_date": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "8",
+          "null_percentage": 0.8113590263691683,
+          "unique_count": 813,
+          "unique_percentage": 82.45436105476674,
+          "type": "datetime",
+          "min_date": "2005-05-24 00:00:00+00:00",
+          "max_date": "2025-01-03 00:00:00+00:00",
+          "date_range_days": 7164
+        },
+        "last_updated": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "8",
+          "null_percentage": 0.8113590263691683,
+          "unique_count": 766,
+          "unique_percentage": 77.68762677484787,
+          "type": "datetime",
+          "min_date": "2007-07-08 00:00:00+00:00",
+          "max_date": "2025-07-14 00:00:00+00:00",
+          "date_range_days": 6581
+        },
+        "created_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 986,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 12:54:18.178462+00:00",
+          "max_date": "2025-05-29 12:54:21.739968+00:00",
+          "date_range_days": 0
+        },
+        "updated_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 986,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 12:54:18.178468+00:00",
+          "max_date": "2025-05-29 12:54:21.739968+00:00",
+          "date_range_days": 0
+        },
+        "enrichment_metadata": {
+          "dtype": "object",
+          "null_count": "8",
+          "null_percentage": 0.8113590263691683,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "167",
+          "max_length": "169",
+          "avg_length": 168.74539877300614,
+          "top_values": "error"
+        }
+      },
+      "sample_data": [
+        {
+          "provider_uuid": "630e386d-50ce-5e1d-ac4f-49064e0ca4f9",
+          "npi": "1669115754",
+          "organization_uuid": "cd0fccfc-5673-56b5-9214-46d72eaba72c",
+          "provider_name": {
+            "first": "DANNY",
+            "last": "PERLAZA",
+            "middle": "",
+            "suffix": ""
+          },
+          "credentials": "['NP']",
+          "primary_specialty": "Nurse Practitioner, Adult Health",
+          "secondary_specialties": "[]",
+          "provider_type": "Individual",
+          "gender": "M",
+          "addresses": "[{'city': 'MINEOLA', 'country': 'United States', 'fax': '', 'phone': '516-663-9500', 'purpose': 'LOCATION', 'state': 'NY', 'street': '120 MINEOLA BLVD STE 500', 'type': 'DOM', 'zip': '115014074'}]",
+          "is_active": true,
+          "enumeration_date": "2022-04-15 00:00:00+00:00",
+          "last_updated": "2023-04-25 00:00:00+00:00",
+          "created_at": "2025-05-29 12:54:21.591842+00:00",
+          "updated_at": "2025-05-29 12:54:21.591842+00:00",
+          "enrichment_metadata": {
+            "api_version": "2.1",
+            "data_source": "NPI_Registry_API",
+            "enriched_at": "2025-07-16 02:39:00.351376+00:00",
+            "enrichment_status": "success"
+          }
+        },
+        {
+          "provider_uuid": "297e460b-aa5b-5a29-8ee5-3749ceb9a06c",
+          "npi": "1568633204",
+          "organization_uuid": "5c770dc6-998c-5de7-a2ef-832682d324b5",
+          "provider_name": {
+            "first": "ANDREW",
+            "last": "SHERMAN",
+            "middle": "",
+            "suffix": ""
+          },
+          "credentials": "['MD']",
+          "primary_specialty": "Pediatrics",
+          "secondary_specialties": "['Student in an Organized Health Care Education/Training Program']",
+          "provider_type": "Individual",
+          "gender": "M",
+          "addresses": "[{'city': 'WEBSTER', 'country': 'United States', 'fax': '', 'phone': '585-787-1253', 'purpose': 'LOCATION', 'state': 'NY', 'street': '2000 EMPIRE BLVD STE 150', 'type': 'DOM', 'zip': '145801957'}]",
+          "is_active": true,
+          "enumeration_date": "2008-03-21 00:00:00+00:00",
+          "last_updated": "2014-06-24 00:00:00+00:00",
+          "created_at": "2025-05-29 12:54:21.444990+00:00",
+          "updated_at": "2025-05-29 12:54:21.444990+00:00",
+          "enrichment_metadata": {
+            "api_version": "2.1",
+            "data_source": "NPI_Registry_API",
+            "enriched_at": "2025-07-16 02:39:00.145011+00:00",
+            "enrichment_status": "success"
+          }
+        },
+        {
+          "provider_uuid": "4dd73be8-a323-5a2a-95f2-780a934145ee",
+          "npi": "1104270917",
+          "organization_uuid": "0383704e-0b26-52ab-8454-336a8d2f4e4f",
+          "provider_name": {
+            "first": "ELIZABETH",
+            "last": "BONARIGO",
+            "middle": "MARY",
+            "suffix": ""
+          },
+          "credentials": "['DPM']",
+          "primary_specialty": "Podiatrist",
+          "secondary_specialties": "['Student in an Organized Health Care Education/Training Program']",
+          "provider_type": "Individual",
+          "gender": "F",
+          "addresses": "[{'city': 'HACKENSACK,', 'country': 'United States', 'fax': '201-603-1812', 'phone': '201-919-1343', 'purpose': 'LOCATION', 'state': 'NJ', 'street': '211 ESSEX ST STE 405', 'type': 'DOM', 'zip': '076013247'}]",
+          "is_active": true,
+          "enumeration_date": "2016-04-18 00:00:00+00:00",
+          "last_updated": "2025-04-01 00:00:00+00:00",
+          "created_at": "2025-05-29 12:54:21.353255+00:00",
+          "updated_at": "2025-05-29 12:54:21.353255+00:00",
+          "enrichment_metadata": {
+            "api_version": "2.1",
+            "data_source": "NPI_Registry_API",
+            "enriched_at": "2025-07-16 02:38:59.724809+00:00",
+            "enrichment_status": "success"
+          }
+        },
+        {
+          "provider_uuid": "e5db1461-8431-5b68-877d-ec6626db03d1",
+          "npi": "1417958810",
+          "organization_uuid": "41a6a87f-1926-59b3-b0f8-0b11dbe56ef4",
+          "provider_name": {
+            "first": "WILLIAM",
+            "last": "PAPURA",
+            "middle": "A",
+            "suffix": ""
+          },
+          "credentials": "['DO']",
+          "primary_specialty": "Family Medicine",
+          "secondary_specialties": "['Neuromusculoskeletal Medicine & OMM']",
+          "provider_type": "Individual",
+          "gender": "M",
+          "addresses": "[{'city': 'GREENWICH', 'country': 'United States', 'fax': '518-692-7947', 'phone': '518-692-9861', 'purpose': 'LOCATION', 'state': 'NY', 'street': '1134 STATE ROUTE 29', 'type': 'DOM', 'zip': '128346107'}]",
+          "is_active": true,
+          "enumeration_date": "2005-08-09 00:00:00+00:00",
+          "last_updated": "2021-06-29 00:00:00+00:00",
+          "created_at": "2025-05-29 12:54:18.186615+00:00",
+          "updated_at": "2025-05-29 12:54:18.186615+00:00",
+          "enrichment_metadata": {
+            "api_version": "2.1",
+            "data_source": "NPI_Registry_API",
+            "enriched_at": "2025-07-16 02:38:58.430898+00:00",
+            "enrichment_status": "success"
+          }
+        },
+        {
+          "provider_uuid": "f21962ca-3205-5f4b-8092-dbccade8ab6c",
+          "npi": "1295969533",
+          "organization_uuid": "ce9e86ee-b5b5-5717-aebc-0beb84a38299",
+          "provider_name": {
+            "first": "VESSELIN",
+            "last": "MILOUSHEV",
+            "middle": "ZDRAVKOV",
+            "suffix": ""
+          },
+          "credentials": "['MD, PhD']",
+          "primary_specialty": null,
+          "secondary_specialties": "['Student in an Organized Health Care Education/Training Program']",
+          "provider_type": "Individual",
+          "gender": "M",
+          "addresses": "[{'city': 'NEW YORK', 'country': 'United States', 'fax': '', 'phone': '212-639-2000', 'purpose': 'LOCATION', 'state': 'NY', 'street': '1275 YORK AVE', 'type': 'DOM', 'zip': '100656007'}]",
+          "is_active": true,
+          "enumeration_date": "2009-05-13 00:00:00+00:00",
+          "last_updated": "2015-10-20 00:00:00+00:00",
+          "created_at": "2025-05-29 12:54:20.118057+00:00",
+          "updated_at": "2025-05-29 12:54:20.118057+00:00",
+          "enrichment_metadata": {
+            "api_version": "2.1",
+            "data_source": "NPI_Registry_API",
+            "enriched_at": "2025-07-16 02:38:59.536075+00:00",
+            "enrichment_status": "success"
+          }
+        }
+      ]
+    },
+    "organizations": {
+      "dataset_name": "organizations",
+      "full_shape": [
+        1871,
+        13
+      ],
+      "sample_shape": null,
+      "basic_info": {
+        "full_memory_usage_mb": 1.4290246963500977,
+        "dtypes": {
+          "organization_uuid": "object",
+          "tin": "object",
+          "organization_name": "object",
+          "organization_type": "object",
+          "parent_system": "object",
+          "npi_count": "int64",
+          "primary_specialty": "object",
+          "is_facility": "bool",
+          "headquarters_address": "object",
+          "service_areas": "object",
+          "created_at": "datetime64[ns, UTC]",
+          "updated_at": "datetime64[ns, UTC]",
+          "data_quality_score": "float64"
+        },
+        "null_counts": {
+          "organization_uuid": 0,
+          "tin": 0,
+          "organization_name": 0,
+          "organization_type": 0,
+          "parent_system": 0,
+          "npi_count": 0,
+          "primary_specialty": 0,
+          "is_facility": 0,
+          "headquarters_address": 0,
+          "service_areas": 0,
+          "created_at": 0,
+          "updated_at": 0,
+          "data_quality_score": 0
+        },
+        "null_percentages": {
+          "organization_uuid": 0.0,
+          "tin": 0.0,
+          "organization_name": 0.0,
+          "organization_type": 0.0,
+          "parent_system": 0.0,
+          "npi_count": 0.0,
+          "primary_specialty": 0.0,
+          "is_facility": 0.0,
+          "headquarters_address": 0.0,
+          "service_areas": 0.0,
+          "created_at": 0.0,
+          "updated_at": 0.0,
+          "data_quality_score": 0.0
+        }
+      },
+      "columns": {
+        "organization_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1871,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "386afaa9-522b-5a94-8487-268e4cf674b3": 1,
+            "b80c7d56-1b11-57a6-8d05-769f3e7727d5": 1,
+            "f8392cb9-aecc-53cb-98bc-21227781116b": 1,
+            "8e758a37-9221-5dbb-937f-4b5faa9e7649": 1,
+            "9f0ffe09-a268-59d1-b03f-9f933da4f390": 1
+          },
+          "note": "Too many unique values (1871), showing top 5 only"
+        },
+        "tin": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1871,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "8",
+          "max_length": "9",
+          "avg_length": 8.903260288615714,
+          "top_values": {
+            "820614180": 1,
+            "133544120": 1,
+            "471758444": 1,
+            "474539584": 1,
+            "923278147": 1
+          },
+          "note": "Too many unique values (1871), showing top 5 only"
+        },
+        "organization_name": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1871,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "21",
+          "max_length": "22",
+          "avg_length": 21.903260288615712,
+          "top_values": {
+            "Organization-820614180": 1,
+            "Organization-133544120": 1,
+            "Organization-471758444": 1,
+            "Organization-474539584": 1,
+            "Organization-923278147": 1
+          },
+          "note": "Too many unique values (1871), showing top 5 only"
+        },
+        "organization_type": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.053447354355959376,
+          "type": "string",
+          "min_length": "7",
+          "max_length": "7",
+          "avg_length": 7.0,
+          "top_values": {
+            "Unknown": 1871
+          }
+        },
+        "parent_system": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.053447354355959376,
+          "type": "string",
+          "min_length": "0",
+          "max_length": "0",
+          "avg_length": 0.0,
+          "top_values": {
+            "": 1871
+          }
+        },
+        "npi_count": {
+          "dtype": "int64",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 75,
+          "unique_percentage": 4.008551576696953,
+          "type": "numeric",
+          "min": 1.0,
+          "max": 317.0,
+          "mean": 5.523784072688402,
+          "median": 1.0,
+          "std": 20.419277507013575,
+          "percentiles": {
+            "p10": 1.0,
+            "p25": 1.0,
+            "p75": 3.0,
+            "p90": 10.0
+          }
+        },
+        "primary_specialty": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.053447354355959376,
+          "type": "string",
+          "min_length": "0",
+          "max_length": "0",
+          "avg_length": 0.0,
+          "top_values": {
+            "": 1871
+          }
+        },
+        "is_facility": {
+          "dtype": "bool",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.053447354355959376,
+          "type": "numeric",
+          "error": "numpy boolean subtract, the `-` operator, is not supported, use the bitwise_xor, the `^` operator, or the logical_xor function instead.",
+          "note": "Error processing numeric column"
+        },
+        "headquarters_address": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "76",
+          "max_length": "76",
+          "avg_length": 76.0,
+          "top_values": "error"
+        },
+        "service_areas": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "2",
+          "max_length": "2",
+          "avg_length": 2.0,
+          "top_values": "error"
+        },
+        "created_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1871,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 12:54:18.178205+00:00",
+          "max_date": "2025-05-29 12:54:21.735517+00:00",
+          "date_range_days": 0
+        },
+        "updated_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1871,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 12:54:18.178206+00:00",
+          "max_date": "2025-05-29 12:54:21.735517+00:00",
+          "date_range_days": 0
+        },
+        "data_quality_score": {
+          "dtype": "float64",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 0.053447354355959376,
+          "type": "numeric",
+          "min": 0.8,
+          "max": 0.8,
+          "mean": 0.8,
+          "median": 0.8,
+          "std": 0.0,
+          "percentiles": {
+            "p10": 0.8,
+            "p25": 0.8,
+            "p75": 0.8,
+            "p90": 0.8
+          }
+        }
+      },
+      "sample_data": [
+        {
+          "organization_uuid": "b80c7d56-1b11-57a6-8d05-769f3e7727d5",
+          "tin": "133544120",
+          "organization_name": "Organization-133544120",
+          "organization_type": "Unknown",
+          "parent_system": "",
+          "npi_count": 104,
+          "primary_specialty": "",
+          "is_facility": false,
+          "headquarters_address": {
+            "city": "",
+            "lat": null,
+            "lng": null,
+            "state": "",
+            "street": "",
+            "zip": ""
+          },
+          "service_areas": "[]",
+          "created_at": "2025-05-29 12:54:18.178205+00:00",
+          "updated_at": "2025-05-29 12:54:18.178206+00:00",
+          "data_quality_score": 0.8
+        },
+        {
+          "organization_uuid": "f8392cb9-aecc-53cb-98bc-21227781116b",
+          "tin": "471758444",
+          "organization_name": "Organization-471758444",
+          "organization_type": "Unknown",
+          "parent_system": "",
+          "npi_count": 6,
+          "primary_specialty": "",
+          "is_facility": false,
+          "headquarters_address": {
+            "city": "",
+            "lat": null,
+            "lng": null,
+            "state": "",
+            "street": "",
+            "zip": ""
+          },
+          "service_areas": "[]",
+          "created_at": "2025-05-29 12:54:18.182470+00:00",
+          "updated_at": "2025-05-29 12:54:18.182471+00:00",
+          "data_quality_score": 0.8
+        },
+        {
+          "organization_uuid": "8e758a37-9221-5dbb-937f-4b5faa9e7649",
+          "tin": "474539584",
+          "organization_name": "Organization-474539584",
+          "organization_type": "Unknown",
+          "parent_system": "",
+          "npi_count": 24,
+          "primary_specialty": "",
+          "is_facility": false,
+          "headquarters_address": {
+            "city": "",
+            "lat": null,
+            "lng": null,
+            "state": "",
+            "street": "",
+            "zip": ""
+          },
+          "service_areas": "[]",
+          "created_at": "2025-05-29 12:54:18.182755+00:00",
+          "updated_at": "2025-05-29 12:54:18.182756+00:00",
+          "data_quality_score": 0.8
+        },
+        {
+          "organization_uuid": "9f0ffe09-a268-59d1-b03f-9f933da4f390",
+          "tin": "923278147",
+          "organization_name": "Organization-923278147",
+          "organization_type": "Unknown",
+          "parent_system": "",
+          "npi_count": 7,
+          "primary_specialty": "",
+          "is_facility": false,
+          "headquarters_address": {
+            "city": "",
+            "lat": null,
+            "lng": null,
+            "state": "",
+            "street": "",
+            "zip": ""
+          },
+          "service_areas": "[]",
+          "created_at": "2025-05-29 12:54:18.183676+00:00",
+          "updated_at": "2025-05-29 12:54:18.183677+00:00",
+          "data_quality_score": 0.8
+        },
+        {
+          "organization_uuid": "95c4139b-c61f-5912-9e94-08f5e79c4851",
+          "tin": "465746956",
+          "organization_name": "Organization-465746956",
+          "organization_type": "Unknown",
+          "parent_system": "",
+          "npi_count": 10,
+          "primary_specialty": "",
+          "is_facility": false,
+          "headquarters_address": {
+            "city": "",
+            "lat": null,
+            "lng": null,
+            "state": "",
+            "street": "",
+            "zip": ""
+          },
+          "service_areas": "[]",
+          "created_at": "2025-05-29 12:54:18.184000+00:00",
+          "updated_at": "2025-05-29 12:54:18.184001+00:00",
+          "data_quality_score": 0.8
+        }
+      ]
+    },
+    "payers": {
+      "dataset_name": "payers",
+      "full_shape": [
+        1,
+        12
+      ],
+      "sample_shape": null,
+      "basic_info": {
+        "full_memory_usage_mb": 0.0007648468017578125,
+        "dtypes": {
+          "payer_uuid": "object",
+          "payer_name": "object",
+          "payer_type": "object",
+          "parent_organization": "object",
+          "state_licenses": "object",
+          "market_type": "object",
+          "is_active": "bool",
+          "created_at": "datetime64[ns, UTC]",
+          "updated_at": "datetime64[ns, UTC]",
+          "data_source": "object",
+          "index_url": "object",
+          "last_scraped": "datetime64[ns, UTC]"
+        },
+        "null_counts": {
+          "payer_uuid": 0,
+          "payer_name": 0,
+          "payer_type": 0,
+          "parent_organization": 0,
+          "state_licenses": 0,
+          "market_type": 0,
+          "is_active": 0,
+          "created_at": 0,
+          "updated_at": 0,
+          "data_source": 0,
+          "index_url": 0,
+          "last_scraped": 0
+        },
+        "null_percentages": {
+          "payer_uuid": 0.0,
+          "payer_name": 0.0,
+          "payer_type": 0.0,
+          "parent_organization": 0.0,
+          "state_licenses": 0.0,
+          "market_type": 0.0,
+          "is_active": 0.0,
+          "created_at": 0.0,
+          "updated_at": 0.0,
+          "data_source": 0.0,
+          "index_url": 0.0,
+          "last_scraped": 0.0
+        }
+      },
+      "columns": {
+        "payer_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "db18448f-0a71-51f8-9a6d-351171089123": 1
+          }
+        },
+        "payer_name": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "15",
+          "max_length": "15",
+          "avg_length": 15.0,
+          "top_values": {
+            "centene_fidelis": 1
+          }
+        },
+        "payer_type": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "10",
+          "max_length": "10",
+          "avg_length": 10.0,
+          "top_values": {
+            "Commercial": 1
+          }
+        },
+        "parent_organization": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "0",
+          "max_length": "0",
+          "avg_length": 0.0,
+          "top_values": {
+            "": 1
+          }
+        },
+        "state_licenses": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "2",
+          "max_length": "2",
+          "avg_length": 2.0,
+          "top_values": "error"
+        },
+        "market_type": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "7",
+          "max_length": "7",
+          "avg_length": 7.0,
+          "top_values": {
+            "Unknown": 1
+          }
+        },
+        "is_active": {
+          "dtype": "bool",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 100.0,
+          "type": "numeric",
+          "error": "numpy boolean subtract, the `-` operator, is not supported, use the bitwise_xor, the `^` operator, or the logical_xor function instead.",
+          "note": "Error processing numeric column"
+        },
+        "created_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-28 22:30:03.787957+00:00",
+          "max_date": "2025-05-28 22:30:03.787957+00:00",
+          "date_range_days": null
+        },
+        "updated_at": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-28 22:30:03.787958+00:00",
+          "max_date": "2025-05-28 22:30:03.787958+00:00",
+          "date_range_days": null
+        },
+        "data_source": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "7",
+          "max_length": "7",
+          "avg_length": 7.0,
+          "top_values": {
+            "TiC_MRF": 1
+          }
+        },
+        "index_url": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "107",
+          "max_length": "107",
+          "avg_length": 107.0,
+          "top_values": {
+            "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_fidelis_index.json": 1
+          }
+        },
+        "last_scraped": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 1,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-28 22:30:03.787959+00:00",
+          "max_date": "2025-05-28 22:30:03.787959+00:00",
+          "date_range_days": null
+        }
+      },
+      "sample_data": [
+        {
+          "payer_uuid": "db18448f-0a71-51f8-9a6d-351171089123",
+          "payer_name": "centene_fidelis",
+          "payer_type": "Commercial",
+          "parent_organization": "",
+          "state_licenses": "[]",
+          "market_type": "Unknown",
+          "is_active": true,
+          "created_at": "2025-05-28 22:30:03.787957+00:00",
+          "updated_at": "2025-05-28 22:30:03.787958+00:00",
+          "data_source": "TiC_MRF",
+          "index_url": "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_fidelis_index.json",
+          "last_scraped": "2025-05-28 22:30:03.787959+00:00"
+        }
+      ]
+    },
+    "analytics": {
+      "dataset_name": "analytics",
+      "full_shape": [
+        10,
+        8
+      ],
+      "sample_shape": null,
+      "basic_info": {
+        "full_memory_usage_mb": 0.009080886840820312,
+        "dtypes": {
+          "analytics_uuid": "object",
+          "service_code": "object",
+          "geographic_scope": "object",
+          "market_statistics": "object",
+          "payer_analysis": "object",
+          "trend_analysis": "object",
+          "computation_date": "datetime64[ns, UTC]",
+          "data_freshness": "datetime64[ns, UTC]"
+        },
+        "null_counts": {
+          "analytics_uuid": 0,
+          "service_code": 0,
+          "geographic_scope": 0,
+          "market_statistics": 0,
+          "payer_analysis": 0,
+          "trend_analysis": 0,
+          "computation_date": 0,
+          "data_freshness": 0
+        },
+        "null_percentages": {
+          "analytics_uuid": 0.0,
+          "service_code": 0.0,
+          "geographic_scope": 0.0,
+          "market_statistics": 0.0,
+          "payer_analysis": 0.0,
+          "trend_analysis": 0.0,
+          "computation_date": 0.0,
+          "data_freshness": 0.0
+        }
+      },
+      "columns": {
+        "analytics_uuid": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 10,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "36",
+          "max_length": "36",
+          "avg_length": 36.0,
+          "top_values": {
+            "f6cfa6ae-e858-590f-bcca-764ae0301acf": 1,
+            "e44b7f17-56cd-524c-a59d-a4b876b3031e": 1,
+            "5635cf52-0ef3-51a0-b338-569f1332e859": 1,
+            "1ba001e9-7996-50a5-bff2-6644747441ec": 1,
+            "64505e64-bea2-58bd-b6a2-fd379fdc8e3f": 1,
+            "cc5127db-f9b7-5032-ae0f-8e7f2497cfd5": 1,
+            "32804e5a-05d1-5789-9851-d7d7b7b8078d": 1,
+            "7f809c9d-2090-5420-8edb-be6a2125a8a3": 1,
+            "b18cef33-1ad9-5f9e-a249-5cb65dc33e3e": 1,
+            "ab82e083-3fba-5a62-bc48-b6dc46a87b28": 1
+          }
+        },
+        "service_code": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 10,
+          "unique_percentage": 100.0,
+          "type": "string",
+          "min_length": "5",
+          "max_length": "5",
+          "avg_length": 5.0,
+          "top_values": {
+            "0240U": 1,
+            "0241U": 1,
+            "10005": 1,
+            "10006": 1,
+            "10040": 1,
+            "70450": 1,
+            "72148": 1,
+            "99213": 1,
+            "99214": 1,
+            "99215": 1
+          }
+        },
+        "geographic_scope": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "66",
+          "max_length": "66",
+          "avg_length": 66.0,
+          "top_values": "error"
+        },
+        "market_statistics": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "216",
+          "max_length": "256",
+          "avg_length": 239.6,
+          "top_values": "error"
+        },
+        "payer_analysis": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'numpy.ndarray'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "2",
+          "max_length": "2",
+          "avg_length": 2.0,
+          "top_values": "error"
+        },
+        "trend_analysis": {
+          "dtype": "object",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": "error",
+          "unique_percentage": "error",
+          "unique_error": "unhashable type: 'dict'",
+          "note": "Cannot compute value counts due to unhashable types",
+          "type": "string",
+          "min_length": "73",
+          "max_length": "89",
+          "avg_length": 86.0,
+          "top_values": "error"
+        },
+        "computation_date": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 10,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 12:54:23.512018+00:00",
+          "max_date": "2025-05-29 12:54:23.526374+00:00",
+          "date_range_days": 0
+        },
+        "data_freshness": {
+          "dtype": "datetime64[ns, UTC]",
+          "null_count": "0",
+          "null_percentage": 0.0,
+          "unique_count": 10,
+          "unique_percentage": 100.0,
+          "type": "datetime",
+          "min_date": "2025-05-29 12:54:23.512020+00:00",
+          "max_date": "2025-05-29 12:54:23.526375+00:00",
+          "date_range_days": 0
+        }
+      },
+      "sample_data": [
+        {
+          "analytics_uuid": "f6cfa6ae-e858-590f-bcca-764ae0301acf",
+          "service_code": "0240U",
+          "geographic_scope": {
+            "identifier": "US",
+            "level": "National",
+            "name": "United States"
+          },
+          "market_statistics": {
+            "mean_rate": 121.23,
+            "median_rate": 121.23,
+            "payer_count": 1,
+            "percentiles": {
+              "p10": 121.23,
+              "p25": 121.23,
+              "p75": 121.23,
+              "p90": 121.23,
+              "p95": 121.23
+            },
+            "provider_count": 1,
+            "rate_observations": 1,
+            "std_dev": null
+          },
+          "payer_analysis": "[]",
+          "trend_analysis": {
+            "rate_change_12m": 0.0,
+            "rate_change_6m": 0.0,
+            "volatility_score": null
+          },
+          "computation_date": "2025-05-29 12:54:23.512018+00:00",
+          "data_freshness": "2025-05-29 12:54:23.512020+00:00"
+        },
+        {
+          "analytics_uuid": "e44b7f17-56cd-524c-a59d-a4b876b3031e",
+          "service_code": "0241U",
+          "geographic_scope": {
+            "identifier": "US",
+            "level": "National",
+            "name": "United States"
+          },
+          "market_statistics": {
+            "mean_rate": 154.37461538461537,
+            "median_rate": 135.5,
+            "payer_count": 1,
+            "percentiles": {
+              "p10": 121.238,
+              "p25": 128.37,
+              "p75": 192.55,
+              "p90": 196.54400000000007,
+              "p95": 249.602
+            },
+            "provider_count": 25,
+            "rate_observations": 39,
+            "std_dev": 47.53965136411774
+          },
+          "payer_analysis": "[]",
+          "trend_analysis": {
+            "rate_change_12m": 0.0,
+            "rate_change_6m": 0.0,
+            "volatility_score": 0.3079499258713971
+          },
+          "computation_date": "2025-05-29 12:54:23.513681+00:00",
+          "data_freshness": "2025-05-29 12:54:23.513682+00:00"
+        },
+        {
+          "analytics_uuid": "5635cf52-0ef3-51a0-b338-569f1332e859",
+          "service_code": "10005",
+          "geographic_scope": {
+            "identifier": "US",
+            "level": "National",
+            "name": "United States"
+          },
+          "market_statistics": {
+            "mean_rate": 136.1803448275862,
+            "median_rate": 136.15,
+            "payer_count": 1,
+            "percentiles": {
+              "p10": 83.16,
+              "p25": 136.15,
+              "p75": 155.66,
+              "p90": 163.18,
+              "p95": 163.813
+            },
+            "provider_count": 49,
+            "rate_observations": 58,
+            "std_dev": 28.39987663461699
+          },
+          "payer_analysis": "[]",
+          "trend_analysis": {
+            "rate_change_12m": 0.0,
+            "rate_change_6m": 0.0,
+            "volatility_score": 0.20854607667922426
+          },
+          "computation_date": "2025-05-29 12:54:23.515181+00:00",
+          "data_freshness": "2025-05-29 12:54:23.515182+00:00"
+        },
+        {
+          "analytics_uuid": "1ba001e9-7996-50a5-bff2-6644747441ec",
+          "service_code": "10006",
+          "geographic_scope": {
+            "identifier": "US",
+            "level": "National",
+            "name": "United States"
+          },
+          "market_statistics": {
+            "mean_rate": 69.07125,
+            "median_rate": 67.8,
+            "payer_count": 1,
+            "percentiles": {
+              "p10": 63.393,
+              "p25": 66.9525,
+              "p75": 74.58,
+              "p90": 74.58,
+              "p95": 74.58
+            },
+            "provider_count": 4,
+            "rate_observations": 8,
+            "std_dev": 5.105138692673155
+          },
+          "payer_analysis": "[]",
+          "trend_analysis": {
+            "rate_change_12m": 0.0,
+            "rate_change_6m": 0.0,
+            "volatility_score": 0.07391119594148295
+          },
+          "computation_date": "2025-05-29 12:54:23.516639+00:00",
+          "data_freshness": "2025-05-29 12:54:23.516640+00:00"
+        },
+        {
+          "analytics_uuid": "64505e64-bea2-58bd-b6a2-fd379fdc8e3f",
+          "service_code": "10040",
+          "geographic_scope": {
+            "identifier": "US",
+            "level": "National",
+            "name": "United States"
+          },
+          "market_statistics": {
+            "mean_rate": 139.7461038961039,
+            "median_rate": 140.08,
+            "payer_count": 1,
+            "percentiles": {
+              "p10": 140.08,
+              "p25": 140.08,
+              "p75": 140.08,
+              "p90": 140.08,
+              "p95": 140.08
+            },
+            "provider_count": 76,
+            "rate_observations": 77,
+            "std_dev": 4.492834984682823
+          },
+          "payer_analysis": "[]",
+          "trend_analysis": {
+            "rate_change_12m": 0.0,
+            "rate_change_6m": 0.0,
+            "volatility_score": 0.032149983859464736
+          },
+          "computation_date": "2025-05-29 12:54:23.518064+00:00",
+          "data_freshness": "2025-05-29 12:54:23.518065+00:00"
+        }
+      ]
+    }
+  },
+  "nppes_data": {
+    "dataset_name": "nppes",
+    "full_shape": [
+      10960,
+      11
+    ],
+    "sample_shape": [
+      548,
+      11
+    ],
+    "basic_info": {
+      "full_memory_usage_mb": 10.48557186126709,
+      "dtypes": {
+        "npi": "object",
+        "provider_name": "object",
+        "credentials": "object",
+        "gender": "object",
+        "enumeration_date": "datetime64[ns, UTC]",
+        "last_updated": "datetime64[ns, UTC]",
+        "addresses": "object",
+        "primary_specialty": "object",
+        "secondary_specialties": "object",
+        "provider_type": "object",
+        "metadata": "object"
+      },
+      "null_counts": {
+        "npi": 0,
+        "provider_name": 0,
+        "credentials": 0,
+        "gender": 0,
+        "enumeration_date": 0,
+        "last_updated": 0,
+        "addresses": 0,
+        "primary_specialty": 184,
+        "secondary_specialties": 0,
+        "provider_type": 0,
+        "metadata": 0
+      },
+      "null_percentages": {
+        "npi": 0.0,
+        "provider_name": 0.0,
+        "credentials": 0.0,
+        "gender": 0.0,
+        "enumeration_date": 0.0,
+        "last_updated": 0.0,
+        "addresses": 0.0,
+        "primary_specialty": 1.6788321167883213,
+        "secondary_specialties": 0.0,
+        "provider_type": 0.0,
+        "metadata": 0.0
+      }
+    },
+    "columns": {
+      "npi": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": 548,
+        "unique_percentage": 100.0,
+        "type": "string",
+        "min_length": "10",
+        "max_length": "10",
+        "avg_length": 10.0,
+        "top_values": {
+          "1124290044": 1,
+          "1396092854": 1,
+          "1710988969": 1,
+          "1629413075": 1,
+          "1932793791": 1
+        },
+        "note": "Too many unique values (548), showing top 5 only"
+      },
+      "provider_name": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": "error",
+        "unique_percentage": "error",
+        "unique_error": "unhashable type: 'dict'",
+        "note": "Cannot compute value counts due to unhashable types",
+        "type": "string",
+        "min_length": "59",
+        "max_length": "93",
+        "avg_length": 67.64598540145985,
+        "top_values": "error"
+      },
+      "credentials": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": "error",
+        "unique_percentage": "error",
+        "unique_error": "unhashable type: 'numpy.ndarray'",
+        "note": "Cannot compute value counts due to unhashable types",
+        "type": "string",
+        "min_length": "2",
+        "max_length": "23",
+        "avg_length": 6.859489051094891,
+        "top_values": "error"
+      },
+      "gender": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": 2,
+        "unique_percentage": 0.36496350364963503,
+        "type": "string",
+        "min_length": "1",
+        "max_length": "1",
+        "avg_length": 1.0,
+        "top_values": {
+          "F": 310,
+          "M": 238
+        }
+      },
+      "enumeration_date": {
+        "dtype": "datetime64[ns, UTC]",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": 491,
+        "unique_percentage": 89.59854014598541,
+        "type": "datetime",
+        "min_date": "2005-05-24 00:00:00+00:00",
+        "max_date": "2024-10-10 00:00:00+00:00",
+        "date_range_days": 7079
+      },
+      "last_updated": {
+        "dtype": "datetime64[ns, UTC]",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": 457,
+        "unique_percentage": 83.3941605839416,
+        "type": "datetime",
+        "min_date": "2007-07-08 00:00:00+00:00",
+        "max_date": "2025-07-17 00:00:00+00:00",
+        "date_range_days": 6584
+      },
+      "addresses": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": "error",
+        "unique_percentage": "error",
+        "unique_error": "unhashable type: 'numpy.ndarray'",
+        "note": "Cannot compute value counts due to unhashable types",
+        "type": "string",
+        "min_length": "178",
+        "max_length": "225",
+        "avg_length": 194.42518248175182,
+        "top_values": "error"
+      },
+      "primary_specialty": {
+        "dtype": "object",
+        "null_count": "10",
+        "null_percentage": 1.824817518248175,
+        "unique_count": 98,
+        "unique_percentage": 17.88321167883212,
+        "type": "string",
+        "min_length": "0",
+        "max_length": "80",
+        "avg_length": 28.29182156133829,
+        "top_values": {
+          "Radiology, Diagnostic Radiology": 41,
+          "Psychiatry & Neurology, Psychiatry": 41,
+          "Physician Assistant": 33,
+          "Nurse Practitioner, Family": 31,
+          "Nurse Practitioner, Psych/Mental Health": 30
+        },
+        "note": "Too many unique values (98), showing top 5 only"
+      },
+      "secondary_specialties": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": "error",
+        "unique_percentage": "error",
+        "unique_error": "unhashable type: 'numpy.ndarray'",
+        "note": "Cannot compute value counts due to unhashable types",
+        "type": "string",
+        "min_length": "2",
+        "max_length": "336",
+        "avg_length": 20.02007299270073,
+        "top_values": "error"
+      },
+      "provider_type": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": 1,
+        "unique_percentage": 0.18248175182481752,
+        "type": "string",
+        "min_length": "10",
+        "max_length": "10",
+        "avg_length": 10.0,
+        "top_values": {
+          "Individual": 548
+        }
+      },
+      "metadata": {
+        "dtype": "object",
+        "null_count": "0",
+        "null_percentage": 0.0,
+        "unique_count": "error",
+        "unique_percentage": "error",
+        "unique_error": "unhashable type: 'dict'",
+        "note": "Cannot compute value counts due to unhashable types",
+        "type": "string",
+        "min_length": "163",
+        "max_length": "164",
+        "avg_length": 163.92153284671534,
+        "top_values": "error"
+      }
+    },
+    "sample_data": [
+      {
+        "npi": "1396092854",
+        "provider_name": {
+          "first": "XIAN",
+          "last": "LI",
+          "middle": "",
+          "suffix": ""
+        },
+        "credentials": "['MD']",
+        "gender": "F",
+        "enumeration_date": "2012-08-14 00:00:00+00:00",
+        "last_updated": "2023-12-18 00:00:00+00:00",
+        "addresses": "[{'city': 'GLEN COVE', 'country': 'United States', 'fax': '516-674-7639', 'phone': '516-674-7631', 'purpose': 'LOCATION', 'state': 'NY', 'street': '101 ST. ANDREWS LANE', 'type': 'DOM', 'zip': '11542'}]",
+        "primary_specialty": "Hospitalist",
+        "secondary_specialties": "['Family Medicine']",
+        "provider_type": "Individual",
+        "metadata": {
+          "api_version": "2.1",
+          "data_source": "NPI_Registry_API",
+          "fetch_status": "success",
+          "fetched_at": "2025-07-23 21:56:11.147353+00:00"
+        }
+      },
+      {
+        "npi": "1710988969",
+        "provider_name": {
+          "first": "BRUCE",
+          "last": "RAPHAEL",
+          "middle": "",
+          "suffix": ""
+        },
+        "credentials": "['M.D.']",
+        "gender": "M",
+        "enumeration_date": "2005-08-09 00:00:00+00:00",
+        "last_updated": "2023-08-14 00:00:00+00:00",
+        "addresses": "[{'city': 'NEW YORK', 'country': 'United States', 'fax': '', 'phone': '212-731-5196', 'purpose': 'LOCATION', 'state': 'NY', 'street': '160 E 34TH ST', 'type': 'DOM', 'zip': '100164750'}]",
+        "primary_specialty": "Internal Medicine, Hematology & Oncology",
+        "secondary_specialties": "['Internal Medicine']",
+        "provider_type": "Individual",
+        "metadata": {
+          "api_version": "2.1",
+          "data_source": "NPI_Registry_API",
+          "fetch_status": "success",
+          "fetched_at": "2025-07-23 21:56:11.144290+00:00"
+        }
+      },
+      {
+        "npi": "1629413075",
+        "provider_name": {
+          "first": "THEODORE",
+          "last": "HAUSLER",
+          "middle": "SCOTT",
+          "suffix": ""
+        },
+        "credentials": "['D.O.']",
+        "gender": "M",
+        "enumeration_date": "2013-04-29 00:00:00+00:00",
+        "last_updated": "2013-04-29 00:00:00+00:00",
+        "addresses": "[{'city': 'ALBANY', 'country': 'United States', 'fax': '', 'phone': '518-262-3095', 'purpose': 'LOCATION', 'state': 'NY', 'street': '47 NEW SCOTLAND AVE', 'type': 'DOM', 'zip': '122083412'}]",
+        "primary_specialty": "Family Medicine",
+        "secondary_specialties": "[]",
+        "provider_type": "Individual",
+        "metadata": {
+          "api_version": "2.1",
+          "data_source": "NPI_Registry_API",
+          "fetch_status": "success",
+          "fetched_at": "2025-07-23 21:56:11.194673+00:00"
+        }
+      },
+      {
+        "npi": "1134161201",
+        "provider_name": {
+          "first": "RAPHAEL",
+          "last": "NOVOGRODSKY",
+          "middle": "",
+          "suffix": ""
+        },
+        "credentials": "['M.D.']",
+        "gender": "M",
+        "enumeration_date": "2006-06-12 00:00:00+00:00",
+        "last_updated": "2013-03-21 00:00:00+00:00",
+        "addresses": "[{'city': 'BRONX', 'country': 'United States', 'fax': '', 'phone': '718-743-7090', 'purpose': 'LOCATION', 'state': 'NY', 'street': '4238 BRONX BLVD', 'type': 'DOM', 'zip': '104662611'}]",
+        "primary_specialty": "Urology",
+        "secondary_specialties": "[]",
+        "provider_type": "Individual",
+        "metadata": {
+          "api_version": "2.1",
+          "data_source": "NPI_Registry_API",
+          "fetch_status": "success",
+          "fetched_at": "2025-07-23 21:56:11.164748+00:00"
+        }
+      },
+      {
+        "npi": "1013020270",
+        "provider_name": {
+          "first": "RICKIE",
+          "last": "DANIELS",
+          "middle": "",
+          "suffix": ""
+        },
+        "credentials": "['LCSW']",
+        "gender": "F",
+        "enumeration_date": "2006-08-15 00:00:00+00:00",
+        "last_updated": "2008-09-08 00:00:00+00:00",
+        "addresses": "[{'city': 'CARMEL', 'country': 'United States', 'fax': '845-279-5447', 'phone': '845-279-5908', 'purpose': 'LOCATION', 'state': 'NY', 'street': '667 STONELEIGH AVE', 'type': 'DOM', 'zip': '105122454'}]",
+        "primary_specialty": "Social Worker, Clinical",
+        "secondary_specialties": "[]",
+        "provider_type": "Individual",
+        "metadata": {
+          "api_version": "2.1",
+          "data_source": "NPI_Registry_API",
+          "fetch_status": "success",
+          "fetched_at": "2025-07-23 21:56:11.205564+00:00"
+        }
+      }
+    ]
+  },
+  "join_compatibility": {
+    "potential_joins": [
+      {
+        "join_type": "providers_to_nppes",
+        "join_key": "npi",
+        "providers_unique_npis": 19727,
+        "nppes_unique_npis": 10960,
+        "sample_intersection_count": 7,
+        "estimated_intersection_count": 700,
+        "estimated_match_rate": 3.5532994923857864
+      },
+      {
+        "join_type": "rates_to_providers",
+        "join_key": "created_at",
+        "rates_unique_values": 4221,
+        "providers_unique_values": 19727,
+        "note": "Potential join column found"
+      },
+      {
+        "join_type": "rates_to_providers",
+        "join_key": "updated_at",
+        "rates_unique_values": 4221,
+        "providers_unique_values": 19727,
+        "note": "Potential join column found"
+      },
+      {
+        "join_type": "rates_to_providers",
+        "join_key": "organization_uuid",
+        "rates_unique_values": 1871,
+        "providers_unique_values": 1736,
+        "note": "Potential join column found"
+      }
+    ],
+    "join_challenges": [],
+    "recommendations": []
+  },
+  "join_strategy": {
+    "recommended_joins": [
+      {
+        "name": "providers_nppes_join",
+        "type": "left_join",
+        "left_table": "providers",
+        "right_table": "nppes",
+        "join_key": "npi",
+        "expected_matches": 10960,
+        "data_preparation": [
+          "No duplicates found"
+        ]
+      },
+      {
+        "name": "rates_providers_join",
+        "type": "inner_join",
+        "left_table": "rates",
+        "right_table": "providers",
+        "join_key": "organization_uuid",
+        "expected_matches": 1736,
+        "data_preparation": [
+          "Check for organization_uuid consistency"
+        ]
+      }
+    ],
+    "data_preparation_steps": [],
+    "potential_issues": [],
+    "estimated_results": {}
+  },
+  "summary": {
+    "total_datasets": 6,
+    "total_records": 36790,
+    "total_memory_mb": 42.03523254394531
+  }
+}

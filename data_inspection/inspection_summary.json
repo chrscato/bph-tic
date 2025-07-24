@@ -1,0 +1,187 @@
+{
+  "datasets": {
+    "rates": {
+      "shape": [
+        1508377,
+        18
+      ],
+      "columns": [
+        "rate_uuid",
+        "payer_uuid",
+        "organization_uuid",
+        "service_code",
+        "service_description",
+        "billing_code_type",
+        "negotiated_rate",
+        "billing_class",
+        "rate_type",
+        "service_codes",
+        "plan_details",
+        "contract_period",
+        "provider_network",
+        "geographic_scope",
+        "data_lineage",
+        "created_at",
+        "updated_at",
+        "quality_flags"
+      ]
+    },
+    "providers": {
+      "shape": [
+        367595,
+        15
+      ],
+      "columns": [
+        "provider_uuid",
+        "npi",
+        "organization_uuid",
+        "provider_name",
+        "credentials",
+        "primary_specialty",
+        "secondary_specialties",
+        "provider_type",
+        "gender",
+        "addresses",
+        "is_active",
+        "enumeration_date",
+        "last_updated",
+        "created_at",
+        "updated_at"
+      ]
+    },
+    "organizations": {
+      "shape": [
+        50528,
+        13
+      ],
+      "columns": [
+        "organization_uuid",
+        "tin",
+        "organization_name",
+        "organization_type",
+        "parent_system",
+        "npi_count",
+        "primary_specialty",
+        "is_facility",
+        "headquarters_address",
+        "service_areas",
+        "created_at",
+        "updated_at",
+        "data_quality_score"
+      ]
+    },
+    "analytics": {
+      "shape": [
+        98,
+        8
+      ],
+      "columns": [
+        "analytics_uuid",
+        "service_code",
+        "geographic_scope",
+        "market_statistics",
+        "payer_analysis",
+        "trend_analysis",
+        "computation_date",
+        "data_freshness"
+      ]
+    },
+    "nppes": {
+      "shape": [
+        1041,
+        11
+      ],
+      "columns": [
+        "npi",
+        "provider_name",
+        "credentials",
+        "gender",
+        "enumeration_date",
+        "last_updated",
+        "addresses",
+        "primary_specialty",
+        "secondary_specialties",
+        "provider_type",
+        "metadata"
+      ]
+    }
+  },
+  "join_compatibility": {
+    "potential_joins": [
+      {
+        "join_type": "providers_to_nppes",
+        "join_key": "npi",
+        "providers_unique_npis": 367595,
+        "nppes_unique_npis": 1041,
+        "sample_intersection_count": 0,
+        "estimated_intersection_count": 0,
+        "estimated_match_rate": 0.0
+      },
+      {
+        "join_type": "rates_to_providers",
+        "join_key": "created_at",
+        "rates_unique_values": 1508377,
+        "providers_unique_values": 367595,
+        "note": "Potential join column found"
+      },
+      {
+        "join_type": "rates_to_providers",
+        "join_key": "updated_at",
+        "rates_unique_values": 1508377,
+        "providers_unique_values": 367595,
+        "note": "Potential join column found"
+      },
+      {
+        "join_type": "rates_to_providers",
+        "join_key": "organization_uuid",
+        "rates_unique_values": 50528,
+        "providers_unique_values": 45323,
+        "note": "Potential join column found"
+      }
+    ],
+    "join_challenges": [
+      {
+        "dataset": "providers",
+        "column": "enumeration_date",
+        "null_percentage": 100.0,
+        "issue": "High null percentage (sample-based)"
+      },
+      {
+        "dataset": "providers",
+        "column": "last_updated",
+        "null_percentage": 100.0,
+        "issue": "High null percentage (sample-based)"
+      }
+    ],
+    "recommendations": []
+  },
+  "join_strategy": {
+    "recommended_joins": [
+      {
+        "name": "providers_nppes_join",
+        "type": "left_join",
+        "left_table": "providers",
+        "right_table": "nppes",
+        "join_key": "npi",
+        "expected_matches": 1011,
+        "data_preparation": [
+          "No duplicates found"
+        ]
+      },
+      {
+        "name": "rates_providers_join",
+        "type": "inner_join",
+        "left_table": "rates",
+        "right_table": "providers",
+        "join_key": "organization_uuid",
+        "expected_matches": 45323,
+        "data_preparation": [
+          "Check for organization_uuid consistency"
+        ]
+      }
+    ],
+    "data_preparation_steps": [],
+    "potential_issues": [],
+    "estimated_results": {}
+  }
+}

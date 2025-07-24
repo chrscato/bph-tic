@@ -1,0 +1,581 @@
+{
+  "metadata": {
+    "generated_at": "2025-07-23T22:22:49.090252+00:00",
+    "data_sources": {
+      "ortho_radiology_data": "ortho_radiology_data",
+      "nppes_data": "nppes_data"
+    },
+    "processing_config": {
+      "ortho_data_dir": "ortho_radiology_data",
+      "nppes_data_dir": "nppes_data",
+      "output_dir": "dashboard_data",
+      "summary_file": "dashboard_summary.json",
+      "include_analytics": true,
+      "include_geographic_analysis": true,
+      "include_specialty_analysis": true,
+      "include_rate_analysis": true,
+      "min_rate_threshold": 0.01,
+      "max_rate_threshold": 100000.0,
+      "min_provider_count": 10
+    }
+  },
+  "summary": {
+    "total_providers": 367595,
+    "total_rates": 1508377,
+    "total_organizations": 50528,
+    "total_payers": 0,
+    "nppes_match_rate": 4.112406316734449
+  },
+  "analyses": {
+    "basic": {
+      "data_load_timestamp": "2025-07-23T22:22:45.024024+00:00",
+      "datasets": {
+        "rates": {
+          "record_count": 1508377,
+          "columns": [
+            "rate_uuid",
+            "payer_uuid",
+            "organization_uuid",
+            "service_code",
+            "service_description",
+            "billing_code_type",
+            "negotiated_rate",
+            "billing_class",
+            "rate_type",
+            "service_codes",
+            "plan_details",
+            "contract_period",
+            "provider_network",
+            "geographic_scope",
+            "data_lineage",
+            "created_at",
+            "updated_at",
+            "quality_flags"
+          ],
+          "memory_usage_mb": 2768.709443092346,
+          "null_counts": {
+            "rate_uuid": 0,
+            "payer_uuid": 0,
+            "organization_uuid": 0,
+            "service_code": 0,
+            "service_description": 0,
+            "billing_code_type": 0,
+            "negotiated_rate": 0,
+            "billing_class": 0,
+            "rate_type": 0,
+            "service_codes": 0,
+            "plan_details": 0,
+            "contract_period": 0,
+            "provider_network": 0,
+            "geographic_scope": 0,
+            "data_lineage": 0,
+            "created_at": 0,
+            "updated_at": 0,
+            "quality_flags": 0
+          }
+        },
+        "providers": {
+          "record_count": 367595,
+          "columns": [
+            "provider_uuid",
+            "npi",
+            "organization_uuid",
+            "provider_name",
+            "credentials",
+            "primary_specialty",
+            "secondary_specialties",
+            "provider_type",
+            "gender",
+            "addresses",
+            "is_active",
+            "enumeration_date",
+            "last_updated",
+            "created_at",
+            "updated_at"
+          ],
+          "memory_usage_mb": 354.07168674468994,
+          "null_counts": {
+            "provider_uuid": 0,
+            "npi": 0,
+            "organization_uuid": 0,
+            "provider_name": 0,
+            "credentials": 0,
+            "primary_specialty": 0,
+            "secondary_specialties": 0,
+            "provider_type": 0,
+            "gender": 0,
+            "addresses": 0,
+            "is_active": 0,
+            "enumeration_date": 367595,
+            "last_updated": 367595,
+            "created_at": 0,
+            "updated_at": 0
+          }
+        },
+        "organizations": {
+          "record_count": 50528,
+          "columns": [
+            "organization_uuid",
+            "tin",
+            "organization_name",
+            "organization_type",
+            "parent_system",
+            "npi_count",
+            "primary_specialty",
+            "is_facility",
+            "headquarters_address",
+            "service_areas",
+            "created_at",
+            "updated_at",
+            "data_quality_score"
+          ],
+          "memory_usage_mb": 38.59621238708496,
+          "null_counts": {
+            "organization_uuid": 0,
+            "tin": 0,
+            "organization_name": 0,
+            "organization_type": 0,
+            "parent_system": 0,
+            "npi_count": 0,
+            "primary_specialty": 0,
+            "is_facility": 0,
+            "headquarters_address": 0,
+            "service_areas": 0,
+            "created_at": 0,
+            "updated_at": 0,
+            "data_quality_score": 0
+          }
+        },
+        "analytics": {
+          "record_count": 98,
+          "columns": [
+            "analytics_uuid",
+            "service_code",
+            "geographic_scope",
+            "market_statistics",
+            "payer_analysis",
+            "trend_analysis",
+            "computation_date",
+            "data_freshness"
+          ],
+          "memory_usage_mb": 0.08788490295410156,
+          "null_counts": {
+            "analytics_uuid": 0,
+            "service_code": 0,
+            "geographic_scope": 0,
+            "market_statistics": 0,
+            "payer_analysis": 0,
+            "trend_analysis": 0,
+            "computation_date": 0,
+            "data_freshness": 0
+          }
+        }
+      },
+      "join_statistics": {
+        "total_providers": 367595,
+        "nppes_matched": "15117",
+        "match_rate_percent": 4.112406316734449,
+        "providers_with_specialties": "14891",
+        "providers_with_addresses": "0"
+      },
+      "data_quality": {
+        "rates": {
+          "total_rates": 1508377,
+          "zero_rates": "0",
+          "negative_rates": "0",
+          "outlier_rates": "0",
+          "rate_statistics": {
+            "mean": 132.67103846054405,
+            "median": 106.48,
+            "std": 180.17380083382133,
+            "min": 1.0,
+            "max": 16841.34,
+            "percentiles": {
+              "p10": 49.38,
+              "p25": 71.33,
+              "p75": 155.52,
+              "p90": 206.75,
+              "p95": 248.09
+            }
+          }
+        }
+      }
+    },
+    "specialty": {
+      "specialty_distribution": {
+        "Nurse Practitioner, Family": 1010,
+        "Physician Assistant": 978,
+        "Psychiatry & Neurology, Psychiatry": 882,
+        "Radiology, Diagnostic Radiology": 856,
+        "Family Medicine": 790,
+        "Internal Medicine": 707,
+        "Emergency Medicine": 580,
+        "Nurse Practitioner, Psych/Mental Health": 574,
+        "Social Worker, Clinical": 564,
+        "Anesthesiology": 413,
+        "Nurse Practitioner, Adult Health": 357,
+        "Internal Medicine, Cardiovascular Disease": 279,
+        "Nurse Practitioner": 270,
+        "Social Worker": 254,
+        "Nurse Practitioner, Acute Care": 240,
+        "Physical Therapist": 236,
+        "Counselor, Mental Health": 235,
+        "Pediatrics": 223,
+        "Hospitalist": 213,
+        "Physician Assistant, Medical": 208
+      },
+      "top_specialties": [
+        "Nurse Practitioner, Family",
+        "Physician Assistant",
+        "Psychiatry & Neurology, Psychiatry",
+        "Radiology, Diagnostic Radiology",
+        "Family Medicine",
+        "Internal Medicine",
+        "Emergency Medicine",
+        "Nurse Practitioner, Psych/Mental Health",
+        "Social Worker, Clinical",
+        "Anesthesiology"
+      ],
+      "specialty_rate_analysis": {},
+      "orthopedic_focus": {
+        "orthopedic_provider_count": 190,
+        "orthopedic_percentage": 0.05168731892435969,
+        "orthopedic_specialties": {
+          "Orthopaedic Surgery": 85,
+          "Orthopaedic Surgery, Sports Medicine": 17,
+          "Orthopaedic Surgery, Orthopaedic Surgery of the Spine": 15,
+          "Orthopaedic Surgery, Hand Surgery": 13,
+          "Physical Therapist, Orthopedic": 12,
+          "Orthopaedic Surgery, Adult Reconstructive Orthopaedic Surgery": 10,
+          "Family Medicine, Sports Medicine": 8,
+          "Neuromusculoskeletal Medicine & OMM": 7,
+          "Orthopaedic Surgery, Orthopaedic Trauma": 5,
+          "Physical Medicine & Rehabilitation, Sports Medicine": 4,
+          "Orthopaedic Surgery, Foot and Ankle Surgery": 4,
+          "Orthopaedic Surgery, Pediatric Orthopaedic Surgery": 4,
+          "Internal Medicine, Sports Medicine": 3,
+          "Neuromusculoskeletal Medicine, Sports Medicine": 1,
+          "Chiropractor, Sports Physician": 1,
+          "Podiatrist, Sports Medicine": 1
+        }
+      }
+    },
+    "geographic": {
+      "state_distribution": {},
+      "geographic_coverage": {},
+      "regional_analysis": {
+        "note": "Regional rate analysis requires additional geographic data processing"
+      }
+    },
+    "rates": {
+      "overall_rate_statistics": {
+        "total_rates": 1508377,
+        "mean_rate": 132.67103846054405,
+        "median_rate": 106.48,
+        "std_dev": 180.17380083382133,
+        "rate_range": {
+          "min": 1.0,
+          "max": 16841.34
+        },
+        "percentiles": {
+          "p10": 49.38,
+          "p25": 71.33,
+          "p75": 155.52,
+          "p90": 206.75,
+          "p95": 248.09
+        }
+      },
+      "service_code_analysis": {
+        "total_service_codes": 98,
+        "top_service_codes": {
+          "99214": {
+            "count": 235696,
+            "mean": 116.79,
+            "median": 116.85,
+            "std": 31.56,
+            "min": 30.0,
+            "max": 763.62
+          },
+          "99213": {
+            "count": 222204,
+            "mean": 81.76,
+            "median": 81.84,
+            "std": 22.59,
+            "min": 1.0,
+            "max": 544.7
+          },
+          "99204": {
+            "count": 150222,
+            "mean": 159.41,
+            "median": 156.78,
+            "std": 40.95,
+            "min": 45.0,
+            "max": 981.37
+          },
+          "99203": {
+            "count": 132483,
+            "mean": 105.46,
+            "median": 104.82,
+            "std": 26.92,
+            "min": 20.0,
+            "max": 679.0
+          },
+          "99215": {
+            "count": 131869,
+            "mean": 169.16,
+            "median": 165.11,
+            "std": 46.09,
+            "min": 50.0,
+            "max": 1066.17
+          },
+          "99212": {
+            "count": 127754,
+            "mean": 48.83,
+            "median": 49.42,
+            "std": 15.64,
+            "min": 12.52,
+            "max": 456.0
+          },
+          "99205": {
+            "count": 87585,
+            "mean": 214.86,
+            "median": 207.97,
+            "std": 60.0,
+            "min": 50.0,
+            "max": 1288.17
+          },
+          "99202": {
+            "count": 63289,
+            "mean": 68.74,
+            "median": 67.66,
+            "std": 18.86,
+            "min": 17.0,
+            "max": 456.0
+          },
+          "20610": {
+            "count": 56983,
+            "mean": 73.03,
+            "median": 66.26,
+            "std": 25.6,
+            "min": 15.72,
+            "max": 400.0
+          },
+          "99244": {
+            "count": 21805,
+            "mean": 160.62,
+            "median": 156.17,
+            "std": 41.67,
+            "min": 60.0,
+            "max": 973.7
+          },
+          "20611": {
+            "count": 18752,
+            "mean": 109.17,
+            "median": 97.44,
+            "std": 42.7,
+            "min": 25.86,
+            "max": 527.78
+          },
+          "97110": {
+            "count": 16826,
+            "mean": 26.84,
+            "median": 24.4,
+            "std": 9.97,
+            "min": 2.56,
+            "max": 155.01
+          },
+          "99243": {
+            "count": 15361,
+            "mean": 109.17,
+            "median": 106.48,
+            "std": 23.23,
+            "min": 57.0,
+            "max": 346.45
+          },
+          "97140": {
+            "count": 12703,
+            "mean": 23.91,
+            "median": 21.87,
+            "std": 9.8,
+            "min": 2.36,
+            "max": 266.59
+          },
+          "97530": {
+            "count": 10978,
+            "mean": 32.61,
+            "median": 30.0,
+            "std": 9.91,
+            "min": 3.53,
+            "max": 163.4
+          },
+          "73721": {
+            "count": 10205,
+            "mean": 168.13,
+            "median": 162.84,
+            "std": 76.67,
+            "min": 40.37,
+            "max": 1061.69
+          },
+          "97112": {
+            "count": 10142,
+            "mean": 30.07,
+            "median": 27.63,
+            "std": 8.06,
+            "min": 2.93,
+            "max": 98.0
+          },
+          "74177": {
+            "count": 9703,
+            "mean": 208.82,
+            "median": 194.56,
+            "std": 119.71,
+            "min": 48.11,
+            "max": 1721.0
+          },
+          "72148": {
+            "count": 8562,
+            "mean": 153.8,
+            "median": 150.24,
+            "std": 75.24,
+            "min": 47.9,
+            "max": 996.5
+          },
+          "74178": {
+            "count": 8313,
+            "mean": 261.04,
+            "median": 266.64,
+            "std": 124.29,
+            "min": 56.56,
+            "max": 1925.96
+          }
+        },
+        "high_cost_procedures": {
+          "29806": {
+            "count": 362,
+            "mean": 1661.53,
+            "median": 1344.01,
+            "std": 1071.85,
+            "min": 281.32,
+            "max": 5994.0
+          },
+          "27244": {
+            "count": 44,
+            "mean": 1584.64,
+            "median": 1784.56,
+            "std": 305.66,
+            "min": 727.34,
+            "max": 1784.56
+          },
+          "27134": {
+            "count": 37,
+            "mean": 1294.18,
+            "median": 645.23,
+            "std": 1152.42,
+            "min": 236.5,
+            "max": 3338.3
+          },
+          "29807": {
+            "count": 242,
+            "mean": 1083.43,
+            "median": 905.6,
+            "std": 540.27,
+            "min": 479.48,
+            "max": 6145.0
+          },
+          "27487": {
+            "count": 854,
+            "mean": 1034.76,
+            "median": 338.42,
+            "std": 951.02,
+            "min": 202.88,
+            "max": 3864.62
+          },
+          "27236": {
+            "count": 322,
+            "mean": 931.71,
+            "median": 1138.14,
+            "std": 549.64,
+            "min": 138.95,
+            "max": 2356.24
+          },
+          "27235": {
+            "count": 127,
+            "mean": 905.72,
+            "median": 931.14,
+            "std": 63.06,
+            "min": 841.41,
+            "max": 1312.61
+          },
+          "27137": {
+            "count": 169,
+            "mean": 902.04,
+            "median": 283.12,
+            "std": 719.69,
+            "min": 283.12,
+            "max": 2081.74
+          },
+          "22630": {
+            "count": 221,
+            "mean": 874.09,
+            "median": 378.98,
+            "std": 793.43,
+            "min": 187.56,
+            "max": 3097.12
+          },
+          "25609": {
+            "count": 1349,
+            "mean": 861.91,
+            "median": 911.97,
+            "std": 1036.14,
+            "min": 128.12,
+            "max": 8553.9
+          }
+        }
+      },
+      "payer_analysis": {
+        "total_payers": 3,
+        "payer_statistics": {
+          "2c6e3588-e634-527a-b886-0723b6c0c199": {
+            "count": 246,
+            "mean": 265.83,
+            "median": 247.47,
+            "std": 105.46
+          },
+          "c4c4e558-8665-5067-86a9-773f407f8b70": {
+            "count": 1501583,
+            "mean": 132.86,
+            "median": 106.64,
+            "std": 180.46
+          },
+          "db18448f-0a71-51f8-9a6d-351171089123": {
+            "count": 6548,
+            "mean": 83.81,
+            "median": 70.35,
+            "std": 79.14
+          }
+        }
+      },
+      "rate_distribution": {
+        "(-15.84, 1685.034]": 1505086,
+        "(1685.034, 3369.068]": 2967,
+        "(3369.068, 5053.102]": 137,
+        "(5053.102, 6737.136]": 84,
+        "(6737.136, 8421.17]": 55,
+        "(8421.17, 10105.204]": 24,
+        "(15157.306, 16841.34]": 24,
+        "(10105.204, 11789.238]": 0,
+        "(11789.238, 13473.272]": 0,
+        "(13473.272, 15157.306]": 0
+      },
+      "outlier_analysis": {
+        "outlier_count": "52689",
+        "outlier_percentage": 3.493092244180334,
+        "iqr_range": {
+          "q1": 71.33,
+          "q3": 155.52,
+          "iqr": 84.19000000000001
+        }
+      }
+    }
+  }
+}

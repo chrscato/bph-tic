@@ -82,3 +82,5 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg 
+*.csv
+dashboard_data/dashboard_data/

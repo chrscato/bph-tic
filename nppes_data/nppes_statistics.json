@@ -1,0 +1,12 @@
+{
+  "total_providers": 71551,
+  "individual_providers": 70507,
+  "organization_providers": 1044,
+  "providers_with_addresses": "0",
+  "providers_with_specialties": "70628",
+  "providers_with_credentials": "0",
+  "successfully_fetched": "71551",
+  "unique_states": 0,
+  "unique_primary_specialties": 421,
+  "last_updated": "2025-07-24T13:33:06.973425+00:00"
+}

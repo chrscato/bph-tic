@@ -1,0 +1,64 @@
+{
+  "file_path": "C:\\Users\\ChristopherCato\\Downloads\\2025-07-05_Aetna-Health-Inc----Florida_index.json.gz",
+  "analysis_time": "2025-07-24T14:07:32.027107",
+  "sample_size": 1000,
+  "structure": {
+    "source": "C:\\Users\\ChristopherCato\\Downloads\\2025-07-05_Aetna-Health-Inc----Florida_index.json.gz",
+    "is_url": false,
+    "file_size_mb": 0.0004425048828125,
+    "compression": "gzip",
+    "structure_type": "table_of_contents",
+    "top_level_keys": [
+      "reporting_entity_name",
+      "reporting_entity_type",
+      "reporting_structure"
+    ],
+    "statistics": {},
+    "samples": {}
+  },
+  "table_of_contents": {
+    "total_reporting_structures": 3,
+    "file_counts": {
+      "in_network": 3,
+      "allowed_amounts": 3
+    },
+    "plan_samples": [
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 1,
+        "keys": [
+          "reporting_plans",
+          "in_network_files",
+          "allowed_amount_file"
+        ]
+      },
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 1,
+        "keys": [
+          "reporting_plans",
+          "in_network_files",
+          "allowed_amount_file"
+        ]
+      },
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 1,
+        "keys": [
+          "reporting_plans",
+          "in_network_files",
+          "allowed_amount_file"
+        ]
+      }
+    ],
+    "url_patterns": [
+      "mrf.healthsparq.com/aetnacvs-egress.nophi.kyruushsq.com"
+    ]
+  }
+}

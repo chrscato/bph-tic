@@ -110,9 +110,9 @@ class ETLConfig:
     max_records_per_file: Optional[int] = None
     
     # Output configuration
-    local_output_dir: str = "production_data"
+    local_output_dir: str = "ortho_radiology_data_default"
     s3_bucket: Optional[str] = None
-    s3_prefix: str = "healthcare-rates-v2"
+    s3_prefix: str = "healthcare-rates-ortho-radiology"
     
     # Data versioning
     schema_version: str = "v2.1.0"
@@ -908,6 +908,19 @@ def create_production_config() -> ETLConfig:
     with open('production_config.yaml', 'r') as f:
         config = yaml.safe_load(f)
     
+    # Get active payers (non-commented ones)
+    active_payers = [payer for payer in config['payer_endpoints'].keys() 
+                    if not payer.startswith('#')]
+    
+    # Generate output directory name based on active payers
+    if active_payers:
+        # Use first active payer as directory name
+        payer_name = active_payers[0]
+        output_dir = f"ortho_radiology_data_{payer_name}"
+    else:
+        # Fallback if no active payers
+        output_dir = "ortho_radiology_data_default"
+    
     return ETLConfig(
         payer_endpoints=config['payer_endpoints'],
         cpt_whitelist=config['cpt_whitelist'],
@@ -915,7 +928,7 @@ def create_production_config() -> ETLConfig:
         parallel_workers=config['processing']['parallel_workers'],
         max_files_per_payer=config['processing'].get('max_files_per_payer'),
         max_records_per_file=config['processing'].get('max_records_per_file'),
-        local_output_dir=config['output']['local_directory'],
+        local_output_dir=output_dir,
         s3_bucket=os.getenv("S3_BUCKET"),
         s3_prefix=config['output']['s3']['prefix'],
         schema_version=config['versioning']['schema_version'],

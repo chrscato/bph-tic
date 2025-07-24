@@ -1,0 +1,5 @@
+service_category,record_count,avg_rate,median_rate,min_rate,max_rate,unique_organizations,unique_service_codes
+Evaluation & Management,1191316,118.13,108.32,1.0,1288.17,47730,11
+Medicine,69822,96.79,28.88,2.36,5181.28,16595,10
+Radiology,110032,164.21,145.79,16.31,3391.0,9898,35
+Surgery,137207,251.93,94.37,15.72,16841.34,17823,42

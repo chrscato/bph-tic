@@ -1,0 +1,35 @@
+# Provider Backfill Configuration
+
+# API Configuration
+api:
+  base_url: "https://npiregistry.cms.hhs.gov/api/"
+  version: "2.1"
+  request_delay: 0.1  # Seconds between requests
+  max_retries: 3
+  retry_delay: 1.0
+
+# Processing Configuration
+processing:
+  batch_size: 100
+  max_workers: 5
+  min_success_rate: 0.95
+
+# Storage Configuration
+storage:
+  s3_bucket: null  # Set to your S3 bucket name if using S3
+  s3_prefix: "healthcare-rates-v2"
+  local_data_dir: "production_data"
+  output_dir: "enriched_provider_data"
+  backup_existing: true
+
+# Quality Control
+quality:
+  log_failed_npis: true
+  validate_addresses: true
+  validate_specialties: true
+
+# Logging
+logging:
+  level: "INFO"
+  log_to_file: true
+  log_file: "backfill_provider.log" 

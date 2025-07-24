@@ -2,11 +2,37 @@
 
 import json
 import requests
+import gzip
+import os
+from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 from tenacity import retry, stop_after_attempt, wait_exponential
 from ..utils.backoff_logger import get_logger
 
 logger = get_logger(__name__)
+
+def is_local_file(path: str) -> bool:
+    """Check if the path is a local file."""
+    return os.path.exists(path) or path.startswith(('file://', 'C:', 'D:', '/', '\\'))
+
+def load_local_file(file_path: str) -> Dict[str, Any]:
+    """Load JSON from a local file, handling gzip compression."""
+    logger.info("loading_local_file", path=file_path)
+    
+    # Remove file:// prefix if present
+    if file_path.startswith('file://'):
+        file_path = file_path[7:]
+    
+    # Handle gzip compression
+    if file_path.endswith('.gz'):
+        with gzip.open(file_path, 'rt', encoding='utf-8') as f:
+            data = json.load(f)
+    else:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    
+    logger.info("local_file_loaded", path=file_path, keys=list(data.keys()) if isinstance(data, dict) else "array")
+    return data
 
 @retry(
     stop=stop_after_attempt(3),
@@ -17,16 +43,22 @@ def list_mrf_blobs_enhanced(index_url: str) -> List[Dict[str, Any]]:
     """Fetch comprehensive list of MRF blob URLs with metadata from index file.
     
     Args:
-        index_url: URL to the index file
+        index_url: URL or local file path to the index file
         
     Returns:
         List of MRF blob information with metadata
     """
     logger.info("fetching_enhanced_index", url=index_url)
-    resp = requests.get(index_url)
-    resp.raise_for_status()
     
-    data = resp.json()
+    # Handle local files
+    if is_local_file(index_url):
+        data = load_local_file(index_url)
+    else:
+        # Handle HTTP URLs
+        resp = requests.get(index_url)
+        resp.raise_for_status()
+        data = resp.json()
+    
     logger.info("index_response_keys", keys=list(data.keys()) if isinstance(data, dict) else "array")
     
     if not isinstance(data, dict):
@@ -105,23 +137,6 @@ def list_mrf_blobs_enhanced(index_url: str) -> List[Dict[str, Any]]:
                 }
                 mrfs.append(mrf_info)
     
-    # Handle direct file links (some payers use this)
-    elif "in_network_files" in data:
-        logger.info("processing_direct_in_network_files")
-        for i, file_info in enumerate(data["in_network_files"]):
-            if "location" in file_info:
-                mrf_info = {
-                    "url": file_info["location"],
-                    "type": "in_network_rates",
-                    "plan_name": file_info.get("description", f"file_{i}"),
-                    "plan_id": None,
-                    "plan_market_type": None,
-                    "description": file_info.get("description", ""),
-                    "reporting_structure_index": 0,
-                    "file_index": i
-                }
-                mrfs.append(mrf_info)
-    
     else:
         available_keys = list(data.keys())
         logger.error("unknown_index_structure", keys=available_keys)
@@ -141,24 +156,42 @@ def list_mrf_blobs(index_url: str) -> List[str]:
     reraise=True
 )
 def fetch_url(url: str) -> bytes:
-    """Fetch data from URL with retry logic.
+    """Fetch data from URL or local file with retry logic.
     
     Args:
-        url: URL to fetch
+        url: URL or local file path to fetch
         
     Returns:
         Response content as bytes
     """
     logger.info("fetching_url", url=url)
-    resp = requests.get(url, stream=True)  # Stream for large files
-    resp.raise_for_status()
-    return resp.content
+    
+    # Handle local files
+    if is_local_file(url):
+        # Remove file:// prefix if present
+        if url.startswith('file://'):
+            file_path = url[7:]
+        else:
+            file_path = url
+        
+        # Handle gzip compression
+        if file_path.endswith('.gz'):
+            with gzip.open(file_path, 'rb') as f:
+                return f.read()
+        else:
+            with open(file_path, 'rb') as f:
+                return f.read()
+    else:
+        # Handle HTTP URLs
+        resp = requests.get(url, stream=True)  # Stream for large files
+        resp.raise_for_status()
+        return resp.content
 
 def analyze_index_structure(index_url: str) -> Dict[str, Any]:
     """Analyze the structure of an index file for debugging.
     
     Args:
-        index_url: URL to the index file
+        index_url: URL or local file path to the index file
         
     Returns:
         Analysis of the index structure
@@ -166,9 +199,14 @@ def analyze_index_structure(index_url: str) -> Dict[str, Any]:
     logger.info("analyzing_index_structure", url=index_url)
     
     try:
-        resp = requests.get(index_url)
-        resp.raise_for_status()
-        data = resp.json()
+        # Handle local files
+        if is_local_file(index_url):
+            data = load_local_file(index_url)
+        else:
+            # Handle HTTP URLs
+            resp = requests.get(index_url)
+            resp.raise_for_status()
+            data = resp.json()
         
         analysis = {
             "url": index_url,

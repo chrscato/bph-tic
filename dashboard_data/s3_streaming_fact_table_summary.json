@@ -1,0 +1,9 @@
+{
+  "total_records": 17067,
+  "generated_at": "2025-07-24T13:10:57.230254+00:00",
+  "s3_bucket": "commercial-rates",
+  "s3_prefix": "tic-mrf/test",
+  "test_mode": true,
+  "nppes_inner_join": true,
+  "streaming_mode": true
+}

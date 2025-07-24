@@ -2,9 +2,11 @@
 
 # Payer endpoints - add more as you scale
 payer_endpoints:
-  bcbsil: "https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-05-20_Blue-Cross-and-Blue-Shield-of-Illinois_index.json"
+  #bcbsil: "https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-05-20_Blue-Cross-and-Blue-Shield-of-Illinois_index.json"
+  #anthem: "https://antm-pt-prod-dataz-nogbd-nophi-us-east1.s3.amazonaws.com/anthem/2025-07-01_anthem_index.json.gz"
+  #horizon_bcbs: "https://horizonblue.sapphiremrfhub.com/tocs/202507/2025-07-01_horizon-healthcare-services_index.json"
   #bcbswv: "https://mrfdata.hmhs.com/files/363/pa/inbound/local/2025-05-01_Blue_Cross_and_Blue_Shield_of_Nebraska_index.json"
-  #centene_fidelis: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_fidelis_index.json"
+  centene_fidelis: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_fidelis_index.json"
   #centene_ambetter: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-30_ambetter_index.json"
   #centene_healthnet: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_healthnet_index.json"
   #centene_wellcarenc: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-30_wellcarenc_index.json"
@@ -181,7 +183,7 @@ processing:
 
 # Output configuration
 output:
-  local_directory: "ortho_radiology_data_bcbsaz"
+  local_directory: "ortho_radiology_data_horizon_bcbs"
   
   # S3 configuration (set via environment variables)
   s3:

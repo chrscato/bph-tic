@@ -1,0 +1,12 @@
+{
+  "payer_name": "horizon bcbs",
+  "test_timestamp": "2025-07-24T09:44:35.421226",
+  "files_tested": 1,
+  "total_records": 4,
+  "successful_records": 0,
+  "errors": [],
+  "warnings": [],
+  "sample_output": [],
+  "processing_rate": 6.962653152949389,
+  "success_rate": 0.0
+}
