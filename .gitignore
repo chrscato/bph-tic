@@ -84,3 +84,5 @@ wheels/
 *.egg 
 *.csv
 dashboard_data/dashboard_data/
+dashboard_data/
+*.csv
