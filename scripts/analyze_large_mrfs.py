@@ -13,6 +13,48 @@ import argparse
 import sys
 import os
 
+def detect_gzip_compression(file_path: str, is_url: bool = False) -> bool:
+    """Detect if a file is gzip compressed by checking magic number."""
+    if file_path.endswith('.gz'):
+        return True
+    
+    try:
+        if is_url:
+            resp = requests.get(file_path, stream=True)
+            chunk = resp.raw.read(10)
+            resp.raw.seek(0)
+            return len(chunk) >= 2 and chunk[0] == 0x1f and chunk[1] == 0x8b
+        else:
+            with open(file_path, 'rb') as f:
+                chunk = f.read(10)
+                return len(chunk) >= 2 and chunk[0] == 0x1f and chunk[1] == 0x8b
+    except:
+        return False
+
+def get_file_object(file_path: str, is_url: bool = False):
+    """Get a file object with proper compression handling."""
+    if is_url:
+        # For URLs, we need to download the content to check compression
+        resp = requests.get(file_path, stream=True)
+        # Read the entire content into memory (for small files this is OK)
+        content = resp.content
+        
+        # Check for gzip compression
+        if len(content) >= 2 and content[0] == 0x1f and content[1] == 0x8b:
+            from io import BytesIO
+            return gzip.GzipFile(fileobj=BytesIO(content))
+        else:
+            from io import BytesIO
+            return BytesIO(content)
+    else:
+        # Check for gzip compression
+        with open(file_path, 'rb') as f:
+            chunk = f.read(10)
+            if len(chunk) >= 2 and chunk[0] == 0x1f and chunk[1] == 0x8b:
+                return gzip.open(file_path, 'rb')
+            else:
+                return open(file_path, 'rb')
+
 def stream_json_array(file_obj, array_path: str, max_items: Optional[int] = None) -> Iterator[Dict]:
     """Stream items from a JSON array without loading entire file."""
     parser = ijson.items(file_obj, f'{array_path}.item')
@@ -39,11 +81,7 @@ def analyze_file_structure(file_path: str, is_url: bool = False) -> Dict[str, An
     }
     
     try:
-        # Determine if file is compressed
-        if file_path.endswith('.gz'):
-            analysis["compression"] = "gzip"
-        
-        # Get file size
+        # Get file size and detect compression
         if is_url:
             try:
                 resp = requests.head(file_path, timeout=10)
@@ -54,21 +92,25 @@ def analyze_file_structure(file_path: str, is_url: bool = False) -> Dict[str, An
         else:
             analysis["file_size_mb"] = Path(file_path).stat().st_size / 1024 / 1024
         
+        # Detect compression and get file object
+        file_obj = get_file_object(file_path, is_url)
+        
+        # Determine compression type for reporting
+        if file_path.endswith('.gz'):
+            analysis["compression"] = "gzip"
+        elif hasattr(file_obj, 'read'):
+            # Check if it's a gzip file by trying to read a small chunk
+            try:
+                pos = file_obj.tell()
+                chunk = file_obj.read(10)
+                file_obj.seek(pos)
+                if len(chunk) >= 2 and chunk[0] == 0x1f and chunk[1] == 0x8b:
+                    analysis["compression"] = "gzip"
+            except:
+                pass
+        
         print(f"   File size: {analysis['file_size_mb']:.2f} MB")
         print(f"   Compression: {analysis['compression']}")
-        
-        # Open file with appropriate method
-        if is_url:
-            resp = requests.get(file_path, stream=True)
-            if analysis["compression"] == "gzip":
-                file_obj = gzip.GzipFile(fileobj=resp.raw)
-            else:
-                file_obj = resp.raw
-        else:
-            if analysis["compression"] == "gzip":
-                file_obj = gzip.open(file_path, 'rb')
-            else:
-                file_obj = open(file_path, 'rb')
         
         # Peek at structure to determine type
         parser = ijson.parse(file_obj)
@@ -126,12 +168,8 @@ def analyze_table_of_contents(file_path: str, is_url: bool = False, sample_size:
     }
     
     try:
-        # Open file
-        if is_url:
-            resp = requests.get(file_path, stream=True)
-            file_obj = gzip.GzipFile(fileobj=resp.raw) if file_path.endswith('.gz') else resp.raw
-        else:
-            file_obj = gzip.open(file_path, 'rb') if file_path.endswith('.gz') else open(file_path, 'rb')
+        # Open file with proper compression detection
+        file_obj = get_file_object(file_path, is_url)
         
         # Stream reporting structures
         print("   Streaming reporting structures...")
@@ -202,12 +240,8 @@ def analyze_in_network_rates(file_path: str, is_url: bool = False, sample_size: 
     }
     
     try:
-        # Open file
-        if is_url:
-            resp = requests.get(file_path, stream=True)
-            file_obj = gzip.GzipFile(fileobj=resp.raw) if file_path.endswith('.gz') else resp.raw
-        else:
-            file_obj = gzip.open(file_path, 'rb') if file_path.endswith('.gz') else open(file_path, 'rb')
+        # Open file with proper compression detection
+        file_obj = get_file_object(file_path, is_url)
         
         # Stream in_network items
         print(f"   Streaming in_network items (sampling {sample_size})...")

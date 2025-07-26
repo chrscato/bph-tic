@@ -42,3 +42,13 @@ def get_handler(name: str) -> PayerHandler:
     """Return handler instance for payer name."""
     cls = _handler_registry.get(name.lower(), PayerHandler)
     return cls()
+
+
+# Import all handler modules to register them
+try:
+    from . import centene
+    from . import bcbsil
+    from . import horizon
+    from . import aetna
+except ImportError as e:
+    warnings.warn(f"Could not import some handler modules: {e}")

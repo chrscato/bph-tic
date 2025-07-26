@@ -1,0 +1,30 @@
+[33m1517c26[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m Clean commit without large file
+[33m1d6369f[m big updates
+[33m7b65119[m Merge pull request #11 from chrscato/codex/create-identify_format.py-script
+[33ma32d375[m Merge pull request #10 from chrscato/codex/update-inspect_json_structure.py-and-document-usage
+[33m25e5bdf[m[33m ([m[1;32mcodex/create-identify_format.py-script[m[33m)[m Add identify_format helper script
+[33m030bb53[m[33m ([m[1;32mcodex/update-inspect_json_structure.py-and-document-usage[m[33m)[m Add JSON inspection script and docs
+[33mdd1aff8[m Merge pull request #9 from chrscato/codex/add-fields-to-etlconfig-and-update-logic
+[33mb44d518[m Merge pull request #8 from chrscato/codex/rename-argument-in-parquetwriter-constructor
+[33m1e33bd4[m[33m ([m[1;32mcodex/add-fields-to-etlconfig-and-update-logic[m[33m)[m Add processing limits to ETL pipeline
+[33me90bd9e[m[33m ([m[1;32mcodex/rename-argument-in-parquetwriter-constructor[m[33m)[m Rename ParquetWriter path parameter
+[33mfa8c71e[m Merge pull request #7 from chrscato/codex/document-payer-module-pattern-and-handlers
+[33mda1c31f[m Merge pull request #6 from chrscato/codex/update-production_etl_pipeline.py-flow
+[33m322334f[m Merge pull request #5 from chrscato/codex/create-utility-functions-for-format_identifier.py
+[33m44df3dd[m[33m ([m[1;32mcodex/document-payer-module-pattern-and-handlers[m[33m)[m Add payer handler skeleton and docs
+[33m9708a0e[m[33m ([m[1;32mcodex/update-production_etl_pipeline.py-flow[m[33m)[m Add diagnostic logging for index and MRF files
+[33m6bc50ef[m[33m ([m[1;32mcodex/create-utility-functions-for-format_identifier.py[m[33m)[m Add format identification helpers
+[33mf5d6de8[m Merge pull request #3 from chrscato/codex/add-payer-handler-package-and-functionality
+[33me9a4882[m Merge pull request #4 from chrscato/codex/add-documentation-for-repository-structure
+[33m599a245[m Merge pull request #1 from chrscato/codex/update-.gitignore-and-remove-files
+[33md789ea0[m[33m ([m[1;32mcodex/add-documentation-for-repository-structure[m[33m)[m docs: add repository structure and plugin info
+[33m9c20863[m[33m ([m[1;32mcodex/add-payer-handler-package-and-functionality[m[33m)[m Add payer handler framework
+[33me453a06[m[33m ([m[1;32mcodex/update-.gitignore-and-remove-files[m[33m)[m Add data directories to .gitignore and remove tracked outputs
+[33m6e9e239[m setup documentation
+[33mead2486[m additions cleanup to close the window
+[33mb036206[m updates
+[33m38fadb5[m inspect the s3
+[33m6c27ee1[m ran and tested the centene
+[33m3846499[m testing for centene
+[33mf32f74f[m working on improvements
+[33m8d01568[m Initial commit: MRF scraper implementation

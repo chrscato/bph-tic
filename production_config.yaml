@@ -1,293 +1,51 @@
-# production_config_ortho_radiology.yaml - Orthopedic & Radiology Focused Configuration
+# Sample ETL Configuration - Conservative Testing Version
 
-# Payer endpoints - add more as you scale
-payer_endpoints:
-  #bcbsil: "https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-05-20_Blue-Cross-and-Blue-Shield-of-Illinois_index.json"
-  #anthem: "https://antm-pt-prod-dataz-nogbd-nophi-us-east1.s3.amazonaws.com/anthem/2025-07-01_anthem_index.json.gz"
-  #horizon_bcbs: "https://horizonblue.sapphiremrfhub.com/tocs/202507/2025-07-01_horizon-healthcare-services_index.json"
-  #bcbswv: "https://mrfdata.hmhs.com/files/363/pa/inbound/local/2025-05-01_Blue_Cross_and_Blue_Shield_of_Nebraska_index.json"
-  centene_fidelis: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_fidelis_index.json"
-  #centene_ambetter: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-30_ambetter_index.json"
-  #centene_healthnet: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-29_healthnet_index.json"
-  #centene_wellcarenc: "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-04-30_wellcarenc_index.json"
+# Payer endpoints - Aetna only for testing
+endpoints:
+  aetna_florida: "file://C:\\Users\\ChristopherCato\\Downloads\\2025-07-05_Aetna-Health-Inc----Florida_index.json.gz"
 
-# ORTHOPEDIC & RADIOLOGY FOCUSED CPT CODES
+# MINIMAL CPT CODES FOR TESTING
 cpt_whitelist:
-  # === EVALUATION & MANAGEMENT (E&M) CODES ===
-  # New Patient Office Visits
-  - "99202"  # New patient, 15-29 minutes, straightforward MDM
-  - "99203"  # New patient, 30-44 minutes, low complexity MDM
-  - "99204"  # New patient, 45-59 minutes, moderate complexity MDM
-  - "99205"  # New patient, 60-74 minutes, high complexity MDM
-  
-  # Established Patient Office Visits  
-  - "99212"  # Established patient, 10-19 minutes, straightforward MDM
-  - "99213"  # Established patient, 20-29 minutes, low complexity MDM
-  - "99214"  # Established patient, 30-39 minutes, moderate complexity MDM
-  - "99215"  # Established patient, 40-54 minutes, high complexity MDM
-  
-  # Consultation Codes (when accepted by payer)
-  - "99242"  # Office consultation, 30 minutes
-  - "99243"  # Office consultation, 40 minutes
-  - "99244"  # Office consultation, 60 minutes
-  
-  # === ADVANCED IMAGING - MRI CODES ===
-  # Brain/Head MRI
-  - "70551"  # MRI brain without contrast
-  - "70552"  # MRI brain with contrast
-  - "70553"  # MRI brain with and without contrast
-  
-  # Spine MRI (High Volume Orthopedic)
-  - "72141"  # MRI cervical spine without contrast
-  - "72142"  # MRI cervical spine with contrast
-  - "72156"  # MRI cervical spine with and without contrast
-  - "72146"  # MRI thoracic spine without contrast
-  - "72147"  # MRI thoracic spine with contrast
-  - "72157"  # MRI thoracic spine with and without contrast
-  - "72148"  # MRI lumbar spine without contrast (HIGH VOLUME)
-  - "72149"  # MRI lumbar spine with contrast
-  - "72158"  # MRI lumbar spine with and without contrast
-  
-  # Joint MRI (Orthopedic Focus)
-  - "73221"  # MRI upper extremity joint without contrast (shoulder, elbow, wrist)
-  - "73222"  # MRI upper extremity joint with contrast
-  - "73223"  # MRI upper extremity joint with and without contrast
-  - "73721"  # MRI lower extremity joint without contrast (hip, knee, ankle)
-  - "73722"  # MRI lower extremity joint with contrast
-  - "73723"  # MRI lower extremity joint with and without contrast
-  
-  # === CT SCAN CODES ===
-  # Head/Brain CT
-  - "70450"  # CT head/brain without contrast (HIGH VOLUME)
-  - "70460"  # CT head/brain with contrast
-  - "70470"  # CT head/brain with and without contrast
-  
-  # Spine CT (Orthopedic)
-  - "72125"  # CT cervical spine without contrast
-  - "72126"  # CT cervical spine with contrast
-  - "72127"  # CT cervical spine with and without contrast
-  - "72128"  # CT thoracic spine without contrast
-  - "72129"  # CT thoracic spine with contrast
-  - "72130"  # CT thoracic spine with and without contrast
-  - "72131"  # CT lumbar spine without contrast
-  - "72132"  # CT lumbar spine with contrast
-  - "72133"  # CT lumbar spine with and without contrast
-  
-  # Body CT (Post-Trauma, Cancer Staging)
-  - "74150"  # CT chest without contrast
-  - "74160"  # CT chest with contrast
-  - "74170"  # CT chest with and without contrast
-  - "74177"  # CT abdomen and pelvis with contrast (HIGH VOLUME)
-  - "74178"  # CT abdomen and pelvis with and without contrast
-  
-  # === MAJOR ORTHOPEDIC SURGERY CODES ===
-  # Total Joint Replacement (High Cost/Volume)
-  - "27130"  # Total hip arthroplasty (replacement)
-  - "27447"  # Total knee arthroplasty (replacement)
-  - "23472"  # Total shoulder arthroplasty (replacement)
-  
-  # Hip Surgery
-  - "27132"  # Conversion to total hip arthroplasty
-  - "27134"  # Revision total hip arthroplasty, both components
-  - "27137"  # Revision total hip arthroplasty, acetabular component only
-  - "27138"  # Revision total hip arthroplasty, femoral component only
-  
-  # Knee Surgery
-  - "27437"  # Arthroplasty, patella; without prosthesis
-  - "27438"  # Arthroplasty, patella; with prosthesis
-  - "27486"  # Revision total knee arthroplasty, with or without allograft
-  - "27487"  # Revision total knee arthroplasty, femoral and entire tibial component
-  
-  # Arthroscopic Procedures (High Volume)
-  - "29880"  # Arthroscopy, knee, with meniscectomy (medial AND lateral)
-  - "29881"  # Arthroscopy, knee, with meniscectomy (medial OR lateral)
-  - "29870"  # Arthroscopy, knee, diagnostic, with or without synovial biopsy
-  - "29874"  # Arthroscopy, knee, surgical; for removal of loose body or foreign body
-  - "29875"  # Arthroscopy, knee, surgical; synovectomy, limited
-  - "29876"  # Arthroscopy, knee, surgical; synovectomy, major, 2 or more compartments
-  - "29877"  # Arthroscopy, knee, surgical; debridement/shaving of articular cartilage
-  
-  # Shoulder Arthroscopy
-  - "29805"  # Arthroscopy, shoulder, diagnostic, with or without synovial biopsy
-  - "29806"  # Arthroscopy, shoulder, surgical; capsulorrhaphy
-  - "29807"  # Arthroscopy, shoulder, surgical; repair of SLAP lesion
-  - "29826"  # Arthroscopy, shoulder, surgical; decompression of subacromial space
-  - "29827"  # Arthroscopy, shoulder, surgical; with rotator cuff repair
-  
-  # === SPINE SURGERY CODES ===
-  # Lumbar Spine Surgery (High Volume/Cost)
-  - "22558"  # Arthrodesis, anterior interbody technique, lumbar, single interspace
-  - "22630"  # Arthrodesis, posterior interbody technique, lumbar, single interspace
-  - "63030"  # Laminotomy, lumbar, single vertebral segment
-  - "63047"  # Laminectomy, facetectomy and foraminotomy, lumbar, single segment
-  - "63048"  # Laminectomy, facetectomy and foraminotomy, lumbar, each additional segment
-  
-  
-  # === FRACTURE TREATMENT CODES ===
-  # Hip Fractures (High Volume/Cost)
-  - "27230"  # Closed treatment of femoral fracture, proximal end, neck
-  - "27235"  # Percutaneous skeletal fixation of femoral fracture, proximal end, neck
-  - "27236"  # Open treatment of femoral fracture, proximal end, neck
-  - "27244"  # Treatment of intertrochanteric, peritrochanteric, or subtrochanteric femoral fracture
-  - "27245"  # Treatment of intertrochanteric, peritrochanteric, or subtrochanteric femoral fracture with plate/screw type implant
-  
-  # Ankle/Lower Extremity Fractures
-  - "27766"  # Open treatment of medial malleolus fracture
-  - "27767"  # Closed treatment of posterior malleolus fracture
-  - "27769"  # Open treatment of posterior malleolus fracture
-  - "27784"  # Open treatment of proximal fibula or shaft fracture
-  - "27792"  # Open treatment of distal fibular fracture
-  
-  # Wrist/Upper Extremity Fractures  
-  - "25608"  # Closed treatment of distal radial fracture
-  - "25609"  # Open treatment of distal radial fracture
-  - "26720"  # Closed treatment of phalangeal shaft fracture, finger
-  - "26735"  # Open treatment of phalangeal shaft fracture, finger
-  
-  # === INJECTION PROCEDURES ===
-  # Joint Injections (High Volume)
-  - "20610"  # Arthrocentesis, aspiration and/or injection, major joint (knee, hip, shoulder)
-  - "20611"  # Arthrocentesis, aspiration and/or injection, intermediate joint (elbow, ankle, wrist)
-  - "27096"  # Injection procedure for sacroiliac joint, anesthetic/steroid
-  - "64483"  # Injection, anesthetic agent and/or steroid, transforaminal epidural, lumbar or sacral, single level
-  - "64484"  # Injection, anesthetic agent and/or steroid, transforaminal epidural, lumbar or sacral, each additional level
-  
-  # Trigger Point Injections
-  - "20552"  # Injection(s); single or multiple trigger point(s), 1 or 2 muscle(s)
-  - "20553"  # Injection(s); single or multiple trigger point(s), 3 or more muscles
-  
-  # === PHYSICAL THERAPY/REHABILITATION CODES ===
-  # (Often billed by orthopedic practices)
-  - "97110"  # Therapeutic procedure, therapeutic exercises
-  - "97112"  # Therapeutic procedure, neuromuscular reeducation
-  - "97140"  # Manual therapy techniques
-  - "97530"  # Therapeutic activities, direct patient contact
+  # Just a few high-volume codes for testing
+  - "99213"  # Established patient office visit (very common)
+  - "99214"  # Established patient office visit (very common)
+  - "72148"  # MRI lumbar spine without contrast (high volume)
+  - "73721"  # MRI knee without contrast (high volume)
+  - "70450"  # CT head without contrast (high volume)
 
-# Processing configuration - Scaled for orthopedic focus
+# VERY CONSERVATIVE PROCESSING CONFIGURATION
 processing:
-  # Resource limits
-  max_files_per_payer: 50          # Stop after this many files per payer
-  max_records_per_file: 500000     # Stop after this many records per file
-  batch_size: 10000                # Parquet batch size
-  parallel_workers: 4              # CPU cores to use
+  max_files_per_payer: 2           # Stop after just 2 files
+  max_records_per_file: 10000      # Stop after 10K records per file
+  batch_size: 1000                 # Very small batches for memory
+  parallel_workers: 1              # Single worker for stability
   
-  # Quality thresholds
-  min_completeness_pct: 75.0       # Minimum data completeness
-  min_accuracy_score: 0.80         # Minimum validation score
+  # Relaxed quality thresholds for testing
+  min_completeness_pct: 50.0       # Lower threshold for testing
+  min_accuracy_score: 0.70         # Lower threshold for testing
   
   # File type filters
   file_types: 
     - "in_network_rates"           # Primary focus
-    # - "allowed_amounts"          # Out-of-network (optional)
-    # - "provider_references"      # Provider lookups (optional)
 
 # Output configuration
 output:
-  local_directory: "ortho_radiology_data_horizon_bcbs"
+  local_directory: "sample_data"   # Different directory for testing
   
-  # S3 configuration (set via environment variables)
+  # S3 configuration (disabled for testing)
   s3:
-    bucket: "${S3_BUCKET}"         # Set S3_BUCKET environment variable
-    prefix: "healthcare-rates-ortho-radiology"
+    bucket: "${S3_BUCKET}"
+    prefix: "healthcare-rates-sample"
     region: "us-east-1"
-    
-  # Partitioning strategy for orthopedic/radiology focus
-  partitioning:
-    rates_by: ["specialty", "procedure_type", "year", "month"]
-    providers_by: ["specialty", "state"]
-    organizations_by: ["specialty", "state"]
-    analytics_by: ["procedure_category", "geography", "cost_tier"]
-
-# Enhanced specialty-specific configuration
-specialty_focus:
-  target_specialties:
-    - "Orthopedic Surgery"
-    - "Radiology"
-    - "Physical Medicine & Rehabilitation"
-    - "Sports Medicine"
-    - "Pain Management"
-  
-  procedure_categories:
-    high_cost_imaging: ["70551", "70552", "70553", "72148", "72149", "72158", "73721", "73722", "73723"]
-    major_surgery: ["27130", "27447", "23472", "22558", "22630"]
-    arthroscopic: ["29880", "29881", "29870", "29827", "29826"]
-    spine_surgery: ["63030", "63047", "63048", "22551", "63075"]
-    fracture_care: ["27230", "27235", "27236", "27244", "27245"]
-    injections: ["20610", "20611", "64483", "64484"]
 
 # Data versioning
 versioning:
-  schema_version: "v2.1.0-ortho"
-  processing_version: "tic-etl-ortho-v1.0"
-  retention_days: 90               # Keep old versions for 90 days
-  
+  schema_version: "v2.1.0-sample"
+  processing_version: "tic-etl-sample-v1.0"
+  retention_days: 7                # Short retention for testing
+
 # Logging configuration
 logging:
   level: "INFO"
   structured: true
-  output_file: "ortho_radiology_data/etl_pipeline.log"
-  
-# Monitoring and alerting
-monitoring:
-  enable_metrics: true
-  error_threshold: 10              # Alert after 10 errors
-  processing_timeout_hours: 6      # Alert if processing takes >6 hours
-  
-# Data quality rules for orthopedic/radiology focus
-quality_rules:
-  rates:
-    min_rate: 0.01                 # Minimum reasonable rate
-    max_rate: 100000.00            # Higher max for major surgery/imaging
-    required_fields: ["service_code", "negotiated_rate", "payer_uuid"]
-    
-  high_cost_procedures:
-    max_reasonable_rates:
-      "27130": 75000.00           # Total hip replacement
-      "27447": 70000.00           # Total knee replacement
-      "23472": 65000.00           # Total shoulder replacement
-      "72148": 5000.00            # MRI lumbar spine
-      "70551": 4000.00            # MRI brain
-      "73721": 4500.00            # MRI joint
-  
-  providers:
-    npi_validation: true           # Validate NPI format
-    required_fields: ["npi", "organization_uuid"]
-    
-  organizations:
-    tin_validation: true           # Validate TIN format
-    required_fields: ["tin"]
-
-# Performance optimization
-performance:
-  # Memory management
-  chunk_size: 10000               # Records per processing chunk
-  memory_limit_gb: 8              # Maximum memory usage
-  
-  # Caching
-  enable_caching: true
-  cache_directory: ".cache"
-  
-  # Compression
-  parquet_compression: "snappy"   # Fast compression
-  
-# Business rules for orthopedic/radiology focus
-business_rules:
-  # Rate filtering
-  exclude_zero_rates: true
-  exclude_negative_rates: true
-  
-  # Specialty filtering
-  focus_on_orthopedic_providers: true
-  
-  # Geographic scope
-  us_only: true                   # US providers only
-  
-  # Provider validation
-  require_active_npi: true        # Only active NPIs
-  
-# Development/testing overrides
-development:
-  # Use smaller limits for testing
-  test_mode: false
-  sample_size: 1000               # Records to sample in test mode
-  mock_s3: false                  # Use local storage instead of S3
+  output_file: "sample_data/etl_pipeline.log" 

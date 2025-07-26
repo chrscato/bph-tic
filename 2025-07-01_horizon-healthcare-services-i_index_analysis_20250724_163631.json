@@ -1,0 +1,130 @@
+{
+  "file_path": "https://horizonblue.sapphiremrfhub.com/tocs/202507/2025-07-01_horizon-healthcare-services-i_index.json",
+  "analysis_time": "2025-07-24T16:36:29.107007",
+  "sample_size": 1000,
+  "structure": {
+    "source": "https://horizonblue.sapphiremrfhub.com/tocs/202507/2025-07-01_horizon-healthcare-services-i_index.json",
+    "is_url": true,
+    "file_size_mb": 0.0082244873046875,
+    "compression": "none",
+    "structure_type": "table_of_contents",
+    "top_level_keys": [
+      "reporting_entity_type",
+      "reporting_entity_name",
+      "reporting_structure"
+    ],
+    "statistics": {},
+    "samples": {}
+  },
+  "table_of_contents": {
+    "total_reporting_structures": 9,
+    "file_counts": {
+      "in_network": 26,
+      "allowed_amounts": 9
+    },
+    "plan_samples": [
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 3,
+        "keys": [
+          "in_network_files",
+          "allowed_amount_file",
+          "reporting_plans"
+        ]
+      },
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 3,
+        "keys": [
+          "in_network_files",
+          "allowed_amount_file",
+          "reporting_plans"
+        ]
+      },
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 2,
+        "keys": [
+          "in_network_files",
+          "allowed_amount_file",
+          "reporting_plans"
+        ]
+      },
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 3,
+        "keys": [
+          "in_network_files",
+          "allowed_amount_file",
+          "reporting_plans"
+        ]
+      },
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 3,
+        "keys": [
+          "in_network_files",
+          "allowed_amount_file",
+          "reporting_plans"
+        ]
+      },
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 3,
+        "keys": [
+          "in_network_files",
+          "allowed_amount_file",
+          "reporting_plans"
+        ]
+      },
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 3,
+        "keys": [
+          "in_network_files",
+          "allowed_amount_file",
+          "reporting_plans"
+        ]
+      },
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 3,
+        "keys": [
+          "in_network_files",
+          "allowed_amount_file",
+          "reporting_plans"
+        ]
+      },
+      {
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": "",
+        "in_network_files": 3,
+        "keys": [
+          "in_network_files",
+          "allowed_amount_file",
+          "reporting_plans"
+        ]
+      }
+    ],
+    "url_patterns": [
+      "horizonblue.sapphiremrfhub.com/mrfs"
+    ]
+  }
+}

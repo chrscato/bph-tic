@@ -1,0 +1,51 @@
+# Sample ETL Configuration - Conservative Testing Version
+
+# Payer endpoints - Aetna only for testing
+endpoints:
+  aetna_florida: "file://C:\\Users\\ChristopherCato\\Downloads\\2025-07-05_Aetna-Health-Inc----Florida_index.json.gz"
+
+# MINIMAL CPT CODES FOR TESTING
+cpt_whitelist:
+  # Just a few high-volume codes for testing
+  - "99213"  # Established patient office visit (very common)
+  - "99214"  # Established patient office visit (very common)
+  - "72148"  # MRI lumbar spine without contrast (high volume)
+  - "73721"  # MRI knee without contrast (high volume)
+  - "70450"  # CT head without contrast (high volume)
+
+# VERY CONSERVATIVE PROCESSING CONFIGURATION
+processing:
+  max_files_per_payer: 2           # Stop after just 2 files
+  max_records_per_file: 10000      # Stop after 10K records per file
+  batch_size: 1000                 # Very small batches for memory
+  parallel_workers: 1              # Single worker for stability
+  
+  # Relaxed quality thresholds for testing
+  min_completeness_pct: 50.0       # Lower threshold for testing
+  min_accuracy_score: 0.70         # Lower threshold for testing
+  
+  # File type filters
+  file_types: 
+    - "in_network_rates"           # Primary focus
+
+# Output configuration
+output:
+  local_directory: "sample_data"   # Different directory for testing
+  
+  # S3 configuration (disabled for testing)
+  s3:
+    bucket: "${S3_BUCKET}"
+    prefix: "healthcare-rates-sample"
+    region: "us-east-1"
+
+# Data versioning
+versioning:
+  schema_version: "v2.1.0-sample"
+  processing_version: "tic-etl-sample-v1.0"
+  retention_days: 7                # Short retention for testing
+
+# Logging configuration
+logging:
+  level: "INFO"
+  structured: true
+  output_file: "sample_data/etl_pipeline.log" 

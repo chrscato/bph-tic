@@ -1,271 +1,370 @@
-# Healthcare Rates ETL Pipeline
+# MRF Payer Structure Analysis Tools
 
-A production-grade ETL pipeline for processing healthcare rates data from Machine Readable Files (MRFs) with full index processing and S3 integration.
+This repository contains tools for analyzing Machine Readable Files (MRFs) from healthcare payers to understand their structure, scale, and processing requirements.
 
 ## Overview
 
-This ETL pipeline processes healthcare rates data from various payer Machine Readable Files (MRFs), normalizes the data, performs quality validation, and stores the results in either S3 or local storage. The pipeline is designed to handle large-scale data processing with memory efficiency and robust error handling.
+The analysis tools help you:
+- **Understand file structures** before processing
+- **Estimate processing requirements** and resource needs
+- **Identify scaling challenges** and optimization opportunities
+- **Validate payer compatibility** with your processing pipeline
 
-## Features
+## Tools
 
-- Full index processing of MRF files
-- Memory-efficient streaming processing
-- Data quality validation and scoring
-- Deterministic UUID generation for entity identification
-- S3 integration with organized partitioning
-- Local storage fallback
-- Comprehensive logging and progress tracking
-- Analytics table generation
-- Configurable processing parameters
-- Optional limits to stop after a set number of files or records
-- Parallel processing support
+### 1. `analyze_large_mrfs.py` - Individual File Analysis
+
+Analyzes individual MRF files (Table of Contents or In-Network Rates) with memory-efficient streaming.
+
+### 2. `analyze_payer_structure.py` - Comprehensive Payer Analysis
+
+Analyzes all payers in your configuration to understand their complete structure and scale.
 
 ## Prerequisites
 
-- Python 3.6+
-- AWS credentials (for S3 integration)
-- Required Python packages (see `requirements.txt`)
-
-## Installation
-
-1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd <repository-directory>
-```
-
-2. Install dependencies:
-```bash
+# Install required dependencies
 pip install -r requirements.txt
+
+# Additional dependencies for analysis
+pip install ijson requests pyyaml
 ```
 
-3. Configure AWS credentials (if using S3):
-```bash
-export AWS_ACCESS_KEY_ID=your_access_key
-export AWS_SECRET_ACCESS_KEY=your_secret_key
-export S3_BUCKET=your_bucket_name
-```
+## Quick Start
 
-## Repository Structure
-
-- `src/tic_mrf_scraper/` - core Python package with the ETL modules
-- `scripts/` - helper scripts for debugging and validation (see
-  `scripts/identify_format.py` for inspecting MRF URLs)
-- `tests/` - pytest suite verifying parser and writer logic
-
-## Configuration
-
-The pipeline is configured using a YAML file (`production_config.yaml`). Here's the structure:
-
-```yaml
-payer_endpoints:
-  payer_name: index_url
-
-cpt_whitelist:
-  - code1
-  - code2
-
-processing:
-  batch_size: 10000
-  parallel_workers: 2
-  max_files_per_payer: 5
-  max_records_per_file: 100000
-  min_completeness_pct: 80.0
-  min_accuracy_score: 0.85
-
-output:
-  local_directory: "production_data"
-  s3:
-    prefix: "healthcare-rates-v2"
-
-versioning:
-  schema_version: "v2.1.0"
-  processing_version: "tic-etl-v1.0"
-```
-
-`max_files_per_payer` and `max_records_per_file` can be used to limit how much
-data is processed during a run. When either limit is reached the pipeline stops
-processing additional files or records for that payer.
-
-## Usage
-
-Run the pipeline:
+### 1. Analyze a Single Large MRF File
 
 ```bash
-python production_etl_pipeline.py
+# Analyze a Table of Contents file
+python scripts/analyze_large_mrfs.py https://example.com/index.json.gz --type toc
+
+# Analyze an In-Network Rates file
+python scripts/analyze_large_mrfs.py https://example.com/in_network.json.gz --type rates
+
+# Auto-detect file type
+python scripts/analyze_large_mrfs.py https://example.com/file.json.gz --type auto
 ```
 
-## Data Model
-
-The pipeline processes and generates the following data types:
-
-### Rates
-- Rate UUID
-- Payer UUID
-- Organization UUID
-- Service code and description
-- Negotiated rate
-- Billing class and type
-- Plan details
-- Contract period
-- Provider network
-- Geographic scope
-- Data lineage
-
-### Organizations
-- Organization UUID
-- TIN
-- Organization name
-- Organization type
-- NPI count
-- Facility status
-- Address information
-- Service areas
-- Data quality metrics
-
-### Providers
-- Provider UUID
-- NPI
-- Organization UUID
-- Provider details
-- Credentials
-- Specialties
-- Addresses
-- Status information
-
-### Analytics
-- Analytics UUID
-- Service code
-- Geographic scope
-- Market statistics
-- Payer analysis
-- Trend analysis
-- Computation metadata
-
-## Output Structure
-
-### S3 Storage
-```
-s3://<bucket>/<prefix>/
-├── rates/
-│   └── payer=<payer_name>/
-│       └── date=<YYYY-MM-DD>/
-├── organizations/
-│   └── payer=<payer_name>/
-│       └── date=<YYYY-MM-DD>/
-├── providers/
-│   └── payer=<payer_name>/
-│       └── date=<YYYY-MM-DD>/
-└── processing_statistics/
-    └── <YYYY-MM-DD>/
-```
-
-### Local Storage
-```
-production_data/
-├── rates/
-├── organizations/
-├── providers/
-├── analytics/
-└── processing_statistics.json
-```
-
-## Data Quality
-
-The pipeline implements several data quality checks:
-
-- Required field validation
-- Rate reasonableness checks
-- NPI validation
-- Completeness scoring
-- Confidence scoring
-- Data lineage tracking
-
-## Logging
-
-The pipeline uses structured logging with the following features:
-
-- JSON-formatted logs
-- Timestamp and log level
-- Contextual information
-- Error tracking
-- Processing statistics
-
-## Error Handling
-
-The pipeline implements robust error handling:
-
-- Graceful failure recovery
-- Detailed error logging
-- Failed file tracking
-- Processing statistics collection
-- Temporary file cleanup
-
-## Performance Considerations
-
-- Memory-efficient streaming processing
-- Batch processing for S3 uploads
-- Configurable batch sizes
-- Parallel processing support
-- Progress tracking and ETA calculation
-
-## Payer Handler Plugins
-
-The pipeline supports a pluggable handler system for payer-specific logic. Each handler subclassing `BasePayerHandler` can modify records before they are written. Handlers are discovered via the `tic_mrf_scraper.payer_handlers` entry point group.
-
-To add your own handler:
-1. Create `src/tic_mrf_scraper/handlers/my_handler.py` and define `class MyHandler(BasePayerHandler)`.
-2. Register it in `pyproject.toml`:
-
-```toml
-[tool.poetry.plugins."tic_mrf_scraper.payer_handlers"]
-my_payer = "tic_mrf_scraper.handlers.my_handler:MyHandler"
-```
-
-3. Reinstall the package with `pip install -e .` to load the plugin.
-
-### Built-in payer modules
-
-Handlers included with the project live in `src/tic_mrf_scraper/payers`. The file name of the module
-is used as a **format identifier**. This identifier appears in `production_config.yaml` under
-`payer_endpoints` and determines which handler processes an index. Each module should declare a
-subclass of `PayerHandler` decorated with `@register_handler("<identifier>")`. Override
-`parse_in_network` whenever the payer's MRF format deviates from the default structure. See
-`src/tic_mrf_scraper/payers/example.py` for a minimal template.
-## Running Tests
-
-1. Install development dependencies with `pip install -r requirements.txt` (or `poetry install`).
-2. From the repository root run:
-```bash
-pytest
-```
-
-## Debugging/Inspection
-
-Helper scripts in the `scripts/` directory make it easier to examine raw JSON
-files. For example, `inspect_json_structure.py` can fetch any TiC JSON URL and
-report whether it looks like an index or an `in_network` file:
+### 2. Analyze All Payers in Configuration
 
 ```bash
-python scripts/inspect_json_structure.py --url https://example.com/file.json
+# Analyze all payers in production_config.yaml
+python scripts/analyze_payer_structure.py
+
+# Analyze specific payers
+python scripts/analyze_payer_structure.py --payers "Blue Cross Blue Shield" "Aetna"
+
+# Skip in-network MRF analysis (faster)
+python scripts/analyze_payer_structure.py --skip-mrf
 ```
 
-The script prints a brief summary including detected structure type and sample
-keys. Use this when validating new payer endpoints or troubleshooting parsing
-issues.
+## Detailed Usage
+
+### Individual File Analysis (`analyze_large_mrfs.py`)
+
+#### Command Line Options
+
+```bash
+python scripts/analyze_large_mrfs.py <file_path_or_url> [options]
+
+Options:
+  --sample-size INT     Number of items to sample (default: 1000)
+  --output PATH         Output JSON file path
+  --type {auto,toc,rates}  File type (default: auto)
+```
+
+#### Examples
+
+```bash
+# Analyze local file
+python scripts/analyze_large_mrfs.py ./data/index.json --type toc --sample-size 500
+
+# Analyze remote file with custom output
+python scripts/analyze_large_mrfs.py https://payer.com/index.json.gz \
+  --type auto \
+  --output ./analysis/payer_analysis.json
+
+# Quick analysis with small sample
+python scripts/analyze_large_mrfs.py https://payer.com/rates.json.gz \
+  --type rates \
+  --sample-size 100
+```
+
+#### Output Structure
+
+The script generates a JSON file with:
+
+```json
+{
+  "file_path": "https://example.com/file.json.gz",
+  "analysis_time": "2024-01-15T10:30:00",
+  "sample_size": 1000,
+  "structure": {
+    "file_size_mb": 245.67,
+    "compression": "gzip",
+    "structure_type": "table_of_contents",
+    "top_level_keys": ["reporting_structure", "version"]
+  },
+  "table_of_contents": {
+    "total_reporting_structures": 15000,
+    "file_counts": {
+      "in_network": 45000,
+      "allowed_amounts": 15000
+    },
+    "url_patterns": ["cdn.payer.com/mrf/2024/", "s3.amazonaws.com/payer-data/"]
+  }
+}
+```
+
+### Comprehensive Payer Analysis (`analyze_payer_structure.py`)
+
+#### Command Line Options
+
+```bash
+python scripts/analyze_payer_structure.py [options]
+
+Options:
+  --config PATH         Path to config file (default: production_config.yaml)
+  --payers PAYER [PAYER ...]  Specific payers to analyze
+  --skip-mrf           Skip in-network MRF analysis
+  --output-dir PATH    Output directory (default: payer_structure_analysis)
+```
+
+#### Examples
+
+```bash
+# Full analysis of all payers
+python scripts/analyze_payer_structure.py
+
+# Quick analysis (skip MRF files)
+python scripts/analyze_payer_structure.py --skip-mrf
+
+# Analyze specific payers
+python scripts/analyze_payer_structure.py \
+  --payers "Blue Cross Blue Shield" "Aetna" "UnitedHealth"
+
+# Use custom config
+python scripts/analyze_payer_structure.py \
+  --config custom_config.yaml \
+  --output-dir ./custom_analysis
+```
+
+#### Output Structure
+
+The script creates two files:
+
+1. **Full Analysis JSON** (`full_analysis_YYYYMMDD_HHMMSS.json`)
+2. **Summary Text** (`summary_YYYYMMDD_HHMMSS.txt`)
+
+Example summary output:
+```
+================================================================================
+PAYER STRUCTURE ANALYSIS SUMMARY
+Generated: 2024-01-15 10:30:00
+================================================================================
+
+============================================================
+PAYER: Blue Cross Blue Shield
+============================================================
+
+[TABLE OF CONTENTS STRUCTURE]
+  - Structure Type: standard_toc
+  - Top Level Keys: reporting_structure, version
+  - File Counts: {"reporting_structures": 15000, "in_network_files": 45000}
+  - Sample Plan Keys: plan_name, plan_id, in_network_files
+
+[IN-NETWORK MRF STRUCTURE]
+  - Structure Type: standard_in_network
+  - Total Items: 2500000
+  - Billing Code Types: {"CPT": 1800000, "HCPCS": 700000}
+
+  Sample Item Structure:
+    - Item Keys: billing_code, billing_code_type, negotiated_rates
+    - Rate Keys: provider_groups, negotiated_prices
+    - Has Provider Groups: True
+    - Provider Group Keys: npi, tin, providers
+    - Provider Info Location: Direct in provider_group
+    - Price Keys: negotiated_rate, service_code
+    - Rate Field Name: negotiated_rate
+```
+
+## Understanding the Analysis Results
+
+### File Structure Types
+
+#### Table of Contents Files
+- **`standard_toc`**: Standard MRF index with `reporting_structure` array
+- **`legacy_blobs`**: Legacy format with `blobs` array
+- **`direct_in_network`**: Direct `in_network_files` array
+
+#### In-Network Rate Files
+- **`standard_in_network`**: Standard format with `in_network` array
+- **`custom_format`**: Non-standard structure
+
+### Key Metrics to Monitor
+
+#### Scale Indicators
+- **File Size**: >100MB indicates large datasets
+- **Reporting Structures**: >10,000 suggests complex payer organization
+- **In-Network Items**: >1M items requires streaming processing
+- **File Counts**: High counts indicate distributed data
+
+#### Structure Complexity
+- **Provider References**: External provider files add complexity
+- **Nested Providers**: Providers in arrays vs. direct NPIs
+- **Rate Variations**: Different rate field names across payers
+- **Billing Code Types**: Mix of CPT, HCPCS, ICD codes
+
+### Scaling Considerations
+
+#### Memory Requirements
+```bash
+# Estimate memory needs
+file_size_mb * 3-5x = estimated_processing_memory_mb
+
+# Example: 500MB file ≈ 2-2.5GB processing memory
+```
+
+#### Processing Time Estimates
+```bash
+# Rough time estimates
+items_per_second = 1000-5000 (depending on complexity)
+estimated_time = total_items / items_per_second
+
+# Example: 2M items ≈ 7-33 minutes
+```
+
+#### Storage Requirements
+```bash
+# Parquet compression ratios
+json_size * 0.1-0.3 = estimated_parquet_size
+
+# Example: 500MB JSON ≈ 50-150MB Parquet
+```
+
+## Best Practices
+
+### 1. Start with Small Samples
+```bash
+# Quick structure analysis
+python scripts/analyze_large_mrfs.py <url> --sample-size 100 --type auto
+```
+
+### 2. Validate Payer Compatibility
+```bash
+# Check if payer uses standard format
+python scripts/analyze_payer_structure.py --payers <payer_name>
+```
+
+### 3. Monitor Resource Usage
+```bash
+# Use system monitoring during analysis
+htop  # or top
+iotop # for I/O monitoring
+```
+
+### 4. Plan for Large Files
+```bash
+# For files >1GB, consider:
+# - Streaming processing only
+# - Chunked downloads
+# - Distributed processing
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Memory Errors
+```bash
+# Reduce sample size
+python scripts/analyze_large_mrfs.py <url> --sample-size 100
+
+# Use skip-mrf for TOC analysis only
+python scripts/analyze_payer_structure.py --skip-mrf
+```
+
+#### Network Timeouts
+```bash
+# Large files may timeout - check file size first
+curl -I <url>  # Check Content-Length header
+```
+
+#### Unsupported Formats
+```bash
+# Check structure type in output
+# Non-standard formats may need custom handlers
+```
+
+### Error Messages
+
+- **"File too large"**: Reduce `max_size_mb` parameter or use streaming
+- **"Failed to fetch"**: Check URL accessibility and network connection
+- **"Unknown file type"**: File may use non-standard MRF format
+
+## Integration with Processing Pipeline
+
+### Pre-Processing Validation
+```bash
+# Validate before processing
+python scripts/analyze_payer_structure.py --payers <payer>
+# Check output for compatibility issues
+```
+
+### Resource Planning
+```bash
+# Estimate resource needs
+python scripts/analyze_large_mrfs.py <url> --type auto
+# Use file_size_mb and item counts for capacity planning
+```
+
+### Monitoring Processing
+```bash
+# Compare expected vs actual processing times
+# Monitor memory usage during processing
+# Validate output structure matches analysis
+```
+
+## Advanced Usage
+
+### Custom Analysis Scripts
+```python
+# Use analysis functions in your own scripts
+from scripts.analyze_large_mrfs import analyze_file_structure
+from scripts.analyze_payer_structure import analyze_table_of_contents
+
+# Analyze structure programmatically
+structure = analyze_file_structure("https://example.com/file.json.gz")
+```
+
+### Batch Processing
+```bash
+# Analyze multiple files
+for url in $(cat urls.txt); do
+    python scripts/analyze_large_mrfs.py "$url" --type auto
+done
+```
+
+### Integration with CI/CD
+```bash
+# Add to deployment pipeline
+python scripts/analyze_payer_structure.py --skip-mrf
+# Fail deployment if incompatible payers detected
+```
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes and run `pytest`
-4. Commit the updates
-5. Push the branch and open a Pull Request
+When adding new payers or formats:
 
-## License
-
-[Specify your license here]
+1. **Analyze structure first** using these tools
+2. **Document format variations** in payer-specific handlers
+3. **Test with sample data** before full processing
+4. **Update analysis tools** if new patterns discovered
 
 ## Support
 
-For support, please [specify contact information or support channels] 
+For issues or questions:
+1. Check the analysis output for error details
+2. Review the troubleshooting section
+3. Examine the payer's MRF documentation
+4. Contact the development team with analysis results 

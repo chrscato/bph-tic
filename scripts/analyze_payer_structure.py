@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Analyze Table of Contents and MRF structures for all payers in config."""
+"""Analyze Table of Contents and MRF structures for all payers in config.
+
+Script name: analyze_payer_structures.py
+"""
 
 import json
 import yaml
@@ -27,7 +30,7 @@ def fetch_json(url: str, max_size_mb: int = 100) -> Optional[Dict[str, Any]]:
         # Check content length if available
         content_length = resp.headers.get('content-length')
         if content_length and int(content_length) > max_size_mb * 1024 * 1024:
-            print(f"  ⚠️  File too large: {int(content_length) / 1024 / 1024:.1f} MB")
+            print(f"  [!] File too large: {int(content_length) / 1024 / 1024:.1f} MB")
             return None
         
         # Download content
@@ -41,7 +44,7 @@ def fetch_json(url: str, max_size_mb: int = 100) -> Optional[Dict[str, Any]]:
             return json.loads(content.decode('utf-8'))
             
     except Exception as e:
-        print(f"  ❌ Error fetching {url}: {str(e)}")
+        print(f"  [X] Error fetching {url}: {str(e)}")
         return None
 
 def analyze_structure(data: Any, path: str = "root", max_depth: int = 4, current_depth: int = 0) -> Dict[str, Any]:
@@ -90,7 +93,7 @@ def analyze_structure(data: Any, path: str = "root", max_depth: int = 4, current
 
 def analyze_table_of_contents(url: str, payer: str) -> Dict[str, Any]:
     """Analyze a Table of Contents (index) file structure."""
-    print(f"\n📋 Analyzing Table of Contents for {payer}")
+    print(f"\n[TOC] Analyzing Table of Contents for {payer}")
     print(f"   URL: {url}")
     
     data = fetch_json(url)
@@ -137,8 +140,10 @@ def analyze_table_of_contents(url: str, payer: str) -> Dict[str, Any]:
                     # Sample first in-network file
                     if first_rs["in_network_files"]:
                         sample_file = first_rs["in_network_files"][0]
+                        sample_url = sample_file.get("location", "")
                         analysis["sample_files"]["in_network"] = {
-                            "url": sample_file.get("location", "")[:100] + "...",
+                            "url": sample_url,
+                            "url_display": sample_url[:100] + "..." if len(sample_url) > 100 else sample_url,
                             "description": sample_file.get("description", "")
                         }
                 
@@ -159,8 +164,10 @@ def analyze_table_of_contents(url: str, payer: str) -> Dict[str, Any]:
             analysis["file_counts"]["blobs"] = len(data["blobs"])
             
             if data["blobs"]:
+                sample_url = data["blobs"][0].get("url", "")
                 analysis["sample_files"]["blob"] = {
-                    "url": data["blobs"][0].get("url", "")[:100] + "...",
+                    "url": sample_url,
+                    "url_display": sample_url[:100] + "..." if len(sample_url) > 100 else sample_url,
                     "name": data["blobs"][0].get("name", "")
                 }
         
@@ -170,8 +177,10 @@ def analyze_table_of_contents(url: str, payer: str) -> Dict[str, Any]:
             analysis["file_counts"]["in_network_files"] = len(data["in_network_files"])
             
             if data["in_network_files"]:
+                sample_url = data["in_network_files"][0].get("location", "")
                 analysis["sample_files"]["in_network"] = {
-                    "url": data["in_network_files"][0].get("location", "")[:100] + "...",
+                    "url": sample_url,
+                    "url_display": sample_url[:100] + "..." if len(sample_url) > 100 else sample_url,
                     "description": data["in_network_files"][0].get("description", "")
                 }
         
@@ -182,7 +191,7 @@ def analyze_table_of_contents(url: str, payer: str) -> Dict[str, Any]:
 
 def analyze_in_network_file(url: str, payer: str, max_items: int = 5) -> Dict[str, Any]:
     """Analyze an in-network MRF file structure."""
-    print(f"\n🏥 Analyzing In-Network MRF for {payer}")
+    print(f"\n[MRF] Analyzing In-Network MRF for {payer}")
     print(f"   URL: {url[:100]}...")
     
     data = fetch_json(url, max_size_mb=50)  # Smaller limit for MRF files
@@ -274,12 +283,12 @@ def save_analysis(analyses: Dict[str, Any], output_dir: str = "payer_structure_a
     
     # Save full analysis
     full_path = output_path / f"full_analysis_{timestamp}.json"
-    with open(full_path, 'w') as f:
+    with open(full_path, 'w', encoding='utf-8') as f:
         json.dump(analyses, f, indent=2, default=str)
     
     # Save summary
     summary_path = output_path / f"summary_{timestamp}.txt"
-    with open(summary_path, 'w') as f:
+    with open(summary_path, 'w', encoding='utf-8') as f:
         f.write("=" * 80 + "\n")
         f.write("PAYER STRUCTURE ANALYSIS SUMMARY\n")
         f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -293,7 +302,7 @@ def save_analysis(analyses: Dict[str, Any], output_dir: str = "payer_structure_a
             # Table of Contents summary
             toc = analysis.get("table_of_contents", {})
             if toc and "error" not in toc:
-                f.write("\n📋 TABLE OF CONTENTS STRUCTURE:\n")
+                f.write("\n[TABLE OF CONTENTS STRUCTURE]\n")
                 f.write(f"  - Structure Type: {toc.get('structure_type', 'unknown')}\n")
                 f.write(f"  - Top Level Keys: {', '.join(toc.get('top_level_keys', []))}\n")
                 f.write(f"  - File Counts: {json.dumps(toc.get('file_counts', {}))}\n")
@@ -304,7 +313,7 @@ def save_analysis(analyses: Dict[str, Any], output_dir: str = "payer_structure_a
             # In-Network MRF summary
             mrf = analysis.get("in_network_mrf", {})
             if mrf and "error" not in mrf:
-                f.write("\n🏥 IN-NETWORK MRF STRUCTURE:\n")
+                f.write("\n[IN-NETWORK MRF STRUCTURE]\n")
                 f.write(f"  - Structure Type: {mrf.get('structure_type', 'unknown')}\n")
                 f.write(f"  - Total Items: {mrf.get('in_network_count', 0)}\n")
                 f.write(f"  - Billing Code Types: {dict(mrf.get('billing_code_types', {}))}\n")
@@ -338,7 +347,7 @@ def save_analysis(analyses: Dict[str, Any], output_dir: str = "payer_structure_a
                         elif ps.get('has_negotiated_price'):
                             f.write("negotiated_price\n")
     
-    print(f"\n✅ Analysis saved to:")
+    print(f"\n[+] Analysis saved to:")
     print(f"   - Full analysis: {full_path}")
     print(f"   - Summary: {summary_path}")
 
@@ -358,7 +367,7 @@ def main():
     if args.payers:
         payer_endpoints = {k: v for k, v in payer_endpoints.items() if k in args.payers}
     
-    print(f"🔍 Analyzing {len(payer_endpoints)} payer(s) from {args.config}")
+    print(f"[*] Analyzing {len(payer_endpoints)} payer(s) from {args.config}")
     
     # Analyze each payer
     all_analyses = {}
@@ -377,8 +386,8 @@ def main():
         # Analyze sample in-network MRF (if not skipped)
         if not args.skip_mrf and toc_analysis.get("sample_files", {}).get("in_network"):
             mrf_url = toc_analysis["sample_files"]["in_network"]["url"]
-            if mrf_url.endswith("..."):
-                print("  ⚠️  Skipping MRF analysis - URL truncated in TOC")
+            if not mrf_url:
+                print("  Warning: No MRF URL found in TOC")
             else:
                 mrf_analysis = analyze_in_network_file(mrf_url, payer)
                 payer_analysis["in_network_mrf"] = mrf_analysis
@@ -388,7 +397,7 @@ def main():
     # Save results
     save_analysis(all_analyses, args.output_dir)
     
-    print("\n🎉 Analysis complete!")
+    print("\n[DONE] Analysis complete!")
 
 if __name__ == "__main__":
     main()
