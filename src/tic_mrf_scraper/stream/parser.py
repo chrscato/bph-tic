@@ -182,9 +182,14 @@ class TiCMRFParser:
                                 payer=payer
                             )
                         elif "providers" in provider_group:
-                            # Handle nested providers array (fallback for other payers)
+                            # Handle nested providers array (Centene-style structure)
                             providers = provider_group.get("providers", [])
+                            group_tin = provider_group.get("tin")  # TIN at group level
                             for provider in providers:
+                                # Merge provider info with group-level TIN if needed
+                                provider_info = provider.copy()
+                                if group_tin and "tin" not in provider_info:
+                                    provider_info["tin"] = group_tin
                                 yield self._create_rate_record(
                                     billing_code=billing_code,
                                     billing_code_type=billing_code_type,
@@ -194,7 +199,7 @@ class TiCMRFParser:
                                     billing_class=billing_class,
                                     negotiated_type=negotiated_type,
                                     expiration_date=expiration_date,
-                                    provider_info=provider,
+                                    provider_info=provider_info,
                                     payer=payer
                                 )
                         else:
@@ -228,6 +233,18 @@ class TiCMRFParser:
                         payer=payer
                     )
 
+    def _extract_tin_value(self, tin_data) -> Optional[str]:
+        """Extract TIN value from various formats."""
+        if not tin_data:
+            return None
+        
+        if isinstance(tin_data, dict):
+            return tin_data.get("value")
+        elif isinstance(tin_data, (str, int)):
+            return str(tin_data)
+        else:
+            return None
+    
     def _create_rate_record(self, 
                            billing_code: str,
                            billing_code_type: str,
@@ -244,6 +261,12 @@ class TiCMRFParser:
         Returns:
             Normalized rate record
         """
+        # Debug logging for provider info
+        logger.debug("debug_provider_info_extraction",
+                   provider_info_keys=list(provider_info.keys()),
+                   provider_npi=provider_info.get("npi"),
+                   provider_tin=provider_info.get("tin"))
+        
         return {
             "billing_code": billing_code,
             "billing_code_type": billing_code_type,
@@ -255,7 +278,7 @@ class TiCMRFParser:
             "expiration_date": expiration_date,
             "provider_npi": provider_info.get("npi"),
             "provider_name": provider_info.get("provider_group_name"),
-            "provider_tin": provider_info.get("tin", {}).get("value") if provider_info.get("tin") else None,
+            "provider_tin": self._extract_tin_value(provider_info.get("tin")),
             "payer": payer
         }
 
@@ -288,7 +311,7 @@ def stream_parse_enhanced(url: str, payer: str,
         content = fetch_url(url)
         
         # Handle gzipped content
-        if url.endswith('.gz'):
+        if url.endswith('.gz') or '.gz?' in url or content.startswith(b'\x1f\x8b'):
             with gzip.GzipFile(fileobj=BytesIO(content)) as gz:
                 data = json.load(gz)
         else:

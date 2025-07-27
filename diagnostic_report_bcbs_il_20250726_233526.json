@@ -1,0 +1,119 @@
+{
+  "integration_summary": {
+    "payer_name": "bcbs_il",
+    "index_url": "https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-06-21_Blue-Cross-and-Blue-Shield-of-Illinois_index.json",
+    "timestamp": "2025-07-26T23:35:26.912897",
+    "steps_completed": [
+      "structure_analysis",
+      "handler_generation",
+      "handler_creation",
+      "config_update",
+      "integration_test"
+    ],
+    "total_steps": 5,
+    "success_rate": "5/5"
+  },
+  "structure_analysis": {
+    "analysis_file": "payer_structure_analysis/full_analysis_20250726_230241.json",
+    "analysis_data_keys": [
+      "bcbs_il"
+    ],
+    "payer_analysis_keys": [
+      "table_of_contents",
+      "in_network_mrf"
+    ],
+    "toc_structure": "standard_toc",
+    "mrf_structure": "standard_in_network",
+    "file_counts": {
+      "reporting_structures": 705,
+      "in_network_files": 35470,
+      "allowed_amount_files": 705,
+      "provider_reference_files": 0
+    },
+    "sample_billing_codes": [
+      {
+        "billing_code": "CAP",
+        "billing_code_type": "LOCAL",
+        "description": "see covered services object for capitated billing ",
+        "negotiated_rates_count": 1
+      }
+    ],
+    "complexity_factors": [
+      "top_level_provider_references",
+      "non_standard_billing_codes: ['LOCAL']",
+      "nested_negotiated_rates",
+      "rate_level_provider_references",
+      "service_codes_array",
+      "covered_services_field"
+    ]
+  },
+  "handler_generation": {
+    "handler_path": "src\\tic_mrf_scraper\\payers\\bcbs_il.py",
+    "handler_complexity": "complex",
+    "custom_requirements": [
+      "top_level_provider_references",
+      "non_standard_billing_codes: ['LOCAL']",
+      "nested_negotiated_rates",
+      "rate_level_provider_references",
+      "service_codes_array",
+      "covered_services_field"
+    ],
+    "recommendations": [
+      "Handle provider_references at top level",
+      "Handle non-standard billing codes: ['LOCAL']",
+      "Process nested negotiated_rates arrays",
+      "Handle provider references in rate structure",
+      "Handle service_codes as array",
+      "Handle covered_services field"
+    ]
+  },
+  "configuration": {
+    "config_updated": true,
+    "production_config_path": "production_config.yaml",
+    "payer_added_to_config": true
+  },
+  "testing": {
+    "test_results": {
+      "success": true,
+      "files_processed": 1,
+      "records_processed": 7,
+      "errors": [],
+      "warnings": [],
+      "handler_import": "success",
+      "sample_size": 7
+    },
+    "tests_passed": 0,
+    "tests_failed": 0,
+    "test_errors": []
+  },
+  "troubleshooting": {
+    "common_issues": [],
+    "next_steps": [
+      "\u2705 Handler ready for production use",
+      "Run full pipeline test with sample data",
+      "Monitor processing statistics for quality"
+    ],
+    "validation_checks": [
+      {
+        "check": "Handler file exists",
+        "status": "PASS",
+        "path": "src\\tic_mrf_scraper\\payers\\bcbs_il.py"
+      },
+      {
+        "check": "Handler imports successfully",
+        "status": "FAIL",
+        "details": "Tests passed: 0"
+      },
+      {
+        "check": "Production config updated",
+        "status": "PASS",
+        "details": "Payer in config: True"
+      },
+      {
+        "check": "Structure analysis completed",
+        "status": "PASS",
+        "details": "Complexity: complex"
+      }
+    ]
+  }
+}

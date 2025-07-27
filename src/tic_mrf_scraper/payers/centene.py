@@ -6,21 +6,24 @@ from . import PayerHandler, register_handler
 @register_handler("centene")
 @register_handler("centene_fidelis")
 @register_handler("fidelis")
+@register_handler("centene_ambetter")
 class CenteneHandler(PayerHandler):
-    """Enhanced handler for Centene-family payers."""
+    """Enhanced handler for Centene-family payers including Fidelis."""
 
     def parse_in_network(self, record: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Centene/Fidelis has:
-        - Provider references instead of embedded providers
-        - Simple consolidated file structure
-        - Direct provider info in provider_groups
-        - Minimal additional fields
+        - Standard CMS-compliant structure with in_network array
+        - Direct provider info in provider_groups (NPI/TIN)
+        - Negotiated rates with provider_groups and negotiated_prices
+        - HCPCS and CPT billing codes
+        - Service codes as arrays
         """
         if "negotiated_rates" in record:
             for rate_group in record.get("negotiated_rates", []):
                 self._normalize_centene_provider_structure(rate_group)
                 self._normalize_centene_pricing(rate_group)
+                self._normalize_centene_metadata(rate_group)
                 
         return [record]
     
@@ -34,24 +37,12 @@ class CenteneHandler(PayerHandler):
                 rate_group["provider_references"] = [refs]
         
         # Handle provider_groups (embedded providers)
+        # Note: Centene has direct NPI/TIN in provider_groups, which the parser can handle
+        # No transformation needed - let the parser handle the original structure
         if "provider_groups" in rate_group:
-            normalized_groups = []
-            for pg in rate_group["provider_groups"]:
-                if "npi" in pg and "providers" not in pg:
-                    # Centene puts provider info directly in provider_group
-                    # Wrap in providers array for consistency
-                    normalized_group = {
-                        "providers": [pg.copy()]
-                    }
-                    # Keep TIN at group level if present
-                    if "tin" in pg:
-                        normalized_group["tin"] = pg["tin"]
-                    normalized_groups.append(normalized_group)
-                else:
-                    # Standard structure
-                    normalized_groups.append(pg)
-            
-            rate_group["provider_groups"] = normalized_groups
+            # Just ensure provider_groups is a list
+            if not isinstance(rate_group["provider_groups"], list):
+                rate_group["provider_groups"] = [rate_group["provider_groups"]]
     
     def _normalize_centene_pricing(self, rate_group: Dict[str, Any]) -> None:
         """Normalize Centene's negotiated prices."""
@@ -77,3 +68,26 @@ class CenteneHandler(PayerHandler):
                     price["service_code"] = [service_code]
                 elif not isinstance(service_code, list):
                     price["service_code"] = []
+            
+            # Handle billing code modifiers if present
+            if "billing_code_modifier" in price:
+                modifier = price["billing_code_modifier"]
+                if isinstance(modifier, str):
+                    price["billing_code_modifier"] = [modifier]
+                elif not isinstance(modifier, list):
+                    price["billing_code_modifier"] = []
+    
+    def _normalize_centene_metadata(self, rate_group: Dict[str, Any]) -> None:
+        """Normalize Centene-specific metadata fields."""
+        # Ensure negotiation arrangement is standardized
+        if "negotiation_arrangement" in rate_group:
+            arrangement = rate_group["negotiation_arrangement"]
+            if isinstance(arrangement, str):
+                rate_group["negotiation_arrangement"] = arrangement.lower()
+        
+        # Handle billing code type version if present
+        if "billing_code_type_version" in rate_group:
+            version = rate_group["billing_code_type_version"]
+            if isinstance(version, str):
+                # Standardize version format
+                rate_group["billing_code_type_version"] = version.strip()

@@ -1,0 +1,15 @@
+================================================================================
+PAYER STRUCTURE ANALYSIS SUMMARY
+Generated: 2025-07-26 17:40:22
+================================================================================
+
+
+============================================================
+PAYER: centene_fidelis
+============================================================
+
+[TABLE OF CONTENTS STRUCTURE]
+  - Structure Type: standard_toc
+  - Top Level Keys: reporting_entity_name, reporting_entity_type, reporting_structure
+  - File Counts: {"reporting_structures": 2, "in_network_files": 2, "allowed_amount_files": 2, "provider_reference_files": 0}
+  - Sample Plan Keys: reporting_plans, in_network_files, allowed_amount_file

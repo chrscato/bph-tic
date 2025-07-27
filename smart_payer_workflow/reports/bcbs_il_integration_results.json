@@ -1,0 +1,33 @@
+{
+  "payer_name": "bcbs_il",
+  "index_url": "https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-06-21_Blue-Cross-and-Blue-Shield-of-Illinois_index.json",
+  "timestamp": "2025-07-26T22:28:06.829406",
+  "steps_completed": [
+    "structure_analysis",
+    "handler_generation",
+    "handler_creation",
+    "config_update",
+    "integration_test"
+  ],
+  "errors": [],
+  "warnings": [],
+  "structure_analysis": {
+    "handler_complexity": "standard",
+    "custom_requirements": [],
+    "provider_structure": "standard",
+    "rate_structure": "standard",
+    "compression_handling": "standard",
+    "recommendations": []
+  },
+  "handler_code": "from typing import Dict, Any, List\n\nfrom . import PayerHandler, register_handler\n\n\n@register_handler(\"bcbs_il\")\nclass Bcbs_IlHandler(PayerHandler):\n    \"\"\"Handler for Bcbs_Il MRF files.\n    \n    Generated based on structure analysis:\n    - Complexity: standard\n    - Provider structure: standard\n    - Rate structure: standard\n    - Custom requirements: \n    \"\"\"\n\n    def parse_in_network(self, record: Dict[str, Any]) -> List[Dict[str, Any]]:\n        \"\"\"Standard parsing for bcbs_il in_network records.\"\"\"\n        return [record]\n",
+  "handler_path": "src\\tic_mrf_scraper\\payers\\bcbs_il.py",
+  "test_results": {
+    "success": true,
+    "files_processed": 1,
+    "records_processed": 7,
+    "errors": [],
+    "warnings": [],
+    "handler_import": "success",
+    "sample_size": 7
+  }
+}

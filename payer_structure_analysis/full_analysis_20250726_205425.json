@@ -1,0 +1,400 @@
+{
+  "bcbs_la": {
+    "table_of_contents": {
+      "payer": "bcbs_la",
+      "url": "https://bcbsla.sapphiremrfhub.com/tocs/202507/2025-07-01_lahsic_index.json",
+      "structure_type": "standard_toc",
+      "top_level_keys": [
+        "reporting_entity_type",
+        "reporting_entity_name",
+        "reporting_structure"
+      ],
+      "file_counts": {
+        "reporting_structures": 4,
+        "in_network_files": 304,
+        "allowed_amount_files": 4,
+        "provider_reference_files": 0
+      },
+      "sample_files": {
+        "in_network": {
+          "url": "https://bcbsla.mrf.bcbs.com/2025-07_800_72A0_in-network-rates_01_of_02.json.gz?&Expires=1755784848&Signature=MpB9cTyMjJ-UjKjGCdn6UNPZ4L~mooBaVSvdgQmG07anPx6w90s7GX0g6tbWnjmjjrgMK4CNjmVamwpMnY9-kR3fCsqCiBccAkdOy4J9uztodxd3OJSzTBCkb3J2umZKgYYM87QAoJ-59uh7LTNBcZpX565rzmDaf4Ccf3tkHvKl~R6AlfwLBjSgNaKPPlQjE~w89YwwD1YRpW8MTPFlRjVEtenGbqAAq4bZpKZPRRUQFKqb47Yz8AxRqMYmm7EyXfsuqKd2ACyC7pdCXHjT6x-HaxqhwJhhzQdEQ3Lx4JnQVbvLnu211yeEOQJ33l9hQZNqndVAuTNjRjKexYnviA__&Key-Pair-Id=K27TQMT39R1C8A",
+          "url_display": "https://bcbsla.mrf.bcbs.com/2025-07_800_72A0_in-network-rates_01_of_02.json.gz?&Expires=1755784848&S...",
+          "description": "800|72A0"
+        }
+      },
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_type",
+          "reporting_entity_name",
+          "reporting_structure"
+        ],
+        "key_count": 3,
+        "children": {
+          "reporting_structure": {
+            "type": "array",
+            "length": 4,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "in_network_files",
+                "allowed_amount_file",
+                "reporting_plans"
+              ],
+              "key_count": 3,
+              "children": {
+                "in_network_files": {
+                  "type": "array",
+                  "length": 297,
+                  "sample_item": {
+                    "type": "truncated",
+                    "reason": "max_depth"
+                  }
+                },
+                "allowed_amount_file": {
+                  "type": "object",
+                  "keys": [
+                    "description",
+                    "location"
+                  ],
+                  "key_count": 2,
+                  "children": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "sample_structure": {
+        "keys": [
+          "in_network_files",
+          "allowed_amount_file",
+          "reporting_plans"
+        ],
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": ""
+      }
+    },
+    "in_network_mrf": {
+      "payer": "bcbs_la",
+      "url": "https://bcbsla.mrf.bcbs.com/2025-07_800_72A0_in-network-rates_01_of_02.json.gz?&Expires=1755784848&Signature=MpB9cTyMjJ-UjKjGCdn6UNPZ4L~mooBaVSvdgQmG07anPx6w90s7GX0g6tbWnjmjjrgMK4CNjmVamwpMnY9-kR3fCsqCiBccAkdOy4J9uztodxd3OJSzTBCkb3J2umZKgYYM87QAoJ-59uh7LTNBcZpX565rzmDaf4Ccf3tkHvKl~R6AlfwLBjSgNaKPPlQjE~w89YwwD1YRpW8MTPFlRjVEtenGbqAAq4bZpKZPRRUQFKqb47Yz8AxRqMYmm7EyXfsuqKd2ACyC7pdCXHjT6x-HaxqhwJhhzQdEQ3Lx4JnQVbvLnu211yeEOQJ33l9hQZNqndVAuTNjRjKexYnviA__&Key-Pair-Id=K27TQMT39R1C8A",
+      "structure_type": "standard_in_network",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "last_updated_on",
+        "version",
+        "in_network"
+      ],
+      "in_network_count": 7084,
+      "billing_code_types": {
+        "CPT": 5
+      },
+      "sample_items": [
+        {
+          "index": 0,
+          "billing_code": "00100",
+          "billing_code_type": "CPT",
+          "description": "ANESTHESIA FOR PROCEDURES ON SALIVARY GLANDS, INCL",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 2,
+          "rate_structure": {
+            "keys": [
+              "provider_groups",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": true,
+            "has_provider_references": false,
+            "negotiated_prices_count": 1
+          },
+          "provider_group_structure": {
+            "keys": [
+              "npi",
+              "tin"
+            ],
+            "has_npi": true,
+            "has_tin": true,
+            "has_providers": false
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier",
+              "additional_information"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 1275.74,
+            "service_codes": [
+              "22"
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "billing_code": "00100",
+          "billing_code_type": "CPT",
+          "description": "ANESTHESIA FOR PROCEDURES ON SALIVARY GLANDS, INCL",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 3,
+          "rate_structure": {
+            "keys": [
+              "provider_groups",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": true,
+            "has_provider_references": false,
+            "negotiated_prices_count": 1
+          },
+          "provider_group_structure": {
+            "keys": [
+              "npi",
+              "tin"
+            ],
+            "has_npi": true,
+            "has_tin": true,
+            "has_providers": false
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier",
+              "additional_information"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 1278.76,
+            "service_codes": [
+              "21"
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "billing_code": "00102",
+          "billing_code_type": "CPT",
+          "description": "ANESTHESIA FOR PROCEDURES ON PLASTIC REPAIR OF CLE",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 1,
+          "rate_structure": {
+            "keys": [
+              "provider_groups",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": true,
+            "has_provider_references": false,
+            "negotiated_prices_count": 1
+          },
+          "provider_group_structure": {
+            "keys": [
+              "npi",
+              "tin"
+            ],
+            "has_npi": true,
+            "has_tin": true,
+            "has_providers": false
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier",
+              "additional_information"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 1789.46,
+            "service_codes": [
+              "22"
+            ]
+          }
+        },
+        {
+          "index": 3,
+          "billing_code": "00103",
+          "billing_code_type": "CPT",
+          "description": "ANESTHESIA FOR RECONSTRUCTIVE PROCEDURES OF EYELID",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 8,
+          "rate_structure": {
+            "keys": [
+              "provider_groups",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": true,
+            "has_provider_references": false,
+            "negotiated_prices_count": 1
+          },
+          "provider_group_structure": {
+            "keys": [
+              "npi",
+              "tin"
+            ],
+            "has_npi": true,
+            "has_tin": true,
+            "has_providers": false
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier",
+              "additional_information"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 284,
+            "service_codes": [
+              "24"
+            ]
+          }
+        },
+        {
+          "index": 4,
+          "billing_code": "00103",
+          "billing_code_type": "CPT",
+          "description": "ANESTHESIA FOR RECONSTRUCTIVE PROCEDURES OF EYELID",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 5,
+          "rate_structure": {
+            "keys": [
+              "provider_groups",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": true,
+            "has_provider_references": false,
+            "negotiated_prices_count": 1
+          },
+          "provider_group_structure": {
+            "keys": [
+              "npi",
+              "tin"
+            ],
+            "has_npi": true,
+            "has_tin": true,
+            "has_providers": false
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier",
+              "additional_information"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 291.43,
+            "service_codes": [
+              "24"
+            ]
+          }
+        }
+      ],
+      "rate_structure": {},
+      "provider_structure": {},
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "last_updated_on",
+          "version",
+          "in_network"
+        ],
+        "key_count": 5,
+        "children": {
+          "in_network": {
+            "type": "array",
+            "length": 7084,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "negotiation_arrangement",
+                "name",
+                "billing_code_type",
+                "billing_code_type_version",
+                "billing_code",
+                "description",
+                "negotiated_rates"
+              ],
+              "key_count": 7,
+              "children": {
+                "negotiated_rates": {
+                  "type": "array",
+                  "length": 2,
+                  "sample_item": {
+                    "type": "object",
+                    "keys": [
+                      "provider_groups",
+                      "negotiated_prices"
+                    ],
+                    "key_count": 2,
+                    "children": {}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

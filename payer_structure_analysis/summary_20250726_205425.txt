@@ -1,0 +1,30 @@
+================================================================================
+PAYER STRUCTURE ANALYSIS SUMMARY
+Generated: 2025-07-26 20:54:25
+================================================================================
+
+
+============================================================
+PAYER: bcbs_la
+============================================================
+
+[TABLE OF CONTENTS STRUCTURE]
+  - Structure Type: standard_toc
+  - Top Level Keys: reporting_entity_type, reporting_entity_name, reporting_structure
+  - File Counts: {"reporting_structures": 4, "in_network_files": 304, "allowed_amount_files": 4, "provider_reference_files": 0}
+  - Sample Plan Keys: in_network_files, allowed_amount_file, reporting_plans
+
+[IN-NETWORK MRF STRUCTURE]
+  - Structure Type: standard_in_network
+  - Total Items: 7084
+  - Billing Code Types: {'CPT': 5}
+
+  Sample Item Structure:
+    - Item Keys: negotiation_arrangement, name, billing_code_type, billing_code_type_version, billing_code, description, negotiated_rates
+    - Rate Keys: provider_groups, negotiated_prices
+    - Has Provider Groups: True
+    - Has Provider References: False
+    - Provider Group Keys: npi, tin
+    - Provider Info Location: Direct in provider_group
+    - Price Keys: negotiated_type, negotiated_rate, expiration_date, service_code, billing_class, billing_code_modifier, additional_information
+    - Rate Field Name: negotiated_rate

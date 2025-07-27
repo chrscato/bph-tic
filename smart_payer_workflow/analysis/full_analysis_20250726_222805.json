@@ -1,0 +1,206 @@
+{
+  "bcbs_il": {
+    "table_of_contents": {
+      "payer": "bcbs_il",
+      "url": "https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-06-21_Blue-Cross-and-Blue-Shield-of-Illinois_index.json",
+      "structure_type": "standard_toc",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "reporting_structure"
+      ],
+      "file_counts": {
+        "reporting_structures": 705,
+        "in_network_files": 35470,
+        "allowed_amount_files": 705,
+        "provider_reference_files": 0
+      },
+      "sample_files": {
+        "in_network": {
+          "url": "https://app0004702110a5prdnc868.blob.core.windows.net/output/2025-06-17_Blue-Cross-and-Blue-Shield-of-Illinois_Blue-Advantage-HMO-BLUEH-L52-IL-HMO-Non-Standard_in-network-rates.json.gz",
+          "url_display": "https://app0004702110a5prdnc868.blob.core.windows.net/output/2025-06-17_Blue-Cross-and-Blue-Shield-o...",
+          "description": "Blue Advantage HMO L52 BLUEH Non-Standard in-network file"
+        }
+      },
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "reporting_structure"
+        ],
+        "key_count": 3,
+        "children": {
+          "reporting_structure": {
+            "type": "array",
+            "length": 705,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "reporting_plans",
+                "in_network_files",
+                "allowed_amount_file"
+              ],
+              "key_count": 3,
+              "children": {
+                "in_network_files": {
+                  "type": "array",
+                  "length": 3,
+                  "sample_item": {
+                    "type": "truncated",
+                    "reason": "max_depth"
+                  }
+                },
+                "allowed_amount_file": {
+                  "type": "array",
+                  "length": 1,
+                  "sample_item": {
+                    "type": "truncated",
+                    "reason": "max_depth"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "sample_structure": {
+        "keys": [
+          "reporting_plans",
+          "in_network_files",
+          "allowed_amount_file"
+        ],
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": ""
+      }
+    },
+    "in_network_mrf": {
+      "payer": "bcbs_il",
+      "url": "https://app0004702110a5prdnc868.blob.core.windows.net/output/2025-06-17_Blue-Cross-and-Blue-Shield-of-Illinois_Blue-Advantage-HMO-BLUEH-L52-IL-HMO-Non-Standard_in-network-rates.json.gz",
+      "structure_type": "standard_in_network",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "last_updated_on",
+        "version",
+        "provider_references",
+        "in_network"
+      ],
+      "in_network_count": 1,
+      "billing_code_types": {
+        "LOCAL": 1
+      },
+      "sample_items": [
+        {
+          "index": 0,
+          "billing_code": "CAP",
+          "billing_code_type": "LOCAL",
+          "description": "see covered services object for capitated billing ",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates",
+            "covered_services"
+          ],
+          "negotiated_rates_count": 1,
+          "rate_structure": {
+            "keys": [
+              "negotiated_prices",
+              "provider_references"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 22.48,
+            "service_codes": [
+              "11"
+            ]
+          }
+        }
+      ],
+      "rate_structure": {},
+      "provider_structure": {},
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "last_updated_on",
+          "version",
+          "provider_references",
+          "in_network"
+        ],
+        "key_count": 6,
+        "children": {
+          "provider_references": {
+            "type": "array",
+            "length": 7,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "provider_group_id",
+                "provider_groups"
+              ],
+              "key_count": 2,
+              "children": {}
+            }
+          },
+          "in_network": {
+            "type": "array",
+            "length": 1,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "negotiation_arrangement",
+                "name",
+                "billing_code_type",
+                "billing_code_type_version",
+                "billing_code",
+                "description",
+                "negotiated_rates",
+                "covered_services"
+              ],
+              "key_count": 8,
+              "children": {
+                "negotiated_rates": {
+                  "type": "array",
+                  "length": 1,
+                  "sample_item": {
+                    "type": "object",
+                    "keys": [
+                      "negotiated_prices",
+                      "provider_references"
+                    ],
+                    "key_count": 2,
+                    "children": {
+                      "provider_references": {
+                        "type": "truncated",
+                        "reason": "max_depth"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

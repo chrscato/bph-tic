@@ -1,0 +1,15 @@
+{
+  "payers_processed": 1,
+  "total_files_found": 2,
+  "files_processed": 2,
+  "files_succeeded": 2,
+  "files_failed": 0,
+  "records_extracted": 20000,
+  "records_validated": 20000,
+  "s3_uploads": 48,
+  "processing_start": "2025-07-27 00:36:58.734694+00:00",
+  "errors": [],
+  "processing_time_seconds": 37.19002,
+  "processing_rate_per_second": 537.7786836360938,
+  "completion_time": "2025-07-27T00:37:35.924728+00:00"
+}

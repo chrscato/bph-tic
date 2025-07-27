@@ -165,9 +165,14 @@ class DataQualityValidator:
             "validation_notes": []
         }
         
-        # Required field validation
-        required_fields = ["service_code", "negotiated_rate", "payer_uuid", "organization_uuid"]
+        # Required field validation - handle both service_code and service_codes
+        required_fields = ["negotiated_rate", "payer_uuid", "organization_uuid"]
         missing_fields = [f for f in required_fields if not record.get(f)]
+        
+        # Check for service_code or service_codes
+        has_service_code = record.get("service_code") or record.get("service_codes")
+        if not has_service_code:
+            missing_fields.append("service_code")
         
         if missing_fields:
             quality_flags["is_validated"] = False
@@ -415,6 +420,14 @@ class ProductionETLPipeline:
                     payer_name
                 )
                 
+                # Debug normalization for first few records
+                if file_stats["records_extracted"] < 5:
+                    logger.info("debug_normalization",
+                              record_extracted=file_stats["records_extracted"],
+                              raw_record_keys=list(raw_record.keys()),
+                              normalized_keys=list(normalized.keys()) if normalized else None,
+                              is_normalized=bool(normalized))
+                
                 if not normalized:
                     continue
                 
@@ -423,9 +436,38 @@ class ProductionETLPipeline:
                     payer_uuid, normalized, file_info, raw_record
                 )
                 
+                # Debug record creation for first few records
+                if file_stats["records_extracted"] < 5:
+                    logger.info("debug_record_creation",
+                              record_extracted=file_stats["records_extracted"],
+                              normalized_keys=list(normalized.keys()),
+                              rate_record_keys=list(rate_record.keys()),
+                              has_payer_uuid=bool(rate_record.get("payer_uuid")),
+                              has_org_uuid=bool(rate_record.get("organization_uuid")),
+                              npi_list=rate_record.get("provider_network", {}).get("npi_list", []))
+                
                 # Validate quality
                 quality_flags = self.validator.validate_rate_record(rate_record)
                 rate_record["quality_flags"] = quality_flags
+                
+                # Debug logging for first few records
+                if file_stats["records_extracted"] < 5:
+                    logger.info("debug_validation", 
+                              record_keys=list(rate_record.keys()),
+                              has_payer_uuid=bool(rate_record.get("payer_uuid")),
+                              has_org_uuid=bool(rate_record.get("organization_uuid")),
+                              npi_list=rate_record.get("provider_network", {}).get("npi_list", []),
+                              is_validated=quality_flags["is_validated"],
+                              validation_notes=quality_flags["validation_notes"])
+                
+                # Additional debug for validation failures
+                if not quality_flags["is_validated"] and file_stats["records_extracted"] < 10:
+                    logger.warning("debug_validation_failure",
+                                 record_extracted=file_stats["records_extracted"],
+                                 validation_notes=quality_flags["validation_notes"],
+                                 has_payer_uuid=bool(rate_record.get("payer_uuid")),
+                                 has_org_uuid=bool(rate_record.get("organization_uuid")),
+                                 npi_count=len(rate_record.get("provider_network", {}).get("npi_list", [])))
                 
                 if quality_flags["is_validated"]:
                     file_stats["records_validated"] += 1
@@ -600,11 +642,17 @@ class ProductionETLPipeline:
             normalized.get("provider_name", "")
         )
         
-        # Generate rate UUID
+        # Generate rate UUID - handle both service_code and service_codes
+        service_code = normalized.get("service_code", "")
+        if not service_code and normalized.get("service_codes"):
+            # Use first service code if service_code is not available
+            service_codes = normalized["service_codes"]
+            service_code = service_codes[0] if service_codes else ""
+        
         rate_uuid = self.uuid_gen.rate_uuid(
             payer_uuid,
             org_uuid,
-            normalized["service_code"],
+            service_code,
             normalized["negotiated_rate"],
             normalized.get("expiration_date", "")
         )
@@ -613,14 +661,16 @@ class ProductionETLPipeline:
         npi_list = normalized.get("provider_npi", [])
         if isinstance(npi_list, (int, str)):
             npi_list = [str(npi_list)]
-        elif npi_list:
+        elif isinstance(npi_list, list):
             npi_list = [str(npi) for npi in npi_list]
+        else:
+            npi_list = []
         
         return {
             "rate_uuid": rate_uuid,
             "payer_uuid": payer_uuid,
             "organization_uuid": org_uuid,
-            "service_code": normalized["service_code"],
+            "service_code": service_code,
             "service_description": normalized.get("description", ""),
             "billing_code_type": normalized.get("billing_code_type", ""),
             "negotiated_rate": float(normalized["negotiated_rate"]),
@@ -909,7 +959,7 @@ def create_production_config() -> ETLConfig:
         config = yaml.safe_load(f)
     
     # Get active payers (non-commented ones)
-    active_payers = [payer for payer in config['payer_endpoints'].keys() 
+    active_payers = [payer for payer in config['endpoints'].keys() 
                     if not payer.startswith('#')]
     
     # Generate output directory name based on active payers
@@ -922,7 +972,7 @@ def create_production_config() -> ETLConfig:
         output_dir = "ortho_radiology_data_default"
     
     return ETLConfig(
-        payer_endpoints=config['payer_endpoints'],
+        payer_endpoints=config['endpoints'],
         cpt_whitelist=config['cpt_whitelist'],
         batch_size=config['processing']['batch_size'],
         parallel_workers=config['processing']['parallel_workers'],

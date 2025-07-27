@@ -1,0 +1,394 @@
+{
+  "centene_fidelis": {
+    "table_of_contents": {
+      "payer": "centene_fidelis",
+      "url": "https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_fidelis_index.json",
+      "structure_type": "standard_toc",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "reporting_structure"
+      ],
+      "file_counts": {
+        "reporting_structures": 2,
+        "in_network_files": 2,
+        "allowed_amount_files": 2,
+        "provider_reference_files": 0
+      },
+      "sample_files": {
+        "in_network": {
+          "url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_centene-management-company-llc_fidelis-ex_in-network.json",
+          "url_display": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_centene-manageme...",
+          "description": "in-network file"
+        }
+      },
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "reporting_structure"
+        ],
+        "key_count": 3,
+        "children": {
+          "reporting_structure": {
+            "type": "array",
+            "length": 2,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "reporting_plans",
+                "in_network_files",
+                "allowed_amount_file"
+              ],
+              "key_count": 3,
+              "children": {
+                "in_network_files": {
+                  "type": "array",
+                  "length": 1,
+                  "sample_item": {
+                    "type": "truncated",
+                    "reason": "max_depth"
+                  }
+                },
+                "allowed_amount_file": {
+                  "type": "object",
+                  "keys": [
+                    "description",
+                    "location"
+                  ],
+                  "key_count": 2,
+                  "children": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "sample_structure": {
+        "keys": [
+          "reporting_plans",
+          "in_network_files",
+          "allowed_amount_file"
+        ],
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": ""
+      }
+    },
+    "in_network_mrf": {
+      "payer": "centene_fidelis",
+      "url": "http://centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_centene-management-company-llc_fidelis-ex_in-network.json",
+      "structure_type": "standard_in_network",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "version",
+        "last_updated_on",
+        "in_network"
+      ],
+      "in_network_count": 2879,
+      "billing_code_types": {
+        "HCPCS": 3,
+        "CPT": 2
+      },
+      "sample_items": [
+        {
+          "index": 0,
+          "billing_code": "0202U",
+          "billing_code_type": "HCPCS",
+          "description": "NFCT DS BCT/VIR RESPIR DNA/RNA 22 TRGT SARSCOV2",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 1,
+          "rate_structure": {
+            "keys": [
+              "negotiated_prices",
+              "provider_groups"
+            ],
+            "has_provider_groups": true,
+            "has_provider_references": false,
+            "negotiated_prices_count": 1
+          },
+          "provider_group_structure": {
+            "keys": [
+              "npi",
+              "tin"
+            ],
+            "has_npi": true,
+            "has_tin": true,
+            "has_providers": false
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 131.38,
+            "service_codes": [
+              "81"
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "billing_code": "0240U",
+          "billing_code_type": "HCPCS",
+          "description": "NFCT DS RNA 3 TARGETS UPPER RESPIRATORY SPECIMEN",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 1,
+          "rate_structure": {
+            "keys": [
+              "negotiated_prices",
+              "provider_groups"
+            ],
+            "has_provider_groups": true,
+            "has_provider_references": false,
+            "negotiated_prices_count": 1
+          },
+          "provider_group_structure": {
+            "keys": [
+              "npi",
+              "tin"
+            ],
+            "has_npi": true,
+            "has_tin": true,
+            "has_providers": false
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 121.23,
+            "service_codes": [
+              "11"
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "billing_code": "0241U",
+          "billing_code_type": "HCPCS",
+          "description": "NFCT DS RNA 4 TARGETS UPPER RESPIRATORY SPECIMEN",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 9,
+          "rate_structure": {
+            "keys": [
+              "negotiated_prices",
+              "provider_groups"
+            ],
+            "has_provider_groups": true,
+            "has_provider_references": false,
+            "negotiated_prices_count": 1
+          },
+          "provider_group_structure": {
+            "keys": [
+              "npi",
+              "tin"
+            ],
+            "has_npi": true,
+            "has_tin": true,
+            "has_providers": false
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 249.62,
+            "service_codes": [
+              "11"
+            ]
+          }
+        },
+        {
+          "index": 3,
+          "billing_code": "10005",
+          "billing_code_type": "CPT",
+          "description": "FINE NEEDLE ASPIRATION BX W/US GDN 1ST LESION",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 3,
+          "rate_structure": {
+            "keys": [
+              "negotiated_prices",
+              "provider_groups"
+            ],
+            "has_provider_groups": true,
+            "has_provider_references": false,
+            "negotiated_prices_count": 1
+          },
+          "provider_group_structure": {
+            "keys": [
+              "npi",
+              "tin"
+            ],
+            "has_npi": true,
+            "has_tin": true,
+            "has_providers": false
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 144.57,
+            "service_codes": [
+              "11"
+            ]
+          }
+        },
+        {
+          "index": 4,
+          "billing_code": "10006",
+          "billing_code_type": "CPT",
+          "description": "FINE NEEDLE ASPIRATION BX W/US GDN EA ADDL",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 1,
+          "rate_structure": {
+            "keys": [
+              "negotiated_prices",
+              "provider_groups"
+            ],
+            "has_provider_groups": true,
+            "has_provider_references": false,
+            "negotiated_prices_count": 1
+          },
+          "provider_group_structure": {
+            "keys": [
+              "npi",
+              "tin"
+            ],
+            "has_npi": true,
+            "has_tin": true,
+            "has_providers": false
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 67.8,
+            "service_codes": [
+              "11"
+            ]
+          }
+        }
+      ],
+      "rate_structure": {},
+      "provider_structure": {},
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "version",
+          "last_updated_on",
+          "in_network"
+        ],
+        "key_count": 5,
+        "children": {
+          "in_network": {
+            "type": "array",
+            "length": 2879,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "negotiation_arrangement",
+                "name",
+                "billing_code_type",
+                "billing_code_type_version",
+                "billing_code",
+                "description",
+                "negotiated_rates"
+              ],
+              "key_count": 7,
+              "children": {
+                "negotiated_rates": {
+                  "type": "array",
+                  "length": 1,
+                  "sample_item": {
+                    "type": "object",
+                    "keys": [
+                      "negotiated_prices",
+                      "provider_groups"
+                    ],
+                    "key_count": 2,
+                    "children": {}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

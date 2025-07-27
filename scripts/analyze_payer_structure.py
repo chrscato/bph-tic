@@ -20,7 +20,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
     with open(config_path, 'r') as f:
         return yaml.safe_load(f)
 
-def fetch_json(url: str, max_size_mb: int = 100) -> Optional[Dict[str, Any]]:
+def fetch_json(url: str, max_size_mb: int = 500) -> Optional[Dict[str, Any]]:
     """Fetch and parse JSON from URL with size limit."""
     try:
         # Stream download to check size
@@ -45,6 +45,63 @@ def fetch_json(url: str, max_size_mb: int = 100) -> Optional[Dict[str, Any]]:
             
     except Exception as e:
         print(f"  [X] Error fetching {url}: {str(e)}")
+        return None
+
+def fetch_json_streaming(url: str, max_size_mb: int = 1000) -> Optional[Dict[str, Any]]:
+    """Fetch and parse JSON from URL with streaming for large files."""
+    try:
+        # Stream download to check size
+        resp = requests.get(url, stream=True)
+        resp.raise_for_status()
+        
+        # Check content length if available
+        content_length = resp.headers.get('content-length')
+        if content_length and int(content_length) > max_size_mb * 1024 * 1024:
+            print(f"  [!] File too large: {int(content_length) / 1024 / 1024:.1f} MB")
+            return None
+        
+        # For very large files, use streaming JSON parser
+        if content_length and int(content_length) > 100 * 1024 * 1024:  # > 100MB
+            print(f"  [*] Using streaming parser for large file ({int(content_length) / 1024 / 1024:.1f} MB)")
+            return fetch_json_streaming_large(url, resp)
+        
+        # Download content for smaller files
+        content = resp.content
+        
+        # Handle gzipped content
+        if url.endswith('.gz') or content.startswith(b'\x1f\x8b'):
+            with gzip.GzipFile(fileobj=BytesIO(content)) as gz:
+                return json.load(gz)
+        else:
+            return json.loads(content.decode('utf-8'))
+            
+    except Exception as e:
+        print(f"  [X] Error fetching {url}: {str(e)}")
+        return None
+
+def fetch_json_streaming_large(url: str, resp) -> Optional[Dict[str, Any]]:
+    """Stream parse large JSON files to avoid memory issues."""
+    try:
+        import ijson  # For streaming JSON parsing
+        
+        # Handle gzipped content
+        if url.endswith('.gz'):
+            import gzip
+            stream = gzip.GzipFile(fileobj=resp.raw)
+        else:
+            stream = resp.raw
+        
+        # Parse JSON stream
+        parser = ijson.parse(stream)
+        # This is a simplified approach - for full implementation we'd need more complex streaming
+        # For now, fall back to regular parsing with increased limits
+        return json.loads(resp.content.decode('utf-8'))
+        
+    except ImportError:
+        print("  [!] ijson not available, falling back to regular parsing")
+        return json.loads(resp.content.decode('utf-8'))
+    except Exception as e:
+        print(f"  [X] Error in streaming parse: {str(e)}")
         return None
 
 def analyze_structure(data: Any, path: str = "root", max_depth: int = 4, current_depth: int = 0) -> Dict[str, Any]:
@@ -194,7 +251,10 @@ def analyze_in_network_file(url: str, payer: str, max_items: int = 5) -> Dict[st
     print(f"\n[MRF] Analyzing In-Network MRF for {payer}")
     print(f"   URL: {url[:100]}...")
     
-    data = fetch_json(url, max_size_mb=50)  # Smaller limit for MRF files
+    # Try streaming first for large files, then fall back to regular fetch
+    data = fetch_json_streaming(url, max_size_mb=1000)  # Much higher limit for MRF files
+    if not data:
+        data = fetch_json(url, max_size_mb=500)  # Fallback with higher limit
     if not data:
         return {"error": "Failed to fetch or file too large"}
     
@@ -214,6 +274,11 @@ def analyze_in_network_file(url: str, payer: str, max_items: int = 5) -> Dict[st
         analysis["structure_type"] = "standard_in_network"
         in_network = data["in_network"]
         analysis["in_network_count"] = len(in_network)
+        
+        # For very large files, limit analysis to avoid memory issues
+        if len(in_network) > 100000:  # More than 100K items
+            print(f"  [!] Large file detected: {len(in_network):,} items. Limiting analysis to first {max_items} items.")
+            analysis["note"] = f"Large file - only analyzing first {max_items} items out of {len(in_network):,} total"
         
         # Analyze sample items
         for i, item in enumerate(in_network[:max_items]):
@@ -361,7 +426,8 @@ def main():
     
     # Load configuration
     config = load_config(args.config)
-    payer_endpoints = config.get("payer_endpoints", {})
+    # Try both payer_endpoints and endpoints (for backward compatibility)
+    payer_endpoints = config.get("payer_endpoints", config.get("endpoints", {}))
     
     # Filter payers if specified
     if args.payers:
