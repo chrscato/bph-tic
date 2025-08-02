@@ -8,6 +8,7 @@ import json
 import yaml
 import requests
 import gzip
+import os
 from io import BytesIO
 from pathlib import Path
 from datetime import datetime
@@ -20,10 +21,36 @@ def load_config(config_path: str) -> Dict[str, Any]:
     with open(config_path, 'r') as f:
         return yaml.safe_load(f)
 
+def is_local_file(path: str) -> bool:
+    """Check if the path is a local file."""
+    return os.path.exists(path) or path.startswith(('file://', 'C:', 'D:', '/', '\\'))
+
+def load_local_file(file_path: str) -> Optional[Dict[str, Any]]:
+    """Load JSON from a local file, handling gzip compression."""
+    try:
+        # Remove file:// prefix if present
+        if file_path.startswith('file://'):
+            file_path = file_path[7:]
+        
+        # Handle gzip compression
+        if file_path.endswith('.gz'):
+            with gzip.open(file_path, 'rt', encoding='utf-8') as f:
+                return json.load(f)
+        else:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"  [X] Error loading local file {file_path}: {str(e)}")
+        return None
+
 def fetch_json(url: str, max_size_mb: int = 500) -> Optional[Dict[str, Any]]:
     """Fetch and parse JSON from URL with size limit."""
     try:
-        # Stream download to check size
+        # Handle local files
+        if is_local_file(url):
+            return load_local_file(url)
+        
+        # Handle HTTP URLs
         resp = requests.get(url, stream=True)
         resp.raise_for_status()
         
@@ -50,7 +77,11 @@ def fetch_json(url: str, max_size_mb: int = 500) -> Optional[Dict[str, Any]]:
 def fetch_json_streaming(url: str, max_size_mb: int = 1000) -> Optional[Dict[str, Any]]:
     """Fetch and parse JSON from URL with streaming for large files."""
     try:
-        # Stream download to check size
+        # Handle local files
+        if is_local_file(url):
+            return load_local_file(url)
+        
+        # Handle HTTP URLs
         resp = requests.get(url, stream=True)
         resp.raise_for_status()
         
@@ -85,21 +116,33 @@ def fetch_json_streaming_large(url: str, resp) -> Optional[Dict[str, Any]]:
         import ijson  # For streaming JSON parsing
         
         # Handle gzipped content
-        if url.endswith('.gz'):
+        if url.endswith('.gz') or resp.content.startswith(b'\x1f\x8b'):
             import gzip
-            stream = gzip.GzipFile(fileobj=resp.raw)
+            # For gzipped content, we need to decompress first
+            with gzip.GzipFile(fileobj=BytesIO(resp.content)) as gz:
+                return json.load(gz)
         else:
-            stream = resp.raw
-        
-        # Parse JSON stream
-        parser = ijson.parse(stream)
-        # This is a simplified approach - for full implementation we'd need more complex streaming
-        # For now, fall back to regular parsing with increased limits
-        return json.loads(resp.content.decode('utf-8'))
+            # For non-gzipped content, try streaming first
+            try:
+                stream = resp.raw
+                # Parse JSON stream
+                parser = ijson.parse(stream)
+                # This is a simplified approach - for full implementation we'd need more complex streaming
+                # For now, fall back to regular parsing with increased limits
+                return json.loads(resp.content.decode('utf-8'))
+            except Exception:
+                # Fall back to regular parsing
+                return json.loads(resp.content.decode('utf-8'))
         
     except ImportError:
         print("  [!] ijson not available, falling back to regular parsing")
-        return json.loads(resp.content.decode('utf-8'))
+        # Handle gzipped content in fallback case
+        if url.endswith('.gz') or resp.content.startswith(b'\x1f\x8b'):
+            import gzip
+            with gzip.GzipFile(fileobj=BytesIO(resp.content)) as gz:
+                return json.load(gz)
+        else:
+            return json.loads(resp.content.decode('utf-8'))
     except Exception as e:
         print(f"  [X] Error in streaming parse: {str(e)}")
         return None

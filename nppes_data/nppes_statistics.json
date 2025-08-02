@@ -1,12 +1,12 @@
 {
-  "total_providers": 71551,
-  "individual_providers": 70507,
-  "organization_providers": 1044,
+  "total_providers": 219304,
+  "individual_providers": 214599,
+  "organization_providers": 4705,
   "providers_with_addresses": "0",
-  "providers_with_specialties": "70628",
+  "providers_with_specialties": "217193",
   "providers_with_credentials": "0",
-  "successfully_fetched": "71551",
+  "successfully_fetched": "219304",
   "unique_states": 0,
-  "unique_primary_specialties": 421,
-  "last_updated": "2025-07-24T13:33:06.973425+00:00"
+  "unique_primary_specialties": 531,
+  "last_updated": "2025-08-01T20:47:49.276863+00:00"
 }

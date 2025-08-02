@@ -3,6 +3,19 @@
 
 import os
 import uuid
+import gc
+import psutil
+import time
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("Loaded environment variables from .env file")
+except ImportError:
+    print("python-dotenv not installed, using system environment variables")
+except Exception as e:
+    print(f"Warning: Could not load .env file: {e}")
 import hashlib
 import boto3
 import pandas as pd
@@ -56,6 +69,32 @@ structlog.configure(
 # Get logger for main pipeline
 logger = get_logger(__name__)
 
+def get_memory_usage():
+    """Get current memory usage in MB."""
+    process = psutil.Process(os.getpid())
+    return process.memory_info().rss / 1024 / 1024
+
+def log_memory_usage(stage: str):
+    """Log memory usage for monitoring."""
+    memory_mb = get_memory_usage()
+    logger.info("memory_usage", stage=stage, memory_mb=memory_mb)
+    return memory_mb
+
+def check_memory_pressure():
+    """Check if memory usage is approaching dangerous levels."""
+    memory_mb = get_memory_usage()
+    if memory_mb > 2000:  # 2GB threshold
+        logger.warning("memory_pressure_detected", memory_mb=memory_mb)
+        return True
+    return False
+
+def force_memory_cleanup():
+    """Aggressive memory cleanup."""
+    gc.collect()
+    memory_mb = get_memory_usage()
+    logger.info("forced_memory_cleanup", memory_mb_after=memory_mb)
+    return memory_mb
+
 # Global progress tracking
 class ProgressTracker:
     def __init__(self):
@@ -84,9 +123,12 @@ class ProgressTracker:
             remaining_files = total_files - files_completed
             eta = remaining_files / (files_completed / elapsed_time) if files_completed > 0 else 0
             
+            # Get memory usage
+            memory_mb = get_memory_usage()
+            
             # Update progress bar description
             self.pbar.set_description(
-                f"{payer} | {records_processed:,} records | {rate:.1f} rec/s | ETA: {eta:.1f}s"
+                f"{payer} | {records_processed:,} records | {rate:.1f} rec/s | {memory_mb:.1f}MB | ETA: {eta:.1f}s"
             )
             self.pbar.update(files_completed - self.pbar.n)
     
@@ -108,6 +150,7 @@ class ETLConfig:
     parallel_workers: int = 2
     max_files_per_payer: Optional[int] = None
     max_records_per_file: Optional[int] = None
+    safety_limit_records_per_file: int = 100000  # Hard limit to prevent crashes
     
     # Output configuration
     local_output_dir: str = "ortho_radiology_data_default"
@@ -225,6 +268,9 @@ class ProductionETLPipeline:
             "processing_start": datetime.now(timezone.utc),
             "errors": []
         }
+        
+        # Log initial memory usage
+        log_memory_usage("pipeline_initialization")
     
     def setup_local_output_structure(self):
         """Create local output directory structure (fallback if no S3)."""
@@ -250,6 +296,14 @@ class ProductionETLPipeline:
             # Process payers sequentially for better resource management
             for payer_name, index_url in self.config.payer_endpoints.items():
                 try:
+                    # Log memory before processing each payer
+                    log_memory_usage(f"before_payer_{payer_name}")
+                    
+                    # Check memory pressure before starting payer
+                    if check_memory_pressure():
+                        logger.warning("memory_pressure_before_payer", payer=payer_name)
+                        force_memory_cleanup()
+                    
                     payer_stats = self.process_payer(payer_name, index_url)
                     logger.info("completed_payer", payer=payer_name, stats=payer_stats)
                     self.stats["payers_processed"] += 1
@@ -261,6 +315,10 @@ class ProductionETLPipeline:
                     self.stats["files_failed"] += payer_stats.get("files_failed", 0)
                     self.stats["records_extracted"] += payer_stats.get("records_extracted", 0)
                     self.stats["records_validated"] += payer_stats.get("records_validated", 0)
+                    
+                    # Force garbage collection after each payer
+                    force_memory_cleanup()
+                    log_memory_usage(f"after_payer_{payer_name}")
                     
                 except Exception as e:
                     error_msg = f"Failed processing {payer_name}: {str(e)}"
@@ -323,6 +381,16 @@ class ProductionETLPipeline:
                 payer_stats["files_processed"] += 1
                 
                 try:
+                    # Log memory before processing each file
+                    log_memory_usage(f"before_file_{file_index}")
+                    
+                    # Check memory pressure before starting file
+                    if check_memory_pressure():
+                        logger.warning("memory_pressure_before_file", 
+                                     file_index=file_index, 
+                                     file_url=file_info["url"])
+                        force_memory_cleanup()
+                    
                     file_stats = self.process_mrf_file_enhanced(
                         payer_uuid, payer_name, file_info, handler, file_index, len(rate_files)
                     )
@@ -338,6 +406,10 @@ class ProductionETLPipeline:
                         total_files=len(rate_files),
                         records_processed=payer_stats["records_extracted"]
                     )
+                    
+                    # Force garbage collection after each file
+                    force_memory_cleanup()
+                    log_memory_usage(f"after_file_{file_index}")
                     
                 except Exception as e:
                     error_msg = f"Failed processing file {file_info['url']}: {str(e)}"
@@ -377,13 +449,16 @@ class ProductionETLPipeline:
         plan_safe_name = "".join(c if c.isalnum() or c in '-_' else '_' for c in file_info["plan_name"])
         filename_base = f"{payer_name}_{plan_safe_name}_{timestamp}"
         
-        # Batch collectors for S3 upload
+        # Batch collectors for S3 upload - use much smaller batches
         rate_batch = []
         org_batch = []
         provider_batch = []
         
-        # Use larger batch size for S3 efficiency
-        batch_size = self.config.batch_size
+        # Use much smaller batch size for memory efficiency
+        batch_size = min(self.config.batch_size, 500)  # Cap at 500 records per batch
+        
+        # Safety limit for records per file to prevent memory issues
+        max_records_per_file_limit = self.config.safety_limit_records_per_file
 
         # Gather diagnostics before parsing
         compression = detect_compression(file_info["url"])
@@ -405,6 +480,14 @@ class ProductionETLPipeline:
                 file_info.get("provider_reference_url"),
                 handler
             ):
+                # Check safety limits
+                if file_stats["records_extracted"] >= max_records_per_file_limit:
+                    logger.warning("reached_safety_limit", 
+                                 url=file_info["url"],
+                                 records_processed=file_stats["records_extracted"],
+                                 limit=max_records_per_file_limit)
+                    break
+                
                 if (
                     self.config.max_records_per_file is not None
                     and file_stats["records_extracted"] >= self.config.max_records_per_file
@@ -412,6 +495,22 @@ class ProductionETLPipeline:
                     break
 
                 file_stats["records_extracted"] += 1
+                
+                # Check memory pressure every 100 records
+                if file_stats["records_extracted"] % 100 == 0:
+                    if check_memory_pressure():
+                        # Force cleanup and write current batches immediately
+                        if rate_batch:
+                            upload_stats = self.write_batches_to_s3(
+                                rate_batch, org_batch, provider_batch, 
+                                payer_name, filename_base, file_stats["s3_uploads"]
+                            )
+                            file_stats["s3_uploads"] += upload_stats["files_uploaded"]
+                            self.stats["s3_uploads"] += upload_stats["files_uploaded"]
+                            
+                            # Clear batches to free memory
+                            rate_batch, org_batch, provider_batch = [], [], []
+                            force_memory_cleanup()
                 
                 # Normalize and validate
                 normalized = normalize_tic_record(
@@ -484,15 +583,20 @@ class ProductionETLPipeline:
                     provider_records = self.create_provider_records(normalized, raw_record)
                     provider_batch.extend(provider_records)
                 
-                # Write batches when full
-                if len(rate_batch) >= batch_size:
+                # Write batches when full or when memory pressure detected
+                if len(rate_batch) >= batch_size or check_memory_pressure():
                     upload_stats = self.write_batches_to_s3(
                         rate_batch, org_batch, provider_batch, 
                         payer_name, filename_base, file_stats["s3_uploads"]
                     )
                     file_stats["s3_uploads"] += upload_stats["files_uploaded"]
                     self.stats["s3_uploads"] += upload_stats["files_uploaded"]
+                    
+                    # Clear batches to free memory
                     rate_batch, org_batch, provider_batch = [], [], []
+                    
+                    # Force garbage collection after each batch
+                    force_memory_cleanup()
             
             # Write final batches
             if rate_batch:
@@ -971,6 +1075,27 @@ def create_production_config() -> ETLConfig:
         # Fallback if no active payers
         output_dir = "ortho_radiology_data_default"
     
+    # Substitute environment variables in S3 configuration
+    s3_prefix = config['output']['s3']['prefix']
+    if s3_prefix.startswith('${') and s3_prefix.endswith('}'):
+        # Extract environment variable name
+        env_var = s3_prefix[2:-1]  # Remove ${ and }
+        s3_prefix = os.getenv(env_var, s3_prefix)
+        logger.info("substituted_environment_variable", 
+                   original=s3_prefix, 
+                   env_var=env_var, 
+                   value=s3_prefix)
+    
+    s3_bucket = config['output']['s3']['bucket']
+    if s3_bucket.startswith('${') and s3_bucket.endswith('}'):
+        env_var = s3_bucket[2:-1]
+        s3_bucket = os.getenv(env_var, s3_bucket)
+    
+    s3_region = config['output']['s3']['region']
+    if s3_region.startswith('${') and s3_region.endswith('}'):
+        env_var = s3_region[2:-1]
+        s3_region = os.getenv(env_var, s3_region)
+    
     return ETLConfig(
         payer_endpoints=config['endpoints'],
         cpt_whitelist=config['cpt_whitelist'],
@@ -978,9 +1103,10 @@ def create_production_config() -> ETLConfig:
         parallel_workers=config['processing']['parallel_workers'],
         max_files_per_payer=config['processing'].get('max_files_per_payer'),
         max_records_per_file=config['processing'].get('max_records_per_file'),
+        safety_limit_records_per_file=config['processing'].get('safety_limit_records_per_file', 100000),
         local_output_dir=output_dir,
-        s3_bucket=os.getenv("S3_BUCKET"),
-        s3_prefix=config['output']['s3']['prefix'],
+        s3_bucket=s3_bucket,
+        s3_prefix=s3_prefix,
         schema_version=config['versioning']['schema_version'],
         processing_version=config['versioning']['processing_version'],
         min_completeness_pct=config['processing']['min_completeness_pct'],

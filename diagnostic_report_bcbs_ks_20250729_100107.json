@@ -1,0 +1,122 @@
+{
+  "integration_summary": {
+    "payer_name": "bcbs_ks",
+    "index_url": "https://mrf.secure.bcbsks.com/api/filedownloadhttptrigger?name=table-of-contents&ext=json",
+    "timestamp": "2025-07-29T10:01:07.804217",
+    "steps_completed": [
+      "structure_analysis",
+      "handler_generation",
+      "handler_creation",
+      "config_update",
+      "integration_test"
+    ],
+    "total_steps": 5,
+    "success_rate": "5/5"
+  },
+  "structure_analysis": {
+    "analysis_file": "payer_structure_analysis/full_analysis_20250729_095526.json",
+    "analysis_data_keys": [
+      "bcbs_ks"
+    ],
+    "payer_analysis_keys": [
+      "table_of_contents",
+      "in_network_mrf"
+    ],
+    "toc_structure": "standard_toc",
+    "mrf_structure": "standard_in_network",
+    "file_counts": {
+      "reporting_structures": 4,
+      "in_network_files": 1168,
+      "allowed_amount_files": 4,
+      "provider_reference_files": 0
+    },
+    "sample_billing_codes": [
+      {
+        "billing_code": "0001U",
+        "billing_code_type": "CPT",
+        "description": "RED BLOOD CELL ANTIGEN, DNA, HUMAN ERYTHROCYTE ANT",
+        "negotiated_rates_count": 220
+      },
+      {
+        "billing_code": "0002M",
+        "billing_code_type": "CPT",
+        "description": "LIVER DISEASE, TEN BIOCHEMICAL ASSAYS (ALT, A2-MAC",
+        "negotiated_rates_count": 3
+      },
+      {
+        "billing_code": "0002U",
+        "billing_code_type": "CPT",
+        "description": "ONCOLOGY (COLORECTAL), QUANTITATIVE ASSESSMENT OF ",
+        "negotiated_rates_count": 3
+      }
+    ],
+    "complexity_factors": [
+      "top_level_provider_references",
+      "nested_negotiated_rates",
+      "rate_level_provider_references"
+    ]
+  },
+  "handler_generation": {
+    "handler_path": "src\\tic_mrf_scraper\\payers\\bcbs_ks.py",
+    "handler_complexity": "complex",
+    "custom_requirements": [
+      "top_level_provider_references",
+      "nested_negotiated_rates",
+      "rate_level_provider_references"
+    ],
+    "recommendations": [
+      "Handle provider_references at top level",
+      "Process nested negotiated_rates arrays",
+      "Handle provider references in rate structure"
+    ]
+  },
+  "configuration": {
+    "config_updated": true,
+    "production_config_path": "production_config.yaml",
+    "payer_added_to_config": true
+  },
+  "testing": {
+    "test_results": {
+      "success": true,
+      "files_processed": 1,
+      "records_processed": 10,
+      "errors": [],
+      "warnings": [],
+      "handler_import": "success",
+      "sample_size": 10
+    },
+    "tests_passed": 0,
+    "tests_failed": 0,
+    "test_errors": []
+  },
+  "troubleshooting": {
+    "common_issues": [],
+    "next_steps": [
+      "\u2705 Handler ready for production use",
+      "Run full pipeline test with sample data",
+      "Monitor processing statistics for quality"
+    ],
+    "validation_checks": [
+      {
+        "check": "Handler file exists",
+        "status": "PASS",
+        "path": "src\\tic_mrf_scraper\\payers\\bcbs_ks.py"
+      },
+      {
+        "check": "Handler imports successfully",
+        "status": "FAIL",
+        "details": "Tests passed: 0"
+      },
+      {
+        "check": "Production config updated",
+        "status": "PASS",
+        "details": "Payer in config: True"
+      },
+      {
+        "check": "Structure analysis completed",
+        "status": "PASS",
+        "details": "Complexity: complex"
+      }
+    ]
+  }
+}

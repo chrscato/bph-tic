@@ -50,5 +50,9 @@ try:
     from . import bcbsil
     from . import horizon
     from . import aetna
+    from . import bcbs_fl
+    from . import bcbs_ks
+    from . import bcbs_il
+    from . import bcbs_la
 except ImportError as e:
     warnings.warn(f"Could not import some handler modules: {e}")

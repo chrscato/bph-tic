@@ -1,249 +1,241 @@
 """Enhanced module for streaming and parsing TiC MRF data with proper structure traversal."""
 
-import gzip
 import json
+import gzip
+import logging
+import gc
+import psutil
+import os
 from io import BytesIO
-from typing import Iterator, Dict, Any, Optional, List
+from typing import Dict, Any, List, Optional, Iterator
+from urllib.parse import urlparse
+import requests
 
 from ..fetch.blobs import fetch_url
-from ..utils.backoff_logger import get_logger
 from ..payers import PayerHandler
+from ..utils.backoff_logger import get_logger
 
 logger = get_logger(__name__)
 
+# Try to import ijson for streaming JSON parsing
+try:
+    import ijson
+    IJSON_AVAILABLE = True
+except ImportError:
+    IJSON_AVAILABLE = False
+    logger.warning("ijson not available, falling back to memory-intensive parsing")
+
+def get_memory_usage():
+    """Get current memory usage in MB."""
+    process = psutil.Process(os.getpid())
+    return process.memory_info().rss / 1024 / 1024
+
+def log_memory_usage(stage: str):
+    """Log memory usage for monitoring."""
+    memory_mb = get_memory_usage()
+    logger.info("memory_usage", stage=stage, memory_mb=memory_mb)
+    return memory_mb
+
 class TiCMRFParser:
-    """Parser for Transparency in Coverage Machine Readable Files."""
+    """Memory-efficient TiC MRF parser with streaming support."""
     
     def __init__(self):
         self.provider_references = {}
-        
+    
     def load_provider_references(self, provider_ref_url: str) -> Dict[int, Dict[str, Any]]:
-        """Load external provider reference file if specified.
+        """Load provider references with memory-efficient streaming."""
+        logger.info("loading_provider_references", url=provider_ref_url)
         
-        Args:
-            provider_ref_url: URL to provider reference file
-            
-        Returns:
-            Dictionary mapping provider IDs to provider info
-        """
         try:
-            content = fetch_url(provider_ref_url)
-            if provider_ref_url.endswith('.gz'):
+            # Use streaming for large provider reference files
+            if IJSON_AVAILABLE:
+                return self._load_provider_references_streaming(provider_ref_url)
+            else:
+                return self._load_provider_references_memory(provider_ref_url)
+        except Exception as e:
+            logger.error("failed_to_load_provider_references", error=str(e))
+            return {}
+    
+    def _load_provider_references_streaming(self, url: str) -> Dict[int, Dict[str, Any]]:
+        """Load provider references using streaming JSON parser."""
+        refs = {}
+        
+        try:
+            # Use requests with streaming to avoid loading entire file into memory
+            response = requests.get(url, stream=True, timeout=30)
+            response.raise_for_status()
+            
+            # Handle gzipped content with true streaming
+            if url.endswith('.gz') or response.headers.get('content-encoding') == 'gzip':
+                with gzip.GzipFile(fileobj=response.raw) as gz:
+                    # Use ijson for streaming parsing
+                    parser = ijson.parse(gz)
+                    for prefix, event, value in parser:
+                        if prefix == "provider_references.item" and event == "start_map":
+                            # Start of a provider reference object
+                            current_ref = {}
+                        elif prefix.startswith("provider_references.item.") and event == "map_key":
+                            current_key = value
+                        elif prefix.startswith("provider_references.item.") and event in ("string", "number"):
+                            if 'current_ref' in locals() and 'current_key' in locals():
+                                current_ref[current_key] = value
+                        elif prefix == "provider_references.item" and event == "end_map":
+                            # End of provider reference object
+                            if 'current_ref' in locals():
+                                ref_id = current_ref.get("provider_group_id")
+                                if ref_id:
+                                    refs[ref_id] = current_ref
+                                current_ref = {}
+            else:
+                # For non-gzipped content
+                parser = ijson.parse(response.raw)
+                for prefix, event, value in parser:
+                    if prefix == "provider_references.item" and event == "start_map":
+                        # Start of a provider reference object
+                        current_ref = {}
+                    elif prefix.startswith("provider_references.item.") and event == "map_key":
+                        current_key = value
+                    elif prefix.startswith("provider_references.item.") and event in ("string", "number"):
+                        if 'current_ref' in locals() and 'current_key' in locals():
+                            current_ref[current_key] = value
+                    elif prefix == "provider_references.item" and event == "end_map":
+                        # End of provider reference object
+                        if 'current_ref' in locals():
+                            ref_id = current_ref.get("provider_group_id")
+                            if ref_id:
+                                refs[ref_id] = current_ref
+                            current_ref = {}
+        except Exception as e:
+            logger.error("streaming_provider_refs_failed", error=str(e))
+        
+        logger.info("loaded_provider_references_streaming", count=len(refs))
+        return refs
+    
+    def _load_provider_references_memory(self, url: str) -> Dict[int, Dict[str, Any]]:
+        """Fallback: load provider references using memory-intensive method."""
+        try:
+            content = fetch_url(url)
+            
+            if url.endswith('.gz') or content.startswith(b'\x1f\x8b'):
                 with gzip.GzipFile(fileobj=BytesIO(content)) as gz:
                     data = json.load(gz)
             else:
                 data = json.loads(content.decode('utf-8'))
-                
-            # Build lookup table from provider references
-            provider_lookup = {}
+            
+            refs = {}
             if "provider_references" in data:
-                for i, provider in enumerate(data["provider_references"]):
-                    provider_lookup[i] = provider
-                    
-            return provider_lookup
+                for ref in data["provider_references"]:
+                    ref_id = ref.get("provider_group_id")
+                    if ref_id:
+                        refs[ref_id] = ref
+            
+            logger.info("loaded_provider_references_memory", count=len(refs))
+            return refs
             
         except Exception as e:
-            logger.warning("failed_to_load_provider_references", 
-                          url=provider_ref_url, error=str(e))
+            logger.error("memory_provider_refs_failed", error=str(e))
             return {}
 
     def parse_negotiated_rates(self, 
                               in_network_item: Dict[str, Any], 
                               payer: str) -> Iterator[Dict[str, Any]]:
-        """Parse negotiated rates from an in-network item.
+        """Parse negotiated rates with memory-efficient processing."""
         
-        Args:
-            in_network_item: Single item from in_network array
-            payer: Payer name
-            
-        Yields:
-            Individual rate records
-        """
-        billing_code = in_network_item.get("billing_code")
+        # Extract basic fields
+        billing_code = in_network_item.get("billing_code", "")
         billing_code_type = in_network_item.get("billing_code_type", "")
         description = in_network_item.get("description", "")
         
-        # DEBUG: Log what we're processing
-        logger.debug("debug_parsing_item", 
-                   billing_code=billing_code, 
-                   billing_code_type=billing_code_type,
-                   has_negotiated_rates="negotiated_rates" in in_network_item,
-                   item_keys=list(in_network_item.keys()))
-        
-        # Handle negotiated_rates array
+        # Handle nested negotiated_rates structure
         negotiated_rates = in_network_item.get("negotiated_rates", [])
-        logger.debug("debug_negotiated_rates", 
-                   billing_code=billing_code,
-                   negotiated_rates_count=len(negotiated_rates))
-        
         if not negotiated_rates:
-            logger.warning("no_negotiated_rates", billing_code=billing_code)
+            # If no negotiated_rates, try to extract from top level
+            rate_record = self._create_rate_record(
+                billing_code, billing_code_type, description,
+                in_network_item.get("negotiated_rate", 0),
+                in_network_item.get("service_codes", []),
+                in_network_item.get("billing_class", ""),
+                in_network_item.get("negotiated_type", ""),
+                in_network_item.get("expiration_date", ""),
+                self._extract_provider_info(in_network_item),
+                payer
+            )
+            if rate_record:
+                yield rate_record
             return
         
-        for i, rate_group in enumerate(negotiated_rates):
-            logger.debug("debug_processing_rate_group",
-                       billing_code=billing_code,
-                       group_index=i,
-                       group_keys=list(rate_group.keys()))
-            
-            # Get provider information
+        # Process each negotiated_rate (memory-efficient iteration)
+        for rate_group in negotiated_rates:
+            # Extract provider references from rate level
             provider_refs = rate_group.get("provider_references", [])
-            provider_groups = rate_group.get("provider_groups", [])
+            provider_info = self._extract_provider_info_from_refs(provider_refs)
             
-            logger.debug("debug_provider_info",
-                       billing_code=billing_code,
-                       group_index=i,
-                       has_provider_refs=bool(provider_refs),
-                       has_provider_groups=bool(provider_groups),
-                       provider_refs_count=len(provider_refs),
-                       provider_groups_count=len(provider_groups))
-            
-            # Handle negotiated_prices array within each rate group
+            # Extract negotiated prices
             negotiated_prices = rate_group.get("negotiated_prices", [])
-            logger.debug("debug_negotiated_prices",
-                       billing_code=billing_code,
-                       group_index=i,
-                       prices_count=len(negotiated_prices))
-            
-            for j, price_item in enumerate(negotiated_prices):
-                logger.debug("debug_processing_price",
-                           billing_code=billing_code,
-                           group_index=i,
-                           price_index=j,
-                           price_keys=list(price_item.keys()))
-                
-                negotiated_rate = price_item.get("negotiated_rate")
-                logger.debug("debug_price_details",
-                           billing_code=billing_code,
-                           group_index=i,
-                           price_index=j,
-                           has_negotiated_rate=negotiated_rate is not None,
-                           negotiated_rate=negotiated_rate)
-                
-                if negotiated_rate is None:
-                    logger.warning("skipping_price_no_rate",
-                                 billing_code=billing_code,
-                                 group_index=i,
-                                 price_index=j)
-                    continue
-                
-                # Extract additional fields
-                service_codes = price_item.get("service_code", [])
-                billing_class = price_item.get("billing_class", "")
-                negotiated_type = price_item.get("negotiated_type", "")
-                expiration_date = price_item.get("expiration_date", "")
-                
-                logger.debug("debug_yielding_record",
-                           billing_code=billing_code,
-                           group_index=i,
-                           price_index=j,
-                           rate=negotiated_rate,
-                           service_codes=service_codes,
-                           billing_class=billing_class)
-                
-                # Process provider references
-                if provider_refs:
-                    for provider_ref in provider_refs:
-                        provider_info = self.provider_references.get(provider_ref, {})
-                        logger.debug("debug_provider_ref",
-                                  billing_code=billing_code,
-                                  group_index=i,
-                                  price_index=j,
-                                  provider_ref=provider_ref,
-                                  has_provider_info=bool(provider_info))
-                        yield self._create_rate_record(
-                            billing_code=billing_code,
-                            billing_code_type=billing_code_type,
-                            description=description,
-                            negotiated_rate=negotiated_rate,
-                            service_codes=service_codes,
-                            billing_class=billing_class,
-                            negotiated_type=negotiated_type,
-                            expiration_date=expiration_date,
-                            provider_info=provider_info,
-                            payer=payer
-                        )
-                # Handle provider_groups (when providers are embedded)
-                elif provider_groups:
-                    for provider_group in provider_groups:
-                        # Handle direct provider info in the provider_group itself
-                        if "npi" in provider_group or "tin" in provider_group:
-                            # Direct provider info in the provider_group itself
-                            yield self._create_rate_record(
-                                billing_code=billing_code,
-                                billing_code_type=billing_code_type,
-                                description=description,
-                                negotiated_rate=negotiated_rate,
-                                service_codes=service_codes,
-                                billing_class=billing_class,
-                                negotiated_type=negotiated_type,
-                                expiration_date=expiration_date,
-                                provider_info=provider_group,  # Use the provider_group directly
-                                payer=payer
-                            )
-                        elif "providers" in provider_group:
-                            # Handle nested providers array (Centene-style structure)
-                            providers = provider_group.get("providers", [])
-                            group_tin = provider_group.get("tin")  # TIN at group level
-                            for provider in providers:
-                                # Merge provider info with group-level TIN if needed
-                                provider_info = provider.copy()
-                                if group_tin and "tin" not in provider_info:
-                                    provider_info["tin"] = group_tin
-                                yield self._create_rate_record(
-                                    billing_code=billing_code,
-                                    billing_code_type=billing_code_type,
-                                    description=description,
-                                    negotiated_rate=negotiated_rate,
-                                    service_codes=service_codes,
-                                    billing_class=billing_class,
-                                    negotiated_type=negotiated_type,
-                                    expiration_date=expiration_date,
-                                    provider_info=provider_info,
-                                    payer=payer
-                                )
-                        else:
-                            # No provider info - create generic record
-                            logger.debug("debug_generic_record",
-                                      billing_code=billing_code,
-                                      group_index=i,
-                                      price_index=j)
-                            yield self._create_rate_record(
-                                billing_code=billing_code,
-                                billing_code_type=billing_code_type,
-                                description=description,
-                                negotiated_rate=negotiated_rate,
-                                service_codes=service_codes,
-                                billing_class=billing_class,
-                                payer=payer
-                            )
-                else:
-                    # No provider info - create generic record
-                    logger.debug("debug_generic_record",
-                              billing_code=billing_code,
-                              group_index=i,
-                              price_index=j)
-                    yield self._create_rate_record(
-                        billing_code=billing_code,
-                        billing_code_type=billing_code_type,
-                        description=description,
-                        negotiated_rate=negotiated_rate,
-                        service_codes=service_codes,
-                        billing_class=billing_class,
-                        payer=payer
+            if negotiated_prices:
+                # Process each price (could create multiple records)
+                for price in negotiated_prices:
+                    rate_record = self._create_rate_record(
+                        billing_code, billing_code_type, description,
+                        price.get("negotiated_rate", 0),
+                        price.get("service_codes", []),
+                        price.get("billing_class", ""),
+                        price.get("negotiated_type", ""),
+                        price.get("expiration_date", ""),
+                        provider_info,
+                        payer
                     )
-
+                    if rate_record:
+                        yield rate_record
+            else:
+                # Fallback: try to extract from rate_group directly
+                rate_record = self._create_rate_record(
+                    billing_code, billing_code_type, description,
+                    rate_group.get("negotiated_rate", 0),
+                    rate_group.get("service_codes", []),
+                    rate_group.get("billing_class", ""),
+                    rate_group.get("negotiated_type", ""),
+                    rate_group.get("expiration_date", ""),
+                    provider_info,
+                    payer
+                )
+                if rate_record:
+                    yield rate_record
+    
+    def _extract_provider_info(self, item: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract provider information from item."""
+        return {
+            "npi": item.get("provider_npi"),
+            "provider_group_name": item.get("provider_name"),
+            "tin": item.get("provider_tin")
+        }
+    
+    def _extract_provider_info_from_refs(self, provider_refs: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Extract provider information from provider references."""
+        if not provider_refs:
+            return {}
+        
+        # Use first provider reference
+        ref = provider_refs[0]
+        ref_id = ref.get("provider_group_id")
+        
+        if ref_id and ref_id in self.provider_references:
+            provider_data = self.provider_references[ref_id]
+            return {
+                "npi": provider_data.get("npi"),
+                "provider_group_name": provider_data.get("provider_group_name"),
+                "tin": provider_data.get("tin")
+            }
+        
+        return {}
+    
     def _extract_tin_value(self, tin_data) -> Optional[str]:
         """Extract TIN value from various formats."""
-        if not tin_data:
-            return None
-        
-        if isinstance(tin_data, dict):
-            return tin_data.get("value")
-        elif isinstance(tin_data, (str, int)):
-            return str(tin_data)
-        else:
-            return None
+        if isinstance(tin_data, str):
+            return tin_data
+        elif isinstance(tin_data, dict):
+            return tin_data.get("value") or tin_data.get("tin")
+        return None
     
     def _create_rate_record(self, 
                            billing_code: str,
@@ -255,17 +247,12 @@ class TiCMRFParser:
                            negotiated_type: str,
                            expiration_date: str,
                            provider_info: Dict[str, Any],
-                           payer: str) -> Dict[str, Any]:
-        """Create a normalized rate record.
+                           payer: str) -> Optional[Dict[str, Any]]:
+        """Create a rate record with validation."""
         
-        Returns:
-            Normalized rate record
-        """
-        # Debug logging for provider info
-        logger.debug("debug_provider_info_extraction",
-                   provider_info_keys=list(provider_info.keys()),
-                   provider_npi=provider_info.get("npi"),
-                   provider_tin=provider_info.get("tin"))
+        # Skip if no negotiated rate
+        if not negotiated_rate or negotiated_rate <= 0:
+            return None
         
         return {
             "billing_code": billing_code,
@@ -285,7 +272,7 @@ class TiCMRFParser:
 def stream_parse_enhanced(url: str, payer: str,
                          provider_ref_url: Optional[str] = None,
                          handler: Optional[PayerHandler] = None) -> Iterator[Dict[str, Any]]:
-    """Enhanced streaming parser for TiC MRF data.
+    """Enhanced streaming parser for TiC MRF data with memory optimization.
     
     Args:
         url: URL to MRF data file
@@ -301,11 +288,131 @@ def stream_parse_enhanced(url: str, payer: str,
     if handler is None:
         handler = PayerHandler()
     
-    # Load provider references if specified
+    # Load provider references if specified (with memory optimization)
     if provider_ref_url:
         parser.provider_references = parser.load_provider_references(provider_ref_url)
         logger.info("loaded_provider_references", 
                    count=len(parser.provider_references))
+    
+    try:
+        # Use streaming parsing for large files
+        if IJSON_AVAILABLE and _is_large_file(url):
+            yield from _stream_parse_large_file(url, payer, parser, handler)
+        else:
+            yield from _stream_parse_memory(url, payer, parser, handler)
+                
+    except Exception as e:
+        logger.error("parsing_failed", url=url, error=str(e))
+        raise
+
+def _is_large_file(url: str) -> bool:
+    """Determine if a file is large enough to require streaming."""
+    try:
+        # Check file size first
+        response = requests.head(url, timeout=10)
+        if response.status_code == 200:
+            content_length = response.headers.get('content-length')
+            if content_length:
+                size_mb = int(content_length) / (1024 * 1024)
+                # If file is larger than 100MB, definitely use streaming
+                if size_mb > 100:
+                    logger.info("file_size_large", url=url, size_mb=size_mb)
+                    return True
+                # If file is larger than 10MB, use streaming
+                elif size_mb > 10:
+                    return True
+        
+        # Also check URL patterns that suggest large files
+        if any(pattern in url.lower() for pattern in ['in_network', 'rates', '.gz']):
+            return True
+            
+        return False
+    except Exception as e:
+        logger.warning("could_not_check_file_size", url=url, error=str(e))
+        # Default to streaming for unknown files
+        return True
+
+def _stream_parse_large_file(url: str, payer: str, parser: TiCMRFParser, handler: PayerHandler) -> Iterator[Dict[str, Any]]:
+    """Stream parse large files using ijson with true streaming."""
+    logger.info("using_streaming_parser_for_large_file", url=url)
+    
+    try:
+        # Use requests with streaming to avoid loading entire file into memory
+        response = requests.get(url, stream=True, timeout=30)
+        response.raise_for_status()
+        
+        # Handle gzipped content with true streaming
+        if url.endswith('.gz') or response.headers.get('content-encoding') == 'gzip':
+            # Stream the gzipped content directly
+            with gzip.GzipFile(fileobj=response.raw) as gz:
+                yield from _parse_json_stream(gz, payer, parser, handler)
+        else:
+            # For non-gzipped content, stream directly
+            yield from _parse_json_stream(response.raw, payer, parser, handler)
+            
+    except Exception as e:
+        logger.error("streaming_parse_failed", error=str(e))
+        # Fall back to memory parsing for smaller files
+        yield from _stream_parse_memory(url, payer, parser, handler)
+
+def _parse_json_stream(stream, payer: str, parser: TiCMRFParser, handler: PayerHandler) -> Iterator[Dict[str, Any]]:
+    """Parse JSON stream using ijson."""
+    try:
+        # Parse the stream
+        json_parser = ijson.parse(stream)
+        
+        in_network_items = []
+        current_item = {}
+        in_in_network = False
+        record_count = 0
+        
+        # Log initial memory usage
+        log_memory_usage("stream_parse_start")
+        
+        for prefix, event, value in json_parser:
+            if prefix == "in_network" and event == "start_array":
+                in_in_network = True
+                logger.info("found_in_network_array")
+            elif prefix == "in_network" and event == "end_array":
+                in_in_network = False
+                break
+            elif prefix.startswith("in_network.item") and event == "start_map":
+                current_item = {}
+            elif prefix.startswith("in_network.item.") and event == "map_key":
+                current_key = value
+            elif prefix.startswith("in_network.item.") and event in ("string", "number", "boolean"):
+                if 'current_item' in locals() and 'current_key' in locals():
+                    current_item[current_key] = value
+            elif prefix.startswith("in_network.item") and event == "end_map":
+                if 'current_item' in locals() and current_item:
+                    # Process the item
+                    for parsed_item in handler.parse_in_network(current_item):
+                        for rate_record in parser.parse_negotiated_rates(parsed_item, payer):
+                            yield rate_record
+                            record_count += 1
+                            
+                            # Monitor memory every 1000 records
+                            if record_count % 1000 == 0:
+                                memory_mb = log_memory_usage(f"stream_parse_records_{record_count}")
+                                # Force garbage collection if memory usage is high
+                                if memory_mb > 1000:  # 1GB threshold
+                                    gc.collect()
+                                    logger.warning("forced_garbage_collection", 
+                                                 memory_mb=memory_mb, 
+                                                 record_count=record_count)
+                    
+                    current_item = {}
+                    
+        # Log final memory usage
+        log_memory_usage("stream_parse_end")
+                    
+    except Exception as e:
+        logger.error("ijson_parse_failed", error=str(e))
+        raise
+
+def _stream_parse_memory(url: str, payer: str, parser: TiCMRFParser, handler: PayerHandler) -> Iterator[Dict[str, Any]]:
+    """Fallback: parse using memory-intensive method."""
+    logger.info("using_memory_parser", url=url)
     
     try:
         content = fetch_url(url)
@@ -357,7 +464,7 @@ def stream_parse_enhanced(url: str, payer: str,
                 yield record
                 
     except Exception as e:
-        logger.error("parsing_failed", url=url, error=str(e))
+        logger.error("memory_parse_failed", url=url, error=str(e))
         raise
 
 # Backward compatibility function

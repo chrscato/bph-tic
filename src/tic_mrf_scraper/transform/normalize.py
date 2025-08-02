@@ -20,9 +20,9 @@ def normalize_tic_record(record: Dict[str, Any],
     if not billing_code:
         return None
     
-    # Temporarily disable whitelist filtering for testing
-    # if billing_code not in cpt_whitelist:
-    #     return None
+    # Apply whitelist filtering
+    if billing_code not in cpt_whitelist:
+        return None
         
     # Get negotiated rate (should be already extracted by enhanced parser)
     negotiated_rate = record.get("negotiated_rate")

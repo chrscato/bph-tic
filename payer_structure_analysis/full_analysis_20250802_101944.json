@@ -1,0 +1,562 @@
+{
+  "bcbs_fl": {
+    "table_of_contents": {
+      "payer": "bcbs_fl",
+      "url": "https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json",
+      "structure_type": "standard_toc",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "reporting_structure"
+      ],
+      "file_counts": {
+        "reporting_structures": 16,
+        "in_network_files": 3527,
+        "allowed_amount_files": 16,
+        "provider_reference_files": 0
+      },
+      "sample_files": {
+        "in_network": {
+          "url": "https://bcbsfl.mrf.bcbs.com/2025-07_020_02E0_in-network-rates_1_of_2.json.gz?&Expires=1755784849&Signature=ITQ1XJtdrO-VhZVj~MCobBMi25rdsmc4Nps4J753iI5B5lI~qt-W2Atwb4ni0YsLlWQfUsM~MeJnaPfHgXVC1Vfuamqm3NA5-YPrqsyiOOXg1oIkdCibuzZbcM-zV0Tc46KixLo56UI11rxHCIR6l~HtgnWDsUvpNdALE0nBxe7-eccusvFIV7~hhe2ja7iciWH0b2BU4ML9iEUb6qJYzX2fh41l-L6hHWQ81-f2KEU~iq1rJbtM0DqGWUdoLvB3mCe3dWXWnPk5KF3TMLCTv5iKMo1JpxyqWOIdwcp7QUEq243MgUc8GvWnv1KmO1w5Jzw7tqz03lun2n1YNczUlQ__&Key-Pair-Id=K27TQMT39R1C8A",
+          "url_display": "https://bcbsfl.mrf.bcbs.com/2025-07_020_02E0_in-network-rates_1_of_2.json.gz?&Expires=1755784849&Sig...",
+          "description": "In Network File"
+        }
+      },
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "reporting_structure"
+        ],
+        "key_count": 3,
+        "children": {
+          "reporting_structure": {
+            "type": "array",
+            "length": 16,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "reporting_plans",
+                "in_network_files",
+                "allowed_amount_file"
+              ],
+              "key_count": 3,
+              "children": {
+                "in_network_files": {
+                  "type": "array",
+                  "length": 284,
+                  "sample_item": {
+                    "type": "truncated",
+                    "reason": "max_depth"
+                  }
+                },
+                "allowed_amount_file": {
+                  "type": "object",
+                  "keys": [
+                    "description",
+                    "location"
+                  ],
+                  "key_count": 2,
+                  "children": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "sample_structure": {
+        "keys": [
+          "reporting_plans",
+          "in_network_files",
+          "allowed_amount_file"
+        ],
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": ""
+      }
+    },
+    "in_network_mrf": {
+      "payer": "bcbs_fl",
+      "url": "https://bcbsfl.mrf.bcbs.com/2025-07_020_02E0_in-network-rates_1_of_2.json.gz?&Expires=1755784849&Signature=ITQ1XJtdrO-VhZVj~MCobBMi25rdsmc4Nps4J753iI5B5lI~qt-W2Atwb4ni0YsLlWQfUsM~MeJnaPfHgXVC1Vfuamqm3NA5-YPrqsyiOOXg1oIkdCibuzZbcM-zV0Tc46KixLo56UI11rxHCIR6l~HtgnWDsUvpNdALE0nBxe7-eccusvFIV7~hhe2ja7iciWH0b2BU4ML9iEUb6qJYzX2fh41l-L6hHWQ81-f2KEU~iq1rJbtM0DqGWUdoLvB3mCe3dWXWnPk5KF3TMLCTv5iKMo1JpxyqWOIdwcp7QUEq243MgUc8GvWnv1KmO1w5Jzw7tqz03lun2n1YNczUlQ__&Key-Pair-Id=K27TQMT39R1C8A",
+      "structure_type": "standard_in_network",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "last_updated_on",
+        "version",
+        "provider_references",
+        "in_network"
+      ],
+      "in_network_count": 14590,
+      "billing_code_types": {
+        "CPT": 5
+      },
+      "sample_items": [
+        {
+          "index": 0,
+          "billing_code": "0001U",
+          "billing_code_type": "CPT",
+          "description": "RED BLOOD CELL ANTIGEN, DNA, HUMAN ERYTHROCYTE ANT",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 220,
+          "rate_structure": {
+            "keys": [
+              "provider_references",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 0,
+            "service_codes": []
+          }
+        },
+        {
+          "index": 1,
+          "billing_code": "0002M",
+          "billing_code_type": "CPT",
+          "description": "LIVER DISEASE, TEN BIOCHEMICAL ASSAYS (ALT, A2-MAC",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 3,
+          "rate_structure": {
+            "keys": [
+              "provider_references",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_code_modifier",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 0,
+            "service_codes": [
+              "01",
+              "02",
+              "03",
+              "04",
+              "05",
+              "06",
+              "07",
+              "08",
+              "09",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "31",
+              "32",
+              "33",
+              "34",
+              "41",
+              "42",
+              "49",
+              "50",
+              "51",
+              "52",
+              "53",
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "60",
+              "61",
+              "62",
+              "65",
+              "71",
+              "72",
+              "81",
+              "99"
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "billing_code": "0002U",
+          "billing_code_type": "CPT",
+          "description": "ONCOLOGY (COLORECTAL), QUANTITATIVE ASSESSMENT OF ",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 3,
+          "rate_structure": {
+            "keys": [
+              "provider_references",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_code_modifier",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 0,
+            "service_codes": [
+              "01",
+              "02",
+              "03",
+              "04",
+              "05",
+              "06",
+              "07",
+              "08",
+              "09",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "31",
+              "32",
+              "33",
+              "34",
+              "41",
+              "42",
+              "49",
+              "50",
+              "51",
+              "52",
+              "53",
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "60",
+              "61",
+              "62",
+              "65",
+              "71",
+              "72",
+              "81",
+              "99"
+            ]
+          }
+        },
+        {
+          "index": 3,
+          "billing_code": "0003M",
+          "billing_code_type": "CPT",
+          "description": "LIVER DISEASE, TEN BIOCHEMICAL ASSAYS (ALT, A2-MAC",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 3,
+          "rate_structure": {
+            "keys": [
+              "provider_references",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_code_modifier",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 0,
+            "service_codes": [
+              "01",
+              "02",
+              "03",
+              "04",
+              "05",
+              "06",
+              "07",
+              "08",
+              "09",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "31",
+              "32",
+              "33",
+              "34",
+              "41",
+              "42",
+              "49",
+              "50",
+              "51",
+              "52",
+              "53",
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "60",
+              "61",
+              "62",
+              "65",
+              "71",
+              "72",
+              "81",
+              "99"
+            ]
+          }
+        },
+        {
+          "index": 4,
+          "billing_code": "0004M",
+          "billing_code_type": "CPT",
+          "description": "SCOLIOSIS, DNA ANALYSIS OF 53 SINGLE NUCLEOTIDE PO",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 3,
+          "rate_structure": {
+            "keys": [
+              "provider_references",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_code_modifier",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 0,
+            "service_codes": [
+              "01",
+              "02",
+              "03",
+              "04",
+              "05",
+              "06",
+              "07",
+              "08",
+              "09",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "31",
+              "32",
+              "33",
+              "34",
+              "41",
+              "42",
+              "49",
+              "50",
+              "51",
+              "52",
+              "53",
+              "54",
+              "55",
+              "56",
+              "57",
+              "58",
+              "60",
+              "61",
+              "62",
+              "65",
+              "71",
+              "72",
+              "81",
+              "99"
+            ]
+          }
+        }
+      ],
+      "rate_structure": {},
+      "provider_structure": {},
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "last_updated_on",
+          "version",
+          "provider_references",
+          "in_network"
+        ],
+        "key_count": 6,
+        "children": {
+          "provider_references": {
+            "type": "array",
+            "length": 3599,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "provider_group_id",
+                "provider_groups"
+              ],
+              "key_count": 2,
+              "children": {}
+            }
+          },
+          "in_network": {
+            "type": "array",
+            "length": 14590,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "negotiation_arrangement",
+                "name",
+                "billing_code_type",
+                "billing_code_type_version",
+                "billing_code",
+                "description",
+                "negotiated_rates"
+              ],
+              "key_count": 7,
+              "children": {
+                "negotiated_rates": {
+                  "type": "array",
+                  "length": 220,
+                  "sample_item": {
+                    "type": "object",
+                    "keys": [
+                      "provider_references",
+                      "negotiated_prices"
+                    ],
+                    "key_count": 2,
+                    "children": {
+                      "provider_references": {
+                        "type": "truncated",
+                        "reason": "max_depth"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

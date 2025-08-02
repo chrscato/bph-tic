@@ -1,0 +1,356 @@
+{
+  "bs_ca": {
+    "table_of_contents": {
+      "payer": "bs_ca",
+      "url": "file://C:\\Users\\ChristopherCato\\Downloads\\2025-08-01_Blue-Shield-of-California_index.json.gz",
+      "structure_type": "standard_toc",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "reporting_structure",
+        "version"
+      ],
+      "file_counts": {
+        "reporting_structures": 4099,
+        "in_network_files": 386189,
+        "allowed_amount_files": 1051,
+        "provider_reference_files": 0
+      },
+      "sample_files": {
+        "in_network": {
+          "url": "https://mrf.healthsparq.com/bsca-egress.nophi.kyruushsq.com/prd/mrf/BSCA_I/BSCA/2025-08-01/inNetworkRates/2025-08-01_000117-HMO-EPO-Chiro_Blue-Shield-of-California.json.gz",
+          "url_display": "https://mrf.healthsparq.com/bsca-egress.nophi.kyruushsq.com/prd/mrf/BSCA_I/BSCA/2025-08-01/inNetwork...",
+          "description": "in-network file"
+        }
+      },
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "reporting_structure",
+          "version"
+        ],
+        "key_count": 4,
+        "children": {
+          "reporting_structure": {
+            "type": "array",
+            "length": 4099,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "reporting_plans",
+                "in_network_files"
+              ],
+              "key_count": 2,
+              "children": {
+                "in_network_files": {
+                  "type": "array",
+                  "length": 1,
+                  "sample_item": {
+                    "type": "truncated",
+                    "reason": "max_depth"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "sample_structure": {
+        "keys": [
+          "reporting_plans",
+          "in_network_files"
+        ],
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": ""
+      }
+    },
+    "in_network_mrf": {
+      "payer": "bs_ca",
+      "url": "https://mrf.healthsparq.com/bsca-egress.nophi.kyruushsq.com/prd/mrf/BSCA_I/BSCA/2025-08-01/inNetworkRates/2025-08-01_000117-HMO-EPO-Chiro_Blue-Shield-of-California.json.gz",
+      "structure_type": "standard_in_network",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "last_updated_on",
+        "version",
+        "provider_references",
+        "in_network"
+      ],
+      "in_network_count": 403,
+      "billing_code_types": {
+        "CPT": 5
+      },
+      "sample_items": [
+        {
+          "index": 0,
+          "billing_code": "L0486",
+          "billing_code_type": "CPT",
+          "description": "TLSO TRIPLANAR 2 PIECE W/INTERFCE LINER CSTM",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 2,
+          "rate_structure": {
+            "keys": [
+              "provider_references",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 1700.0,
+            "service_codes": [
+              "11"
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "billing_code": "L3670",
+          "billing_code_type": "CPT",
+          "description": "SHOULDER ORTHOSIS ACROMIO/CLAVICULAR PREFAB",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 2,
+          "rate_structure": {
+            "keys": [
+              "provider_references",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 104.0,
+            "service_codes": [
+              "11"
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "billing_code": "E1830",
+          "billing_code_type": "CPT",
+          "description": "DYN ADJUSTBL TOE EXT/FLX DEVC W/SFT INTRFCE MATL",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 2,
+          "rate_structure": {
+            "keys": [
+              "provider_references",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 82.6,
+            "service_codes": [
+              "11"
+            ]
+          }
+        },
+        {
+          "index": 3,
+          "billing_code": "Q4026",
+          "billing_code_type": "CPT",
+          "description": "CAST SUPPLIES HIP SPICA ADULT FIBERGLASS",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 2,
+          "rate_structure": {
+            "keys": [
+              "provider_references",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 112.41,
+            "service_codes": [
+              "11"
+            ]
+          }
+        },
+        {
+          "index": 4,
+          "billing_code": "97035",
+          "billing_code_type": "CPT",
+          "description": "APPL MODALITY 1+ AREAS ULTRASOUND EA 15 MIN",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 3,
+          "rate_structure": {
+            "keys": [
+              "provider_references",
+              "negotiated_prices"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 30.52,
+            "service_codes": [
+              "11"
+            ]
+          }
+        }
+      ],
+      "rate_structure": {},
+      "provider_structure": {},
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "last_updated_on",
+          "version",
+          "provider_references",
+          "in_network"
+        ],
+        "key_count": 6,
+        "children": {
+          "provider_references": {
+            "type": "array",
+            "length": 6,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "provider_group_id",
+                "provider_groups"
+              ],
+              "key_count": 2,
+              "children": {}
+            }
+          },
+          "in_network": {
+            "type": "array",
+            "length": 403,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "negotiation_arrangement",
+                "name",
+                "billing_code_type",
+                "billing_code_type_version",
+                "billing_code",
+                "description",
+                "negotiated_rates"
+              ],
+              "key_count": 7,
+              "children": {
+                "negotiated_rates": {
+                  "type": "array",
+                  "length": 2,
+                  "sample_item": {
+                    "type": "object",
+                    "keys": [
+                      "provider_references",
+                      "negotiated_prices"
+                    ],
+                    "key_count": 2,
+                    "children": {
+                      "provider_references": {
+                        "type": "truncated",
+                        "reason": "max_depth"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

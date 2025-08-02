@@ -18,6 +18,13 @@ from tqdm import tqdm
 import yaml
 import argparse
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print("python-dotenv not installed, using system environment variables")
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,9 +44,10 @@ class NPPESConfig:
     retry_delay: float = 1.0
     
     # Storage Configuration
-    s3_bucket: Optional[str] = "commercial-rates"  # Updated to use commercial-rates bucket
-    s3_prefix: str = "tic-mrf/test"  # Updated to use the test prefix
-    local_data_dir: str = "ortho_radiology_data"
+    s3_bucket: Optional[str] = None  # Will be set from environment variable
+    s3_prefix: str = ""  # Will be set by user
+    local_data_dir: str = "."  # Updated to use current directory for multi-payer structure
+    local_base_pattern: str = "ortho_radiology_data_"  # Pattern to match payer directories
     
     # NPPES Data Configuration
     nppes_data_dir: str = "nppes_data"
@@ -140,7 +148,7 @@ class NPPESDataManager:
             return self._extract_npis_from_local()
     
     def _extract_npis_from_s3(self) -> List[str]:
-        """Extract NPIs from S3 provider data."""
+        """Extract NPIs from S3 provider data with payer/date partitioning."""
         # List all files in the S3 prefix
         paginator = self.s3_client.get_paginator('list_objects_v2')
         pages = paginator.paginate(
@@ -156,62 +164,140 @@ class NPPESDataManager:
         if not all_files:
             raise ValueError(f"No files found in S3 bucket {self.config.s3_bucket} with prefix {self.config.s3_prefix}")
         
-        # Filter for provider files (files containing 'providers' in the name)
-        provider_files = [f for f in all_files if 'providers' in f and f.endswith('.parquet')]
+        logger.info(f"Found {len(all_files)} total files in S3")
+        
+        # Filter for provider files in the partitioned structure
+        # Expected structure: {prefix}/providers/payer={payer}/date={date}/*.parquet
+        provider_files = []
+        for file_key in all_files:
+            # Check if it's a provider file in the partitioned structure
+            if (file_key.endswith('.parquet') and 
+                'providers/' in file_key and 
+                'payer=' in file_key and 
+                'date=' in file_key):
+                provider_files.append(file_key)
         
         if not provider_files:
             logger.warning(f"No provider files found in S3. Available files: {[f.split('/')[-1] for f in all_files[:10]]}")
-            raise ValueError("No provider files found in S3")
+            # Fallback: look for any files with 'providers' in the name
+            provider_files = [f for f in all_files if 'providers' in f and f.endswith('.parquet')]
+            if not provider_files:
+                raise ValueError("No provider files found in S3")
         
         logger.info(f"Found {len(provider_files)} provider files in S3")
         
+        # Group files by payer for better logging
+        payer_files = {}
+        for s3_key in provider_files:
+            # Extract payer from path like: {prefix}/providers/payer=bcbs_il/date=2025-07-29/file.parquet
+            parts = s3_key.split('/')
+            payer_part = None
+            for part in parts:
+                if part.startswith('payer='):
+                    payer_part = part.replace('payer=', '')
+                    break
+            
+            if payer_part:
+                if payer_part not in payer_files:
+                    payer_files[payer_part] = []
+                payer_files[payer_part].append(s3_key)
+            else:
+                # Fallback for non-partitioned files
+                if 'unknown' not in payer_files:
+                    payer_files['unknown'] = []
+                payer_files['unknown'].append(s3_key)
+        
+        logger.info(f"Provider files by payer: {list(payer_files.keys())}")
+        
         # Extract NPIs from all provider files
         all_npis = set()
-        for s3_key in tqdm(provider_files, desc="Extracting NPIs from S3"):
-            temp_file = Path(self.config.nppes_data_dir) / f"temp_{hash(s3_key)}.parquet"
+        for payer, files in payer_files.items():
+            logger.info(f"Processing {len(files)} files for payer: {payer}")
             
-            try:
-                logger.debug(f"Downloading {s3_key} to {temp_file}")
-                self.s3_client.download_file(self.config.s3_bucket, s3_key, str(temp_file))
-                df = pd.read_parquet(temp_file)
+            for s3_key in tqdm(files, desc=f"Extracting NPIs from {payer}"):
+                temp_file = Path(self.config.nppes_data_dir) / f"temp_{hash(s3_key)}.parquet"
                 
-                # Check for NPI column (could be 'npi', 'provider_npi', etc.)
-                npi_columns = [col for col in df.columns if 'npi' in col.lower()]
-                if npi_columns:
-                    npi_col = npi_columns[0]
-                    npis = df[npi_col].dropna().astype(str).tolist()
-                    all_npis.update(npis)
-                    logger.debug(f"Found {len(npis)} NPIs in {s3_key}")
-                else:
-                    logger.warning(f"No NPI column found in {s3_key}. Available columns: {list(df.columns)}")
+                try:
+                    logger.debug(f"Downloading {s3_key} to {temp_file}")
+                    self.s3_client.download_file(self.config.s3_bucket, s3_key, str(temp_file))
+                    df = pd.read_parquet(temp_file)
                     
-            except Exception as e:
-                logger.error(f"Error processing {s3_key}: {str(e)}")
-            finally:
-                if temp_file.exists():
-                    temp_file.unlink()
+                    # Check for NPI column (could be 'npi', 'provider_npi', etc.)
+                    npi_columns = [col for col in df.columns if 'npi' in col.lower()]
+                    if npi_columns:
+                        npi_col = npi_columns[0]
+                        npis = df[npi_col].dropna().astype(str).tolist()
+                        all_npis.update(npis)
+                        logger.debug(f"Found {len(npis)} NPIs in {s3_key}")
+                    else:
+                        logger.warning(f"No NPI column found in {s3_key}. Available columns: {list(df.columns)}")
+                        
+                except Exception as e:
+                    logger.error(f"Error processing {s3_key}: {str(e)}")
+                finally:
+                    if temp_file.exists():
+                        temp_file.unlink()
         
         logger.info(f"Total unique NPIs found: {len(all_npis)}")
         return list(all_npis)
     
     def _extract_npis_from_local(self) -> List[str]:
         """Extract NPIs from local provider data."""
-        providers_dir = Path(self.config.local_data_dir) / "providers"
-        if not providers_dir.exists():
-            raise ValueError(f"Provider directory not found: {providers_dir}")
+        # Look for payer-specific directories (e.g., ortho_radiology_data_bcbs_il)
+        base_dir = Path(self.config.local_data_dir)
+        if not base_dir.exists():
+            raise ValueError(f"Base directory not found: {base_dir}")
         
-        # Find all parquet files
-        provider_files = list(providers_dir.glob("*.parquet"))
-        if not provider_files:
-            raise ValueError(f"No provider files found in {providers_dir}")
+        # Find all payer directories that match the pattern
+        payer_dirs = []
+        for item in base_dir.iterdir():
+            if item.is_dir() and item.name.startswith(self.config.local_base_pattern):
+                providers_dir = item / "providers"
+                if providers_dir.exists():
+                    payer_dirs.append(providers_dir)
         
-        # Extract NPIs from all provider files
+        if not payer_dirs:
+            # Fallback to the original single directory structure
+            providers_dir = base_dir / "providers"
+            if providers_dir.exists():
+                payer_dirs = [providers_dir]
+            else:
+                raise ValueError(f"No provider directories found in {base_dir}")
+        
+        logger.info(f"Found {len(payer_dirs)} payer directories with providers")
+        
+        # Extract NPIs from all provider files across all payers
         all_npis = set()
-        for file_path in tqdm(provider_files, desc="Extracting NPIs from local files"):
-            df = pd.read_parquet(file_path)
-            if 'npi' in df.columns:
-                all_npis.update(df['npi'].dropna().astype(str).tolist())
+        for providers_dir in payer_dirs:
+            logger.info(f"Processing providers from: {providers_dir}")
+            
+            # Find all parquet files in this provider directory
+            provider_files = list(providers_dir.glob("*.parquet"))
+            if not provider_files:
+                logger.warning(f"No provider files found in {providers_dir}")
+                continue
+            
+            logger.info(f"Found {len(provider_files)} provider files in {providers_dir}")
+            
+            # Extract NPIs from all provider files in this payer
+            for file_path in tqdm(provider_files, desc=f"Extracting NPIs from {providers_dir.name}"):
+                try:
+                    df = pd.read_parquet(file_path)
+                    
+                    # Check for NPI column (could be 'npi', 'provider_npi', etc.)
+                    npi_columns = [col for col in df.columns if 'npi' in col.lower()]
+                    if npi_columns:
+                        npi_col = npi_columns[0]
+                        npis = df[npi_col].dropna().astype(str).tolist()
+                        all_npis.update(npis)
+                        logger.debug(f"Found {len(npis)} NPIs in {file_path.name}")
+                    else:
+                        logger.warning(f"No NPI column found in {file_path.name}. Available columns: {list(df.columns)}")
+                        
+                except Exception as e:
+                    logger.error(f"Error processing {file_path}: {str(e)}")
         
+        logger.info(f"Total unique NPIs found across all payers: {len(all_npis)}")
         return list(all_npis)
     
     def get_new_npis(self, existing_nppes_df: pd.DataFrame, all_npis: List[str]) -> List[str]:
@@ -441,14 +527,21 @@ class NPPESDataManager:
         except Exception as e:
             logger.error(f"NPPES update failed: {str(e)}")
             raise
-
+                                                                                                                                                                                                                                                                                                                    
 def create_nppes_config(limit: Optional[int] = None) -> NPPESConfig:
     """Create NPPES configuration from environment or defaults."""
+    s3_bucket = os.getenv("S3_BUCKET")
+    s3_prefix = os.getenv("S3_PREFIX")
+    local_data_dir = os.getenv("LOCAL_DATA_DIR", ".")
+    local_base_pattern = os.getenv("LOCAL_BASE_PATTERN", "ortho_radiology_data_")
+    nppes_data_dir = os.getenv("NPPES_DATA_DIR", "nppes_data")
+
     return NPPESConfig(
-        s3_bucket=os.getenv("S3_BUCKET", "commercial-rates"),  # Default to commercial-rates
-        s3_prefix=os.getenv("S3_PREFIX", "tic-mrf/test"),  # Default to test prefix
-        local_data_dir=os.getenv("LOCAL_DATA_DIR", "ortho_radiology_data"),
-        nppes_data_dir=os.getenv("NPPES_DATA_DIR", "nppes_data"),
+        s3_bucket=s3_bucket,
+        s3_prefix=s3_prefix,
+        local_data_dir=local_data_dir,
+        local_base_pattern=local_base_pattern,
+        nppes_data_dir=nppes_data_dir,
         batch_size=int(os.getenv("BATCH_SIZE", "100")),
         max_workers=int(os.getenv("MAX_WORKERS", "5")),
         request_delay=float(os.getenv("REQUEST_DELAY", "0.1")),
@@ -464,17 +557,20 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Run with default settings (commercial-rates/tic-mrf/test)
-  python scripts/backfill_provider_info.py
-  
-  # Test with limited NPIs
+  # Run with local data (current directory structure)
   python scripts/backfill_provider_info.py --limit 500
+  
+  # Run with S3 data (bucket from .env, default prefix)
+  python scripts/backfill_provider_info.py --limit 500
+  
+  # Run with custom S3 prefix
+  python scripts/backfill_provider_info.py --s3-prefix my-data/providers --limit 500
+  
+  # Run with custom S3 bucket and prefix
+  python scripts/backfill_provider_info.py --s3-bucket my-bucket --s3-prefix my-data/providers --limit 500
   
   # Test with very small sample
   python scripts/backfill_provider_info.py --limit 50
-  
-  # Run with custom S3 location
-  python scripts/backfill_provider_info.py --s3-bucket my-bucket --s3-prefix my-data/providers
   
   # Run with custom settings
   python scripts/backfill_provider_info.py --limit 1000 --request-delay 0.2
@@ -518,15 +614,28 @@ Examples:
     parser.add_argument(
         '--s3-bucket',
         type=str,
-        default='commercial-rates',
-        help='S3 bucket name (default: commercial-rates)'
+        help='S3 bucket name (overrides S3_BUCKET env var)'
     )
     
     parser.add_argument(
         '--s3-prefix',
         type=str,
-        default='tic-mrf/test',
-        help='S3 prefix/path (default: tic-mrf/test)'
+        default='tic-mrf/providers',
+        help='S3 prefix/path (default: tic-mrf/providers)'
+    )
+    
+    parser.add_argument(
+        '--local-data-dir',
+        type=str,
+        default='.',
+        help='Local data directory (default: current directory)'
+    )
+    
+    parser.add_argument(
+        '--local-base-pattern',
+        type=str,
+        default='ortho_radiology_data_',
+        help='Pattern to match payer directories (default: ortho_radiology_data_)'
     )
     
     args = parser.parse_args()
@@ -544,15 +653,29 @@ Examples:
             config.batch_size = args.batch_size
         if args.max_workers != 5:
             config.max_workers = args.max_workers
-        if args.s3_bucket != 'commercial-rates':
+        if args.s3_bucket:
             config.s3_bucket = args.s3_bucket
-        if args.s3_prefix != 'tic-mrf/test':
+        if args.s3_prefix:
             config.s3_prefix = args.s3_prefix
+        if args.local_data_dir != '.':
+            config.local_data_dir = args.local_data_dir
+        if args.local_base_pattern != 'ortho_radiology_data_':
+            config.local_base_pattern = args.local_base_pattern
+        
+        # Validate S3 configuration
+        if config.s3_prefix:
+            if not config.s3_bucket:
+                raise ValueError("S3_BUCKET environment variable must be set when using S3 mode")
+            logger.info("Using S3 mode")
+        else:
+            logger.info("Using local mode")
         
         # Log configuration
         logger.info("NPPES Configuration:")
         logger.info(f"  S3 Bucket: {config.s3_bucket}")
         logger.info(f"  S3 Prefix: {config.s3_prefix}")
+        logger.info(f"  Local Data Dir: {config.local_data_dir}")
+        logger.info(f"  Local Base Pattern: {config.local_base_pattern}")
         logger.info(f"  Limit: {config.limit or 'No limit'}")
         logger.info(f"  Request delay: {config.request_delay}s")
         logger.info(f"  Max retries: {config.max_retries}")

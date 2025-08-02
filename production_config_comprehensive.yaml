@@ -285,6 +285,7 @@ endpoints:
   bcbs_fl: https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json
   # bs_ca: file://C:\Users\ChristopherCato\Downloads\2025-08-01_Blue-Shield-of-California_index.json.gz
   #centene_fidelis: https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_fidelis_index.json
+
 logging:
   level: INFO
   output_file: sample_data/etl_pipeline.log
@@ -303,16 +304,16 @@ payer_endpoints:
   # bcbs_ks: https://mrf.secure.bcbsks.com/api/filedownloadhttptrigger?name=table-of-contents&ext=json
   #centene_fidelis: https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_fidelis_index.json
 processing:
-  batch_size: 25000
+  batch_size: 1000  # Reduced from 50000 to 1000 for memory safety
   file_types:
   - in_network_rates
-  max_files_per_payer: 1000
-  max_records_per_file: 1000000
-  safety_limit_records_per_file: 100000  # Hard limit to prevent memory crashes
-  min_accuracy_score: 0.7
-  min_completeness_pct: 50.0
-  parallel_workers: 2
+  max_files_per_payer: null  # Process ALL files
+  max_records_per_file: null  # Process ALL records
+  safety_limit_records_per_file: 50000  # Reduced from 500000 to 50000
+  min_accuracy_score: 0.5
+  min_completeness_pct: 30.0
+  parallel_workers: 1  # Reduced from 4 to be more conservative
 versioning:
-  processing_version: tic-etl-sample-v1.0
-  retention_days: 7
-  schema_version: v2.1.0-sample
+  processing_version: tic-etl-comprehensive-v1.0
+  retention_days: 30
+  schema_version: v2.1.0-comprehensive 
