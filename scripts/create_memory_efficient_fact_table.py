@@ -88,8 +88,19 @@ class MemoryEfficientFactTableBuilder:
                 if 'Contents' in page:
                     all_files.extend([obj['Key'] for obj in page['Contents']])
             
-            # Filter for specific file type
-            filtered_files = [f for f in all_files if file_type in f and f.endswith('.parquet')]
+            # Filter for specific file type with proper mapping
+            if file_type == 'orgs':
+                # Look for organizations_final.parquet
+                filtered_files = [f for f in all_files if 'organizations_final' in f and f.endswith('.parquet')]
+            elif file_type == 'rates':
+                # Look for rates_final.parquet
+                filtered_files = [f for f in all_files if 'rates_final' in f and f.endswith('.parquet')]
+            elif file_type == 'providers':
+                # Look for providers_final.parquet
+                filtered_files = [f for f in all_files if 'providers_final' in f and f.endswith('.parquet')]
+            else:
+                # Fallback to original logic
+                filtered_files = [f for f in all_files if file_type in f and f.endswith('.parquet')]
             
             logger.info(f"Found {len(filtered_files)} {file_type} files in S3")
             return filtered_files
