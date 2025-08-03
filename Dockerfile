@@ -20,12 +20,16 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
+# Copy source code and setup files
 COPY src/ ./src/
+COPY setup.py ./
 COPY config.yaml ./
 COPY production_config.yaml ./
 COPY production_etl_pipeline.py ./
 COPY production_etl_pipeline_quiet.py ./
+
+# Install the package in development mode
+RUN pip install -e .
 
 # Create directories for data processing
 RUN mkdir -p /app/data /app/logs /app/temp
