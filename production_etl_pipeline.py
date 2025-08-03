@@ -45,6 +45,7 @@ from tic_mrf_scraper.diagnostics import (
     detect_compression,
     identify_in_network,
 )
+from tic_mrf_scraper.utils.dedup_cache import SQLiteDedupCache
 
 # Configure logging levels - suppress all debug output
 logging.getLogger('tic_mrf_scraper.stream.parser').setLevel(logging.WARNING)
@@ -449,10 +450,11 @@ class ProductionETLPipeline:
     def process_mrf_file_enhanced(self, payer_uuid: str, payer_name: str,
                                 file_info: Dict[str, Any], handler, file_index: int, total_files: int) -> Dict[str, Any]:
         """Process a single MRF file with direct S3 upload and enhanced logging."""
+        dedup_cache = SQLiteDedupCache()
         file_stats = {
             "records_extracted": 0,
             "records_validated": 0,
-            "organizations_created": set(),
+            "organizations_created": 0,
             "start_time": time.time(),
             "s3_uploads": 0
         }
@@ -521,8 +523,9 @@ class ProductionETLPipeline:
                             file_stats["s3_uploads"] += upload_stats["files_uploaded"]
                             self.stats["s3_uploads"] += upload_stats["files_uploaded"]
                             
-                            # Clear batches to free memory
+                            # Clear batches to free memory and reset dedup cache
                             rate_batch, org_batch, provider_batch = [], [], []
+                            dedup_cache.reset()
                             force_memory_cleanup()
                 
                 # Normalize and validate
@@ -587,10 +590,11 @@ class ProductionETLPipeline:
                     
                     # Create organization record if new
                     org_uuid = rate_record["organization_uuid"]
-                    if org_uuid not in file_stats["organizations_created"]:
+                    if org_uuid not in dedup_cache:
                         org_record = self.create_organization_record(normalized, raw_record)
                         org_batch.append(org_record)
-                        file_stats["organizations_created"].add(org_uuid)
+                        dedup_cache.add(org_uuid)
+                        file_stats["organizations_created"] += 1
                     
                     # Create provider records
                     provider_records = self.create_provider_records(normalized, raw_record)
@@ -605,25 +609,29 @@ class ProductionETLPipeline:
                     file_stats["s3_uploads"] += upload_stats["files_uploaded"]
                     self.stats["s3_uploads"] += upload_stats["files_uploaded"]
                     
-                    # Clear batches to free memory
+                    # Clear batches to free memory and reset dedup cache
                     rate_batch, org_batch, provider_batch = [], [], []
-                    
+                    dedup_cache.reset()
+
                     # Force garbage collection after each batch
                     force_memory_cleanup()
             
             # Write final batches
             if rate_batch:
                 upload_stats = self.write_batches_to_s3(
-                    rate_batch, org_batch, provider_batch, 
+                    rate_batch, org_batch, provider_batch,
                     payer_name, filename_base, file_stats["s3_uploads"]
                 )
                 file_stats["s3_uploads"] += upload_stats["files_uploaded"]
                 self.stats["s3_uploads"] += upload_stats["files_uploaded"]
+                dedup_cache.reset()
         
         except Exception as e:
             logger.error(f"Failed processing file {file_info['url']}: {str(e)}")
             raise
-        
+        finally:
+            dedup_cache.close()
+
         file_stats["processing_time"] = time.time() - file_stats["start_time"]
         return file_stats
     
