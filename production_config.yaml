@@ -297,9 +297,9 @@ logging:
 output:
   local_directory: /app/data  # Updated for container path
   s3:
-    bucket: ${S3_BUCKET}
-    prefix: ${S3_PREFIX}
-    region: ${AWS_DEFAULT_REGION}
+    bucket: commercial-rates
+    prefix: tic-mrf-data/
+    region: us-east-2
 payer_endpoints:
   #aetna_fl: file://C:\Users\chris\Downloads\2025-07-05_Aetna-Health-Inc----Florida_index.json.gz
   #anthem: https://antm-pt-prod-dataz-nogbd-nophi-us-east1.s3.amazonaws.com/anthem/2025-08-01_anthem_index.json.gz
