@@ -284,7 +284,7 @@ endpoints:
   #anthem: https://antm-pt-prod-dataz-nogbd-nophi-us-east1.s3.amazonaws.com/anthem/2025-08-01_anthem_index.json.gz
   bcbs_il: https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-07-23_Blue-Cross-and-Blue-Shield-of-Illinois_index.json
   # bcbs_ks: https://mrf.secure.bcbsks.com/api/filedownloadhttptrigger?name=table-of-contents&ext=json
-  bcbs_fl: https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json
+  #bcbs_fl: https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json
   # bs_ca: file://C:\Users\ChristopherCato\Downloads\2025-08-01_Blue-Shield-of-California_index.json.gz
   #centene_fidelis: https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_fidelis_index.json
 logging:
@@ -302,7 +302,7 @@ payer_endpoints:
   #anthem: https://antm-pt-prod-dataz-nogbd-nophi-us-east1.s3.amazonaws.com/anthem/2025-08-01_anthem_index.json.gz
   # bs_ca: file://C:\Users\ChristopherCato\Downloads\2025-08-01_Blue-Shield-of-California_index.json.gz
   bcbs_il: https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-07-23_Blue-Cross-and-Blue-Shield-of-Illinois_index.json
-  bcbs_fl: https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json 
+  #bcbs_fl: https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json 
   # bcbs_ks: https://mrf.secure.bcbsks.com/api/filedownloadhttptrigger?name=table-of-contents&ext=json
   #centene_fidelis: https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_fidelis_index.json
 processing:
