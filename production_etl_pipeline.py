@@ -930,43 +930,65 @@ class ProductionETLPipeline:
         self.generate_analytics_table()
     
     def combine_table_files(self, table_name: str):
-        """Combine all staging files for a table into final parquet."""
+        """Combine all staging files for a table into final parquet without loading all data."""
         staging_dir = Path(self.config.local_output_dir) / table_name
-        staging_files = list(staging_dir.glob("*.parquet"))
-        
+
+        # Exclude any previously generated final file
+        staging_files = [
+            f for f in staging_dir.glob("*.parquet")
+            if not f.name.endswith("_final.parquet")
+        ]
+
         if not staging_files:
             logger.warning("no_staging_files", table=table_name)
             return
-        
+
         logger.info("combining_table_files", table=table_name, files=len(staging_files))
-        
-        # Read all files and combine
-        all_dfs = []
+
+        final_file = staging_dir / f"{table_name}_final.parquet"
+        if final_file.exists():
+            final_file.unlink()
+
+        uuid_col = f"{table_name.rstrip('s')}_uuid"
+        seen_uuids = set()
+        writer = None
+        records_written = 0
+        uuid_col_present = False
+
         for file_path in staging_files:
-            df = pd.read_parquet(file_path)
-            all_dfs.append(df)
-        
-        if all_dfs:
-            combined_df = pd.concat(all_dfs, ignore_index=True)
-            
-            # Deduplicate based on UUID
-            uuid_col = f"{table_name.rstrip('s')}_uuid"
-            if uuid_col in combined_df.columns:
-                combined_df = combined_df.drop_duplicates(subset=[uuid_col])
-            
-            # Write final table
-            final_file = staging_dir / f"{table_name}_final.parquet"
-            combined_df.to_parquet(final_file, index=False)
-            
-            logger.info("created_final_table", 
-                       table=table_name, 
-                       records=len(combined_df),
-                       file=str(final_file))
-            
-            # Clean up staging files
-            for file_path in staging_files:
-                if file_path.name != f"{table_name}_final.parquet":
-                    file_path.unlink()
+            parquet_file = pq.ParquetFile(file_path)
+
+            for batch in parquet_file.iter_batches():
+                df = batch.to_pandas()
+
+                if uuid_col in df.columns:
+                    uuid_col_present = True
+                    mask = ~df[uuid_col].isin(seen_uuids)
+                    new_uuids = df.loc[mask, uuid_col]
+                    seen_uuids.update(new_uuids.tolist())
+                    df = df[mask]
+
+                if df.empty:
+                    continue
+
+                table = pa.Table.from_pandas(df, preserve_index=False)
+                if writer is None:
+                    writer = pq.ParquetWriter(final_file, table.schema)
+                writer.write_table(table)
+                records_written += len(df)
+
+        if writer:
+            writer.close()
+            logger.info(
+                "created_final_table",
+                table=table_name,
+                records=len(seen_uuids) if uuid_col_present else records_written,
+                file=str(final_file),
+            )
+
+        # Clean up staging files
+        for file_path in staging_files:
+            file_path.unlink()
     
     def generate_analytics_table(self):
         """Generate pre-computed analytics table."""
