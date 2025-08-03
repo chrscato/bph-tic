@@ -13,6 +13,9 @@ import json
 import argparse
 from typing import List, Optional, Dict, Any
 import io
+import gc
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -303,11 +306,12 @@ class S3StreamingFactTableBuilder:
             return False
         
         try:
-            # Convert DataFrame to parquet bytes
+            # Convert DataFrame to PyArrow table and write to parquet bytes
+            table = pa.Table.from_pandas(df, preserve_index=False)
             parquet_buffer = io.BytesIO()
-            df.to_parquet(parquet_buffer, index=False, compression='snappy')
+            pq.write_table(table, parquet_buffer, compression="snappy")
             parquet_buffer.seek(0)
-            
+
             # Upload to S3
             self.s3_client.upload_fileobj(parquet_buffer, self.s3_bucket, s3_key)
             logger.info(f"✅ Streamed {len(df):,} records to s3://{self.s3_bucket}/{s3_key}")
@@ -315,6 +319,9 @@ class S3StreamingFactTableBuilder:
         except Exception as e:
             logger.error(f"❌ Failed to stream to S3: {e}")
             return False
+        finally:
+            parquet_buffer.close()
+            del table
     
     def create_fact_table_streaming(self):
         """Create fact table by streaming directly to S3."""
@@ -347,19 +354,27 @@ class S3StreamingFactTableBuilder:
             for chunk_start in range(0, len(rates_df), self.chunk_size):
                 chunk_end = min(chunk_start + self.chunk_size, len(rates_df))
                 chunk_df = rates_df.iloc[chunk_start:chunk_end].copy()
-                
+
                 # Process chunk
                 processed_chunk = self.process_chunk(chunk_df)
                 if processed_chunk is None or processed_chunk.empty:
+                    del chunk_df, processed_chunk
+                    gc.collect()
                     continue
-                
+
                 # Stream to S3
                 chunk_num = total_records // self.chunk_size
                 s3_key = f"{self.s3_prefix}/fact_tables/streaming_chunks/chunk_{chunk_num:04d}_{timestamp}.parquet"
-                
+
                 if self.stream_to_s3(processed_chunk, s3_key):
                     total_records += len(processed_chunk)
                     logger.info(f"Total records processed: {total_records:,}")
+
+                del chunk_df, processed_chunk
+                gc.collect()
+
+        del rates_df
+        gc.collect()
         
         logger.info(f"✅ Completed streaming fact table creation. Total records: {total_records:,}")
         return total_records
