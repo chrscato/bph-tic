@@ -16,7 +16,7 @@ services:
       - ./temp:/app/temp
       - ./config.yaml:/app/config.yaml:ro
       - ./production_config.yaml:/app/production_config.yaml:ro
-    command: ["python", "production_etl_pipeline_quiet.py"]
+    command: ["python", "production_etl_pipeline.py"]
     deploy:
       resources:
         limits:

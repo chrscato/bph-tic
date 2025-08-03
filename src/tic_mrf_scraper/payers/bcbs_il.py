@@ -23,13 +23,8 @@ class Bcbs_IlHandler(PayerHandler):
         billing_code_type = record.get("billing_code_type", "")
         description = record.get("description", "")
         
-        # Handle different complexity levels
-        if patterns["handler_complexity"] == "complex":
-            results = self._parse_complex_structure(record, billing_code, billing_code_type, description)
-        elif patterns["handler_complexity"] == "moderate":
-            results = self._parse_moderate_structure(record, billing_code, billing_code_type, description)
-        else:
-            results = self._parse_standard_structure(record, billing_code, billing_code_type, description)
+        # Handle different complexity levels - use complex structure for BCBS IL
+        results = self._parse_complex_structure(record, billing_code, billing_code_type, description)
         
         return results
 

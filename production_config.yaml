@@ -306,24 +306,24 @@ payer_endpoints:
   # bcbs_ks: https://mrf.secure.bcbsks.com/api/filedownloadhttptrigger?name=table-of-contents&ext=json
   #centene_fidelis: https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_fidelis_index.json
 processing:
-  batch_size: 50000  # Optimized for 32GB RAM with streaming
+  batch_size: 10000  # Reduced for memory safety
   file_types:
   - in_network_rates
   max_files_per_payer: null  # Process ALL files - no artificial limit
   max_records_per_file: null  # Process ALL records - no artificial limit
-  safety_limit_records_per_file: 1000000  # Higher safety limit for comprehensive processing
+  safety_limit_records_per_file: 500000  # Reduced safety limit
   min_accuracy_score: 0.7
   min_completeness_pct: 50.0
-  parallel_workers: 8  # Optimized for 32GB RAM parallel processing
+  parallel_workers: 4  # Reduced for memory safety
   # Memory management settings for comprehensive processing
-  memory_threshold_mb: 24576  # 75% of 32GB RAM (24GB)
+  memory_threshold_mb: 16384  # Reduced to 16GB (50% of 32GB)
   max_processing_time_hours: 24  # Extended for comprehensive processing
   enable_memory_monitoring: true
   # Streaming and chunking settings
   enable_streaming: true
-  chunk_size_mb: 100  # 100MB chunks for memory-efficient processing
+  chunk_size_mb: 50  # Reduced chunk size for memory safety
   enable_data_dumping: true  # Dump processed data to disk/S3 to free memory
-  dump_interval_records: 100000  # Dump every 100K records to prevent memory buildup
+  dump_interval_records: 50000  # Dump every 50K records to prevent memory buildup
 versioning:
   processing_version: tic-etl-sample-v1.0
   retention_days: 7
