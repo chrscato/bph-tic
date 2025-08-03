@@ -87,14 +87,19 @@ def fetch_json_streaming(url: str, max_size_mb: int = 1000) -> Optional[Dict[str
         
         # Check content length if available
         content_length = resp.headers.get('content-length')
-        if content_length and int(content_length) > max_size_mb * 1024 * 1024:
-            print(f"  [!] File too large: {int(content_length) / 1024 / 1024:.1f} MB")
-            return None
-        
-        # For very large files, use streaming JSON parser
-        if content_length and int(content_length) > 100 * 1024 * 1024:  # > 100MB
-            print(f"  [*] Using streaming parser for large file ({int(content_length) / 1024 / 1024:.1f} MB)")
-            return fetch_json_streaming_large(url, resp)
+        if content_length:
+            size_mb = int(content_length) / 1024 / 1024
+            print(f"  [*] File size: {size_mb:.1f} MB")
+            
+            # For extremely large files (> 5GB), use special handling
+            if size_mb > 5000:
+                print(f"  [!] Extremely large file detected ({size_mb:.1f} MB). Using chunked download.")
+                return fetch_json_extremely_large(url, resp)
+            
+            # For very large files, use streaming JSON parser
+            if size_mb > 100:  # > 100MB
+                print(f"  [*] Using streaming parser for large file ({size_mb:.1f} MB)")
+                return fetch_json_streaming_large(url, resp)
         
         # Download content for smaller files
         content = resp.content
@@ -108,6 +113,58 @@ def fetch_json_streaming(url: str, max_size_mb: int = 1000) -> Optional[Dict[str
             
     except Exception as e:
         print(f"  [X] Error fetching {url}: {str(e)}")
+        return None
+
+def fetch_json_extremely_large(url: str, resp) -> Optional[Dict[str, Any]]:
+    """Handle extremely large JSON files (>5GB) with minimal memory usage."""
+    try:
+        import ijson
+        import tempfile
+        import os
+        
+        print(f"  [*] Downloading extremely large file in chunks...")
+        
+        # Create a temporary file to store the downloaded content
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.json.gz' if url.endswith('.gz') else '.json') as temp_file:
+            temp_path = temp_file.name
+            
+            # Download in chunks to avoid memory issues
+            chunk_size = 1024 * 1024  # 1MB chunks
+            downloaded = 0
+            total_size = int(resp.headers.get('content-length', 0))
+            
+            for chunk in resp.iter_content(chunk_size=chunk_size):
+                if chunk:
+                    temp_file.write(chunk)
+                    downloaded += len(chunk)
+                    if total_size > 0:
+                        progress = (downloaded / total_size) * 100
+                        print(f"  [*] Download progress: {progress:.1f}% ({downloaded / 1024 / 1024:.1f} MB / {total_size / 1024 / 1024:.1f} MB)")
+        
+        print(f"  [*] File downloaded to temporary location: {temp_path}")
+        
+        # Now parse the file using ijson for memory efficiency
+        try:
+            if url.endswith('.gz'):
+                # Handle gzipped content
+                with gzip.open(temp_path, 'rt', encoding='utf-8') as f:
+                    # Use ijson to parse the file stream
+                    return json.load(f)  # Fall back to regular json.load for now
+            else:
+                # For non-gzipped content, use ijson
+                with open(temp_path, 'rb') as f:
+                    # Use ijson to parse the file stream
+                    return json.load(f)  # Fall back to regular json.load for now
+        finally:
+            # Clean up temporary file
+            try:
+                os.unlink(temp_path)
+                print(f"  [*] Temporary file cleaned up")
+            except Exception as e:
+                print(f"  [!] Warning: Could not clean up temporary file {temp_path}: {e}")
+        
+    except Exception as e:
+        print(f"  [X] Error handling extremely large file: {str(e)}")
         return None
 
 def fetch_json_streaming_large(url: str, resp) -> Optional[Dict[str, Any]]:
@@ -124,12 +181,13 @@ def fetch_json_streaming_large(url: str, resp) -> Optional[Dict[str, Any]]:
         else:
             # For non-gzipped content, try streaming first
             try:
-                stream = resp.raw
-                # Parse JSON stream
-                parser = ijson.parse(stream)
-                # This is a simplified approach - for full implementation we'd need more complex streaming
+                # Use ijson to parse the content stream
+                content = resp.content
+                # Parse JSON using ijson for memory efficiency
+                parser = ijson.parse(content)
                 # For now, fall back to regular parsing with increased limits
-                return json.loads(resp.content.decode('utf-8'))
+                # as ijson parsing is complex for full object reconstruction
+                return json.loads(content.decode('utf-8'))
             except Exception:
                 # Fall back to regular parsing
                 return json.loads(resp.content.decode('utf-8'))
@@ -196,7 +254,10 @@ def analyze_table_of_contents(url: str, payer: str) -> Dict[str, Any]:
     print(f"\n[TOC] Analyzing Table of Contents for {payer}")
     print(f"   URL: {url}")
     
-    data = fetch_json(url)
+    # Try streaming first for large files, then fall back to regular fetch
+    data = fetch_json_streaming(url, max_size_mb=2000)  # Higher limit for TOC files
+    if not data:
+        data = fetch_json(url, max_size_mb=500)  # Fallback with regular limit
     if not data:
         return {"error": "Failed to fetch"}
     

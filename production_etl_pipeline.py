@@ -6,6 +6,7 @@ import uuid
 import gc
 import psutil
 import time
+import itertools
 
 # Load environment variables from .env file
 try:
@@ -25,7 +26,7 @@ import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional, Iterator
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import time
@@ -45,6 +46,7 @@ from tic_mrf_scraper.diagnostics import (
     detect_compression,
     identify_in_network,
 )
+from tic_mrf_scraper.utils.dedup_cache import SQLiteDedupCache
 
 # Configure logging levels - suppress all debug output
 logging.getLogger('tic_mrf_scraper.stream.parser').setLevel(logging.WARNING)
@@ -80,11 +82,15 @@ def log_memory_usage(stage: str):
     logger.info("memory_usage", stage=stage, memory_mb=memory_mb)
     return memory_mb
 
-def check_memory_pressure():
-    """Check if memory usage is approaching dangerous levels."""
+def check_memory_pressure(config: "ETLConfig"):
+    """Check if memory usage exceeds configured threshold."""
     memory_mb = get_memory_usage()
-    if memory_mb > 2000:  # 2GB threshold
-        logger.warning("memory_pressure_detected", memory_mb=memory_mb)
+    if memory_mb > config.memory_threshold_mb:
+        logger.warning(
+            "memory_pressure_detected",
+            memory_mb=memory_mb,
+            threshold_mb=config.memory_threshold_mb,
+        )
         return True
     return False
 
@@ -151,6 +157,11 @@ class ETLConfig:
     max_files_per_payer: Optional[int] = None
     max_records_per_file: Optional[int] = None
     safety_limit_records_per_file: int = 100000  # Hard limit to prevent crashes
+
+    # Memory management
+    memory_threshold_mb: int = field(
+        default_factory=lambda: int(psutil.virtual_memory().total / 1024 / 1024 * 0.8)
+    )
     
     # Output configuration
     local_output_dir: str = "ortho_radiology_data_default"
@@ -243,10 +254,12 @@ class ProductionETLPipeline:
     
     def __init__(self, config: ETLConfig):
         self.config = config
+        self.cpt_whitelist_set = set(config.cpt_whitelist)
         self.uuid_gen = UUIDGenerator()
         self.validator = DataQualityValidator()
         self.s3_client = boto3.client('s3') if config.s3_bucket else None
-        
+        self.local_parquet_writers: Dict[Path, pq.ParquetWriter] = {}
+
         # Initialize local temp directory for S3 uploads
         if self.s3_client:
             self.temp_dir = tempfile.mkdtemp(prefix="etl_pipeline_")
@@ -284,6 +297,15 @@ class ProductionETLPipeline:
             import shutil
             shutil.rmtree(self.temp_dir, ignore_errors=True)
             logger.info("cleaned_temp_directory", temp_dir=self.temp_dir)
+
+    def close_parquet_writers(self):
+        """Close all open parquet writers."""
+        for writer in self.local_parquet_writers.values():
+            try:
+                writer.close()
+            except Exception:
+                pass
+        self.local_parquet_writers.clear()
     
     def process_all_payers(self):
         """Process all configured payers with full index processing."""
@@ -300,7 +322,7 @@ class ProductionETLPipeline:
                     log_memory_usage(f"before_payer_{payer_name}")
                     
                     # Check memory pressure before starting payer
-                    if check_memory_pressure():
+                    if check_memory_pressure(self.config):
                         logger.warning("memory_pressure_before_payer", payer=payer_name)
                         force_memory_cleanup()
                     
@@ -324,15 +346,18 @@ class ProductionETLPipeline:
                     error_msg = f"Failed processing {payer_name}: {str(e)}"
                     logger.error("payer_processing_failed", payer=payer_name, error=str(e))
                     self.stats["errors"].append(error_msg)
-            
+
             # Generate final outputs if not using S3
             if not self.s3_client:
+                self.close_parquet_writers()
                 self.generate_aggregated_tables()
             
             self.log_final_statistics()
             
         finally:
-            # Always cleanup temp directory
+            # Always close writers and cleanup temp directory
+            if not self.s3_client:
+                self.close_parquet_writers()
             self.cleanup_temp_directory()
     
     def process_payer(self, payer_name: str, index_url: str) -> Dict[str, Any]:
@@ -359,25 +384,43 @@ class ProductionETLPipeline:
             payer_stats["index_analysis"] = index_info
             logger.info("index_analysis", payer=payer_name, analysis=index_info)
 
-            # Get ALL MRF files from index using handler
+            # Get MRF files from index using handler
             handler = get_handler(payer_name)
-            mrf_files = handler.list_mrf_files(index_url)
-            
-            # Filter to in-network rates files only
-            rate_files = [f for f in mrf_files if f["type"] == "in_network_rates"]
-            payer_stats["files_found"] = len(rate_files)
+
+            # First pass: count matching files without storing them
+            total_rate_files = sum(
+                1
+                for f in handler.list_mrf_files(index_url)
+                if f["type"] == "in_network_rates"
+            )
+            payer_stats["files_found"] = total_rate_files
 
             if self.config.max_files_per_payer:
-                rate_files = rate_files[: self.config.max_files_per_payer]
+                total_rate_files = min(
+                    total_rate_files, self.config.max_files_per_payer
+                )
 
-            if not rate_files:
+            if total_rate_files == 0:
                 logger.warning(f"No rate files found for {payer_name}")
                 return payer_stats
 
-            logger.info(f"Found {len(rate_files)} rate files for {payer_name}")
-            
+            logger.info(
+                f"Found {total_rate_files} rate files for {payer_name}"
+            )
+
+            # Second pass: process matching files as they are yielded
+            rate_files_iter = (
+                f
+                for f in handler.list_mrf_files(index_url)
+                if f["type"] == "in_network_rates"
+            )
+            if self.config.max_files_per_payer:
+                rate_files_iter = itertools.islice(
+                    rate_files_iter, self.config.max_files_per_payer
+                )
+
             # Process ALL rate files
-            for file_index, file_info in enumerate(rate_files, 1):
+            for file_index, file_info in enumerate(rate_files_iter, 1):
                 payer_stats["files_processed"] += 1
                 
                 try:
@@ -385,14 +428,14 @@ class ProductionETLPipeline:
                     log_memory_usage(f"before_file_{file_index}")
                     
                     # Check memory pressure before starting file
-                    if check_memory_pressure():
+                    if check_memory_pressure(self.config):
                         logger.warning("memory_pressure_before_file", 
                                      file_index=file_index, 
                                      file_url=file_info["url"])
                         force_memory_cleanup()
                     
                     file_stats = self.process_mrf_file_enhanced(
-                        payer_uuid, payer_name, file_info, handler, file_index, len(rate_files)
+                        payer_uuid, payer_name, file_info, handler, file_index, total_rate_files
                     )
                     
                     payer_stats["files_succeeded"] += 1
@@ -403,8 +446,8 @@ class ProductionETLPipeline:
                     progress.update_progress(
                         payer=payer_name,
                         files_completed=file_index,
-                        total_files=len(rate_files),
-                        records_processed=payer_stats["records_extracted"]
+                        total_files=total_rate_files,
+                        records_processed=payer_stats["records_extracted"],
                     )
                     
                     # Force garbage collection after each file
@@ -436,10 +479,11 @@ class ProductionETLPipeline:
     def process_mrf_file_enhanced(self, payer_uuid: str, payer_name: str,
                                 file_info: Dict[str, Any], handler, file_index: int, total_files: int) -> Dict[str, Any]:
         """Process a single MRF file with direct S3 upload and enhanced logging."""
+        dedup_cache = SQLiteDedupCache()
         file_stats = {
             "records_extracted": 0,
             "records_validated": 0,
-            "organizations_created": set(),
+            "organizations_created": 0,
             "start_time": time.time(),
             "s3_uploads": 0
         }
@@ -498,7 +542,7 @@ class ProductionETLPipeline:
                 
                 # Check memory pressure every 100 records
                 if file_stats["records_extracted"] % 100 == 0:
-                    if check_memory_pressure():
+                    if check_memory_pressure(self.config):
                         # Force cleanup and write current batches immediately
                         if rate_batch:
                             upload_stats = self.write_batches_to_s3(
@@ -508,14 +552,15 @@ class ProductionETLPipeline:
                             file_stats["s3_uploads"] += upload_stats["files_uploaded"]
                             self.stats["s3_uploads"] += upload_stats["files_uploaded"]
                             
-                            # Clear batches to free memory
+                            # Clear batches to free memory and reset dedup cache
                             rate_batch, org_batch, provider_batch = [], [], []
+                            dedup_cache.reset()
                             force_memory_cleanup()
                 
                 # Normalize and validate
                 normalized = normalize_tic_record(
-                    raw_record, 
-                    set(self.config.cpt_whitelist), 
+                    raw_record,
+                    self.cpt_whitelist_set,
                     payer_name
                 )
                 
@@ -574,17 +619,18 @@ class ProductionETLPipeline:
                     
                     # Create organization record if new
                     org_uuid = rate_record["organization_uuid"]
-                    if org_uuid not in file_stats["organizations_created"]:
+                    if org_uuid not in dedup_cache:
                         org_record = self.create_organization_record(normalized, raw_record)
                         org_batch.append(org_record)
-                        file_stats["organizations_created"].add(org_uuid)
+                        dedup_cache.add(org_uuid)
+                        file_stats["organizations_created"] += 1
                     
                     # Create provider records
                     provider_records = self.create_provider_records(normalized, raw_record)
                     provider_batch.extend(provider_records)
                 
                 # Write batches when full or when memory pressure detected
-                if len(rate_batch) >= batch_size or check_memory_pressure():
+                if len(rate_batch) >= batch_size or check_memory_pressure(self.config):
                     upload_stats = self.write_batches_to_s3(
                         rate_batch, org_batch, provider_batch, 
                         payer_name, filename_base, file_stats["s3_uploads"]
@@ -592,25 +638,29 @@ class ProductionETLPipeline:
                     file_stats["s3_uploads"] += upload_stats["files_uploaded"]
                     self.stats["s3_uploads"] += upload_stats["files_uploaded"]
                     
-                    # Clear batches to free memory
+                    # Clear batches to free memory and reset dedup cache
                     rate_batch, org_batch, provider_batch = [], [], []
-                    
+                    dedup_cache.reset()
+
                     # Force garbage collection after each batch
                     force_memory_cleanup()
             
             # Write final batches
             if rate_batch:
                 upload_stats = self.write_batches_to_s3(
-                    rate_batch, org_batch, provider_batch, 
+                    rate_batch, org_batch, provider_batch,
                     payer_name, filename_base, file_stats["s3_uploads"]
                 )
                 file_stats["s3_uploads"] += upload_stats["files_uploaded"]
                 self.stats["s3_uploads"] += upload_stats["files_uploaded"]
+                dedup_cache.reset()
         
         except Exception as e:
             logger.error(f"Failed processing file {file_info['url']}: {str(e)}")
             raise
-        
+        finally:
+            dedup_cache.close()
+
         file_stats["processing_time"] = time.time() - file_stats["start_time"]
         return file_stats
     
@@ -891,16 +941,13 @@ class ProductionETLPipeline:
         """Append records to parquet file (local fallback)."""
         if not records:
             return
-        
-        df = pd.DataFrame(records)
-        
-        if file_path.exists():
-            existing_df = pd.read_parquet(file_path)
-            combined_df = pd.concat([existing_df, df], ignore_index=True)
-            combined_df.to_parquet(file_path, index=False)
-        else:
-            df.to_parquet(file_path, index=False)
-        
+        table = pa.Table.from_pylist(records)
+        writer = self.local_parquet_writers.get(file_path)
+        if writer is None:
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            writer = pq.ParquetWriter(file_path, table.schema)
+            self.local_parquet_writers[file_path] = writer
+        writer.write_table(table)
         logger.info("wrote_local_batch", file=str(file_path), records=len(records))
     
     def generate_aggregated_tables(self):
@@ -920,43 +967,65 @@ class ProductionETLPipeline:
         self.generate_analytics_table()
     
     def combine_table_files(self, table_name: str):
-        """Combine all staging files for a table into final parquet."""
+        """Combine all staging files for a table into final parquet without loading all data."""
         staging_dir = Path(self.config.local_output_dir) / table_name
-        staging_files = list(staging_dir.glob("*.parquet"))
-        
+
+        # Exclude any previously generated final file
+        staging_files = [
+            f for f in staging_dir.glob("*.parquet")
+            if not f.name.endswith("_final.parquet")
+        ]
+
         if not staging_files:
             logger.warning("no_staging_files", table=table_name)
             return
-        
+
         logger.info("combining_table_files", table=table_name, files=len(staging_files))
-        
-        # Read all files and combine
-        all_dfs = []
+
+        final_file = staging_dir / f"{table_name}_final.parquet"
+        if final_file.exists():
+            final_file.unlink()
+
+        uuid_col = f"{table_name.rstrip('s')}_uuid"
+        seen_uuids = set()
+        writer = None
+        records_written = 0
+        uuid_col_present = False
+
         for file_path in staging_files:
-            df = pd.read_parquet(file_path)
-            all_dfs.append(df)
-        
-        if all_dfs:
-            combined_df = pd.concat(all_dfs, ignore_index=True)
-            
-            # Deduplicate based on UUID
-            uuid_col = f"{table_name.rstrip('s')}_uuid"
-            if uuid_col in combined_df.columns:
-                combined_df = combined_df.drop_duplicates(subset=[uuid_col])
-            
-            # Write final table
-            final_file = staging_dir / f"{table_name}_final.parquet"
-            combined_df.to_parquet(final_file, index=False)
-            
-            logger.info("created_final_table", 
-                       table=table_name, 
-                       records=len(combined_df),
-                       file=str(final_file))
-            
-            # Clean up staging files
-            for file_path in staging_files:
-                if file_path.name != f"{table_name}_final.parquet":
-                    file_path.unlink()
+            parquet_file = pq.ParquetFile(file_path)
+
+            for batch in parquet_file.iter_batches():
+                df = batch.to_pandas()
+
+                if uuid_col in df.columns:
+                    uuid_col_present = True
+                    mask = ~df[uuid_col].isin(seen_uuids)
+                    new_uuids = df.loc[mask, uuid_col]
+                    seen_uuids.update(new_uuids.tolist())
+                    df = df[mask]
+
+                if df.empty:
+                    continue
+
+                table = pa.Table.from_pandas(df, preserve_index=False)
+                if writer is None:
+                    writer = pq.ParquetWriter(final_file, table.schema)
+                writer.write_table(table)
+                records_written += len(df)
+
+        if writer:
+            writer.close()
+            logger.info(
+                "created_final_table",
+                table=table_name,
+                records=len(seen_uuids) if uuid_col_present else records_written,
+                file=str(final_file),
+            )
+
+        # Clean up staging files
+        for file_path in staging_files:
+            file_path.unlink()
     
     def generate_analytics_table(self):
         """Generate pre-computed analytics table."""

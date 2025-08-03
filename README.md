@@ -157,6 +157,9 @@ class ETLConfig:
     parallel_workers: int = 2
     max_files_per_payer: Optional[int] = None
     max_records_per_file: Optional[int] = None
+
+    # Memory management
+    memory_threshold_mb: int = int(psutil.virtual_memory().total / 1024 / 1024 * 0.8)
     
     # Output configuration
     local_output_dir: str = "ortho_radiology_data_default"

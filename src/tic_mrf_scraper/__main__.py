@@ -5,6 +5,7 @@ import os
 import yaml
 from pathlib import Path
 from datetime import datetime
+from typing import Optional
 from tic_mrf_scraper.fetch.blobs import analyze_index_structure
 from tic_mrf_scraper.stream.parser import stream_parse_enhanced
 from tic_mrf_scraper.payers import get_handler
@@ -38,37 +39,43 @@ def analyze_endpoint(index_url: str, payer_name: str):
     # Get detailed MRF information
     try:
         handler = get_handler(payer_name)
-        mrfs = handler.list_mrf_files(index_url)
+        mrfs = list(handler.list_mrf_files(index_url))
         logger.info("found_mrfs", payer=payer_name, count=len(mrfs))
-        
+
         # Analyze file types
         file_types = {}
         for mrf in mrfs:
             mrf_type = mrf["type"]
             file_types[mrf_type] = file_types.get(mrf_type, 0) + 1
-        
+
         logger.info("mrf_file_types", payer=payer_name, types=file_types)
-        
+
         # Sample first few files
         for i, mrf in enumerate(mrfs[:5]):
-            logger.info("mrf_sample", 
-                       index=i,
-                       type=mrf["type"],
-                       plan_name=mrf["plan_name"],
-                       url=mrf["url"][:100] + "..." if len(mrf["url"]) > 100 else mrf["url"])
-                       
+            logger.info(
+                "mrf_sample",
+                index=i,
+                type=mrf["type"],
+                plan_name=mrf["plan_name"],
+                url=mrf["url"][:100] + "..." if len(mrf["url"]) > 100 else mrf["url"],
+            )
+
     except Exception as e:
         logger.error("mrf_analysis_failed", payer=payer_name, error=str(e))
 
-def process_mrf_file(mrf_info: dict,
-                    cpt_whitelist: set,
-                    payer_name: str,
-                    handler,
-                    s3_bucket: str = None,
-                    s3_prefix: str = None,
-                    args=None) -> dict:
+def process_mrf_file(
+    mrf_info: dict,
+    cpt_whitelist: set,
+    payer_name: str,
+    handler,
+    s3_bucket: str = None,
+    s3_prefix: str = None,
+    *,
+    max_records: Optional[int] = None,
+    batch_size: int = 5000,
+) -> dict:
     """Process a single MRF file with enhanced parsing and direct S3 upload.
-    
+
     Returns:
         Processing statistics
     """
@@ -81,88 +88,103 @@ def process_mrf_file(mrf_info: dict,
         "status": "started",
         "error": None,
         "start_time": datetime.now(),
-        "s3_uploads": 0
+        "s3_uploads": 0,
     }
-    
+
     try:
         # Create output filename for S3
-        plan_safe_name = "".join(c if c.isalnum() or c in '-_' else '_' for c in mrf_info["plan_name"])
+        plan_safe_name = "".join(
+            c if c.isalnum() or c in '-_' else '_' for c in mrf_info["plan_name"]
+        )
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename_base = f"{payer_name}_{plan_safe_name}_{mrf_info['type']}_{timestamp}"
         if mrf_info["plan_id"]:
             filename_base += f"_{mrf_info['plan_id']}"
-        
+
         # For S3: use a more organized path structure
         if s3_bucket:
-            s3_file_prefix = f"{s3_prefix}/payer={payer_name}/type={mrf_info['type']}/date={datetime.now().strftime('%Y-%m-%d')}/{filename_base}"
+            s3_file_prefix = (
+                f"{s3_prefix}/payer={payer_name}/type={mrf_info['type']}/date="
+                f"{datetime.now().strftime('%Y-%m-%d')}/{filename_base}"
+            )
         else:
             s3_file_prefix = None
-        
+
         # Initialize writer with S3 configuration
         local_path = f"temp_{filename_base}.parquet"  # Temp filename
         writer = ParquetWriter(
-            local_path, 
-            batch_size=5000,  # Larger batches for better S3 efficiency
+            local_path,
+            batch_size=batch_size,
             s3_bucket=s3_bucket,
-            s3_prefix=s3_file_prefix
+            s3_prefix=s3_file_prefix,
         )
-        
-        logger.info("processing_mrf_file", 
-                   url=mrf_info["url"][:100] + "..." if len(mrf_info["url"]) > 100 else mrf_info["url"],
-                   type=mrf_info["type"],
-                   plan=mrf_info["plan_name"],
-                   s3_bucket=s3_bucket,
-                   s3_prefix=s3_file_prefix)
-        
+
+        logger.info(
+            "processing_mrf_file",
+            url=mrf_info["url"][:100] + "..." if len(mrf_info["url"]) > 100 else mrf_info["url"],
+            type=mrf_info["type"],
+            plan=mrf_info["plan_name"],
+            s3_bucket=s3_bucket,
+            s3_prefix=s3_file_prefix,
+        )
+
         # Process with enhanced parser
         provider_ref_url = mrf_info.get("provider_reference_url")
-        
+
         for raw_record in stream_parse_enhanced(
-            mrf_info["url"],
-            payer_name,
-            provider_ref_url,
-            handler
+            mrf_info["url"], payer_name, provider_ref_url, handler
         ):
             stats["records_processed"] += 1
-            
+
             # Normalize the record
             normalized = normalize_tic_record(raw_record, cpt_whitelist, payer_name)
             if normalized:
                 writer.write(normalized)
                 stats["records_written"] += 1
-                
+
             # Log progress for large files
             if stats["records_processed"] % 50000 == 0:
-                logger.info("processing_progress",
-                           processed=stats["records_processed"],
-                           written=stats["records_written"],
-                           plan=mrf_info["plan_name"],
-                           progress_pct=f"{(stats['records_written']/max(stats['records_processed'], 1)*100):.1f}%")
-        
+                logger.info(
+                    "processing_progress",
+                    processed=stats["records_processed"],
+                    written=stats["records_written"],
+                    plan=mrf_info["plan_name"],
+                    progress_pct=f"{(stats['records_written']/max(stats['records_processed'], 1)*100):.1f}%",
+                )
+
+            if max_records and stats["records_processed"] >= max_records:
+                break
+
         # Close writer (this will upload final batch to S3)
         writer.close()
         stats["status"] = "completed"
         stats["end_time"] = datetime.now()
-        stats["processing_time_seconds"] = (stats["end_time"] - stats["start_time"]).total_seconds()
-        
-        logger.info("completed_mrf_processing", 
-                   plan=mrf_info["plan_name"],
-                   processed=stats["records_processed"],
-                   written=stats["records_written"],
-                   processing_time=f"{stats['processing_time_seconds']:.1f}s",
-                   records_per_second=f"{stats['records_written']/max(stats['processing_time_seconds'], 1):.1f}",
-                   s3_bucket=s3_bucket)
-        
+        stats["processing_time_seconds"] = (
+            stats["end_time"] - stats["start_time"]
+        ).total_seconds()
+
+        logger.info(
+            "completed_mrf_processing",
+            plan=mrf_info["plan_name"],
+            processed=stats["records_processed"],
+            written=stats["records_written"],
+            processing_time=f"{stats['processing_time_seconds']:.1f}s",
+            records_per_second=f"{stats['records_written']/max(stats['processing_time_seconds'], 1):.1f}",
+            s3_bucket=s3_bucket,
+        )
+
         return stats
-        
+
     except Exception as e:
         stats["status"] = "failed"
         stats["error"] = str(e)
         stats["end_time"] = datetime.now()
-        logger.error("mrf_processing_failed", 
-                    url=mrf_info["url"][:100] + "...",
-                    plan=mrf_info["plan_name"],
-                    error=str(e))
+        logger.error(
+            "mrf_processing_failed",
+            url=mrf_info["url"][:100] + "...",
+            plan=mrf_info["plan_name"],
+            error=str(e),
+        )
         return stats
 
 def main():
@@ -225,34 +247,35 @@ def main():
                 analyze_endpoint(index_url, payer_name)
                 continue
             
-            # Get ALL MRF files from index (no limits!)
+            # Get MRF files from index as an iterator
             logger.info("fetching_full_index", payer=payer_name)
             handler = get_handler(payer_name)
-            mrfs = handler.list_mrf_files(index_url)
-            
-            # Filter by file types
-            filtered_mrfs = [mrf for mrf in mrfs if mrf["type"] in args.file_types]
-            overall_stats["total_files_found"] += len(filtered_mrfs)
-            
-            logger.info("found_mrf_files", 
-                       payer=payer_name,
-                       total_in_index=len(mrfs),
-                       filtered_count=len(filtered_mrfs),
-                       types_processing=args.file_types)
-            
-            # Process ALL filtered files (this is the key change!)
+            mrf_iter = handler.list_mrf_files(index_url)
+
+            max_files = cfg["processing"].get("max_files_per_payer")
             payer_success_count = 0
             payer_fail_count = 0
-            
-            for i, mrf_info in enumerate(filtered_mrfs, 1):
+            total_in_index = 0
+            filtered_count = 0
+
+            for mrf_info in mrf_iter:
+                total_in_index += 1
+                if mrf_info["type"] not in args.file_types:
+                    continue
+                if max_files and filtered_count >= max_files:
+                    break
+
+                filtered_count += 1
                 overall_stats["files_processed"] += 1
-                
-                logger.info("starting_file_processing",
-                           payer=payer_name,
-                           file_number=f"{i}/{len(filtered_mrfs)}",
-                           plan=mrf_info["plan_name"],
-                           type=mrf_info["type"])
-                
+
+                logger.info(
+                    "starting_file_processing",
+                    payer=payer_name,
+                    file_number=str(filtered_count),
+                    plan=mrf_info["plan_name"],
+                    type=mrf_info["type"],
+                )
+
                 file_stats = process_mrf_file(
                     mrf_info,
                     cpt_whitelist,
@@ -260,19 +283,22 @@ def main():
                     handler,
                     s3_bucket,
                     s3_prefix,
-                    args
+                    max_records=cfg["processing"].get("max_records_per_file"),
+                    batch_size=cfg["processing"].get("batch_size", 5000),
                 )
-                
+
                 if file_stats["status"] == "completed":
                     overall_stats["files_succeeded"] += 1
                     overall_stats["total_records_written"] += file_stats["records_written"]
                     payer_success_count += 1
                     
-                    logger.info("file_completed_successfully",
-                               payer=payer_name,
-                               file_number=f"{i}/{len(filtered_mrfs)}",
-                               records_written=file_stats["records_written"],
-                               processing_time=f"{file_stats.get('processing_time_seconds', 0):.1f}s")
+                    logger.info(
+                        "file_completed_successfully",
+                        payer=payer_name,
+                        file_number=str(filtered_count),
+                        records_written=file_stats["records_written"],
+                        processing_time=f"{file_stats.get('processing_time_seconds', 0):.1f}s",
+                    )
                 else:
                     overall_stats["files_failed"] += 1
                     overall_stats["failed_files"].append({
@@ -285,20 +311,32 @@ def main():
                     
                     logger.error("file_processing_failed",
                                 payer=payer_name,
-                                file_number=f"{i}/{len(filtered_mrfs)}",
+                                file_number=str(filtered_count),
                                 plan=mrf_info["plan_name"],
-                                error=file_stats["error"])
+                                error=file_stats["error"],
+                            )
                     
                     # Stop processing this payer if skip_failed is False
                     if not args.skip_failed:
                         logger.error("stopping_payer_processing_due_to_failure", payer=payer_name)
                         break
             
-            logger.info("completed_payer_processing",
-                       payer=payer_name,
-                       files_attempted=len(filtered_mrfs),
-                       files_succeeded=payer_success_count,
-                       files_failed=payer_fail_count)
+            overall_stats["total_files_found"] += filtered_count
+            logger.info(
+                "found_mrf_files",
+                payer=payer_name,
+                total_in_index=total_in_index,
+                filtered_count=filtered_count,
+                types_processing=args.file_types,
+            )
+
+            logger.info(
+                "completed_payer_processing",
+                payer=payer_name,
+                files_attempted=filtered_count,
+                files_succeeded=payer_success_count,
+                files_failed=payer_fail_count,
+            )
                     
         except Exception as e:
             logger.error("payer_processing_failed", payer=payer_name, error=str(e))

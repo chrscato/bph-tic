@@ -54,27 +54,28 @@ def test_memory_management():
     # Log initial memory
     log_memory_usage("test_start")
     
+    config = None
     try:
         # Create test configuration
         config = create_test_config()
-        
+
         # Initialize pipeline
         pipeline = ProductionETLPipeline(config)
-        
+
         # Process with memory monitoring
         pipeline.process_all_payers()
-        
+
         logger.info("Memory management test completed successfully!")
-        
+
     except Exception as e:
         logger.error(f"Memory management test failed: {str(e)}")
         raise
     finally:
         # Log final memory
         log_memory_usage("test_end")
-        
+
         # Check for memory pressure
-        if check_memory_pressure():
+        if config and check_memory_pressure(config):
             logger.warning("Memory pressure detected at end of test")
             force_memory_cleanup()
 

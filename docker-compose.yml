@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  tic-mrf-scraper:
+    build: .
+    container_name: tic-mrf-scraper
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./temp:/app/temp
+      - ./config.yaml:/app/config.yaml:ro
+      - ./production_config.yaml:/app/production_config.yaml:ro
+    command: ["python", "production_etl_pipeline_quiet.py"]
+    deploy:
+      resources:
+        limits:
+          memory: 28G
+          cpus: '4.0'
+        reservations:
+          memory: 16G
+          cpus: '2.0'
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "5"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+  # Optional: Add a monitoring service
+  monitoring:
+    image: prom/prometheus:latest
+    container_name: tic-monitoring
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    profiles:
+      - monitoring
+
+volumes:
+  prometheus_data: 

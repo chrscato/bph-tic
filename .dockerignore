@@ -1,0 +1,77 @@
+# Git and version control
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Development files
+.env
+.env.local
+.env.development
+.env.test
+*.log
+logs/
+
+# Data directories (will be mounted as volumes)
+data/
+temp/
+backups/
+ortho_radiology_data_*/
+nppes_data/
+dashboard_data/
+payer_structure_analysis/
+smart_payer_workflow/
+
+# Test files
+tests/
+test_*.py
+*_test.py
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Jupyter notebooks
+*.ipynb
+
+# Large files and archives
+*.tar.gz
+*.zip
+*.rar
+
+# Monitoring and diagnostic files
+monitoring/
+diagnostic_report_*.json
+quick_test_*.json
+
+# Scripts and utilities
+scripts/
+*.sh
+
+# Configuration backups
+*_backup.yaml
+*_sample.yaml 

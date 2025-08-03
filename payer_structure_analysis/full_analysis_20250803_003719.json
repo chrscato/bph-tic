@@ -1,0 +1,64 @@
+{
+  "cigna": {
+    "table_of_contents": {
+      "payer": "cigna",
+      "url": "https://d25kgz5rikkq4n.cloudfront.net/cost_transparency/mrf/table-of-contents/reporting_month=2025-08/2025-08-01_cigna-health-life-insurance-company_index.json?Expires=1757891470&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9kMjVrZ3o1cmlra3E0bi5jbG91ZGZyb250Lm5ldC9jb3N0X3RyYW5zcGFyZW5jeS9tcmYvdGFibGUtb2YtY29udGVudHMvcmVwb3J0aW5nX21vbnRoPTIwMjUtMDgvMjAyNS0wOC0wMV9jaWduYS1oZWFsdGgtbGlmZS1pbnN1cmFuY2UtY29tcGFueV9pbmRleC5qc29uIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzU3ODkxNDcwfX19XX0_&Signature=fg1XUcLNsxx7RYtuB88Qo5ainXP~yQaGXqvWocH1qCuWC8YW2s1nkFDfMmc3NlbLcfjG8X3g~p-v80yvx78wi9q0GmLxLbFEQueqfaBCvEV7i-ABQmVOl6XTZnNnO5HaHRRh9i6TbikcuUlQ4JmN65jZ8AhC0aFv5DAZmwaPZrpeKU81dSf254J8LZZq9q2-~VwIuIhlF6M9Yw6eODghYKrzBC2KluX5cNFYTpivXPNdckq9tIp-JsAZbJfP-1UetqOkszdOB9fFrEylwsFrHqHwV8803wbk8q2yapm-Y2lTfZzxDHtCJX2MGI6PaPKVRcy4oWCwcE3u2XUZtqdaaw__&Key-Pair-Id=K1NVBEPVH9LWJP",
+      "structure_type": "standard_toc",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "reporting_structure"
+      ],
+      "file_counts": {
+        "reporting_structures": 15914,
+        "in_network_files": 0,
+        "allowed_amount_files": 15547,
+        "provider_reference_files": 0
+      },
+      "sample_files": {},
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "reporting_structure"
+        ],
+        "key_count": 3,
+        "children": {
+          "reporting_structure": {
+            "type": "array",
+            "length": 15914,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "reporting_plans",
+                "allowed_amount_file"
+              ],
+              "key_count": 2,
+              "children": {
+                "allowed_amount_file": {
+                  "type": "object",
+                  "keys": [
+                    "description",
+                    "location"
+                  ],
+                  "key_count": 2,
+                  "children": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "sample_structure": {
+        "keys": [
+          "reporting_plans",
+          "allowed_amount_file"
+        ],
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": ""
+      }
+    }
+  }
+}

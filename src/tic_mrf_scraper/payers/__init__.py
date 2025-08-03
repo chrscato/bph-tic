@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Type
+from typing import Dict, Any, List, Type, Iterator
 import warnings
 
 from ..fetch.blobs import list_mrf_blobs_enhanced
@@ -7,8 +7,8 @@ from ..fetch.blobs import list_mrf_blobs_enhanced
 class PayerHandler:
     """Base class for payer specific logic."""
 
-    def list_mrf_files(self, index_url: str) -> List[Dict[str, Any]]:
-        """Return list of MRF metadata dictionaries for an index."""
+    def list_mrf_files(self, index_url: str) -> Iterator[Dict[str, Any]]:
+        """Yield MRF metadata dictionaries for an index."""
         return list_mrf_blobs_enhanced(index_url)
 
     def parse_in_network(self, record: Dict[str, Any]) -> List[Dict[str, Any]]:
