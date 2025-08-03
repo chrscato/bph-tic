@@ -67,9 +67,11 @@ class TiCMRFParser:
             
             # Handle gzipped content with true streaming
             if url.endswith('.gz') or response.headers.get('content-encoding') == 'gzip':
-                with gzip.GzipFile(fileobj=response.raw) as gz:
+                gz_file = None
+                try:
+                    gz_file = gzip.GzipFile(fileobj=response.raw)
                     # Use ijson for streaming parsing
-                    parser = ijson.parse(gz)
+                    parser = ijson.parse(gz_file)
                     for prefix, event, value in parser:
                         if prefix == "provider_references.item" and event == "start_map":
                             # Start of a provider reference object
@@ -86,6 +88,9 @@ class TiCMRFParser:
                                 if ref_id:
                                     refs[ref_id] = current_ref
                                 current_ref = {}
+                finally:
+                    if gz_file:
+                        gz_file.close()
             else:
                 # For non-gzipped content
                 parser = ijson.parse(response.raw)
@@ -336,6 +341,7 @@ def _stream_parse_large_file(url: str, payer: str, parser: TiCMRFParser, handler
     """Stream parse large files using ijson with true streaming."""
     logger.info("using_streaming_parser_for_large_file", url=url)
     
+    response = None
     try:
         # Use requests with streaming to avoid loading entire file into memory
         response = requests.get(url, stream=True, timeout=30)
@@ -343,9 +349,14 @@ def _stream_parse_large_file(url: str, payer: str, parser: TiCMRFParser, handler
         
         # Handle gzipped content with true streaming
         if url.endswith('.gz') or response.headers.get('content-encoding') == 'gzip':
-            # Stream the gzipped content directly
-            with gzip.GzipFile(fileobj=response.raw) as gz:
-                yield from _parse_json_stream(gz, payer, parser, handler)
+            # Stream the gzipped content directly with proper cleanup
+            gz_file = None
+            try:
+                gz_file = gzip.GzipFile(fileobj=response.raw)
+                yield from _parse_json_stream(gz_file, payer, parser, handler)
+            finally:
+                if gz_file:
+                    gz_file.close()
         else:
             # For non-gzipped content, stream directly
             yield from _parse_json_stream(response.raw, payer, parser, handler)
@@ -354,6 +365,10 @@ def _stream_parse_large_file(url: str, payer: str, parser: TiCMRFParser, handler
         logger.error("streaming_parse_failed", error=str(e))
         # Fall back to memory parsing for smaller files
         yield from _stream_parse_memory(url, payer, parser, handler)
+    finally:
+        # Ensure response is properly closed to prevent file locking issues
+        if response:
+            response.close()
 
 def _parse_json_stream(stream, payer: str, parser: TiCMRFParser, handler: PayerHandler) -> Iterator[Dict[str, Any]]:
     """Parse JSON stream using ijson."""
@@ -419,8 +434,13 @@ def _stream_parse_memory(url: str, payer: str, parser: TiCMRFParser, handler: Pa
         
         # Handle gzipped content
         if url.endswith('.gz') or '.gz?' in url or content.startswith(b'\x1f\x8b'):
-            with gzip.GzipFile(fileobj=BytesIO(content)) as gz:
-                data = json.load(gz)
+            gz_file = None
+            try:
+                gz_file = gzip.GzipFile(fileobj=BytesIO(content))
+                data = json.load(gz_file)
+            finally:
+                if gz_file:
+                    gz_file.close()
         else:
             data = json.loads(content.decode('utf-8'))
         
