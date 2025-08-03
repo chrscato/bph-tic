@@ -5,7 +5,7 @@ import requests
 import gzip
 import os
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional, Tuple, Iterator
 from tenacity import retry, stop_after_attempt, wait_exponential
 from ..utils.backoff_logger import get_logger
 
@@ -39,17 +39,17 @@ def load_local_file(file_path: str) -> Dict[str, Any]:
     wait=wait_exponential(multiplier=1, min=4, max=10),
     reraise=True
 )
-def list_mrf_blobs_enhanced(index_url: str) -> List[Dict[str, Any]]:
-    """Fetch comprehensive list of MRF blob URLs with metadata from index file.
-    
+def list_mrf_blobs_enhanced(index_url: str) -> Iterator[Dict[str, Any]]:
+    """Yield MRF blob URLs with metadata from an index file.
+
     Args:
         index_url: URL or local file path to the index file
-        
-    Returns:
-        List of MRF blob information with metadata
+
+    Yields:
+        Dictionaries containing MRF blob information with metadata
     """
     logger.info("fetching_enhanced_index", url=index_url)
-    
+
     # Handle local files
     if is_local_file(index_url):
         data = load_local_file(index_url)
@@ -58,28 +58,30 @@ def list_mrf_blobs_enhanced(index_url: str) -> List[Dict[str, Any]]:
         resp = requests.get(index_url)
         resp.raise_for_status()
         data = resp.json()
-    
+
     logger.info("index_response_keys", keys=list(data.keys()) if isinstance(data, dict) else "array")
-    
+
     if not isinstance(data, dict):
         raise ValueError(f"Expected dict response, got {type(data)}")
-    
-    mrfs = []
-    
+
+    count = 0
+
     # Handle standard Table of Contents structure
     if "reporting_structure" in data:
         logger.info("processing_table_of_contents")
-        
+
         for i, structure in enumerate(data["reporting_structure"]):
-            logger.info("processing_reporting_structure", 
-                       index=i, 
-                       keys=list(structure.keys()))
-            
+            logger.info(
+                "processing_reporting_structure",
+                index=i,
+                keys=list(structure.keys()),
+            )
+
             # Extract plan information
             plan_name = structure.get("plan_name", f"plan_{i}")
             plan_id = structure.get("plan_id")
             plan_market_type = structure.get("plan_market_type")
-            
+
             # Process in-network files
             if "in_network_files" in structure:
                 for j, file_info in enumerate(structure["in_network_files"]):
@@ -92,18 +94,19 @@ def list_mrf_blobs_enhanced(index_url: str) -> List[Dict[str, Any]]:
                             "plan_market_type": plan_market_type,
                             "description": file_info.get("description", ""),
                             "reporting_structure_index": i,
-                            "file_index": j
+                            "file_index": j,
                         }
-                        
+
                         # Check for provider reference file
                         if "provider_references" in structure:
                             for provider_ref in structure["provider_references"]:
                                 if "location" in provider_ref:
                                     mrf_info["provider_reference_url"] = provider_ref["location"]
                                     break
-                        
-                        mrfs.append(mrf_info)
-            
+
+                        count += 1
+                        yield mrf_info
+
             # Process allowed amount files
             if "allowed_amount_file" in structure:
                 allowed_file = structure["allowed_amount_file"]
@@ -116,10 +119,11 @@ def list_mrf_blobs_enhanced(index_url: str) -> List[Dict[str, Any]]:
                         "plan_market_type": plan_market_type,
                         "description": allowed_file.get("description", ""),
                         "reporting_structure_index": i,
-                        "file_index": 0
+                        "file_index": 0,
                     }
-                    mrfs.append(mrf_info)
-    
+                    count += 1
+                    yield mrf_info
+
     # Handle legacy blobs structure
     elif "blobs" in data:
         logger.info("processing_legacy_blobs")
@@ -133,17 +137,19 @@ def list_mrf_blobs_enhanced(index_url: str) -> List[Dict[str, Any]]:
                     "plan_market_type": None,
                     "description": blob.get("description", ""),
                     "reporting_structure_index": 0,
-                    "file_index": i
+                    "file_index": i,
                 }
-                mrfs.append(mrf_info)
-    
+                count += 1
+                yield mrf_info
+
     else:
         available_keys = list(data.keys())
         logger.error("unknown_index_structure", keys=available_keys)
-        raise ValueError(f"Response missing expected keys. Available keys: {available_keys}")
-    
-    logger.info("found_mrf_files", count=len(mrfs))
-    return mrfs
+        raise ValueError(
+            f"Response missing expected keys. Available keys: {available_keys}"
+        )
+
+    logger.info("found_mrf_files", count=count)
 
 def list_mrf_blobs(index_url: str) -> List[str]:
     """Legacy function for backward compatibility - returns just URLs."""
