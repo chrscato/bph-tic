@@ -60,6 +60,7 @@ class TiCMRFParser:
         """Load provider references using streaming JSON parser."""
         refs = {}
         
+        response = None
         try:
             # Use requests with streaming to avoid loading entire file into memory
             response = requests.get(url, stream=True, timeout=30)
@@ -112,6 +113,10 @@ class TiCMRFParser:
                             current_ref = {}
         except Exception as e:
             logger.error("streaming_provider_refs_failed", error=str(e))
+        finally:
+            # Ensure response is properly closed to prevent file locking issues
+            if response:
+                response.close()
         
         logger.info("loaded_provider_references_streaming", count=len(refs))
         return refs

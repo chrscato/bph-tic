@@ -1,0 +1,370 @@
+{
+  "bcbs_mi": {
+    "table_of_contents": {
+      "payer": "bcbs_mi",
+      "url": "https://bcbsm.sapphiremrfhub.com/tocs/current/blue_cross_blue_shield_of_michigan",
+      "structure_type": "standard_toc",
+      "top_level_keys": [
+        "reporting_entity_type",
+        "reporting_entity_name",
+        "reporting_structure"
+      ],
+      "file_counts": {
+        "reporting_structures": 7,
+        "in_network_files": 669,
+        "allowed_amount_files": 7,
+        "provider_reference_files": 0
+      },
+      "sample_files": {
+        "in_network": {
+          "url": "https://bcbsm.sapphiremrfhub.com/mrfs/202508/2025-07-01_BCBSMI_COMMERCIAL-HMO-Northwood-DME_in-network-rates.json.gz",
+          "url_display": "https://bcbsm.sapphiremrfhub.com/mrfs/202508/2025-07-01_BCBSMI_COMMERCIAL-HMO-Northwood-DME_in-netwo...",
+          "description": "BCBSMI HMO Northwood DME In Network Rates"
+        }
+      },
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_type",
+          "reporting_entity_name",
+          "reporting_structure"
+        ],
+        "key_count": 3,
+        "children": {
+          "reporting_structure": {
+            "type": "array",
+            "length": 7,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "allowed_amount_file",
+                "reporting_plans",
+                "in_network_files"
+              ],
+              "key_count": 3,
+              "children": {
+                "allowed_amount_file": {
+                  "type": "object",
+                  "keys": [
+                    "description",
+                    "location"
+                  ],
+                  "key_count": 2,
+                  "children": {}
+                },
+                "in_network_files": {
+                  "type": "array",
+                  "length": 6,
+                  "sample_item": {
+                    "type": "truncated",
+                    "reason": "max_depth"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "sample_structure": {
+        "keys": [
+          "allowed_amount_file",
+          "reporting_plans",
+          "in_network_files"
+        ],
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": ""
+      }
+    },
+    "in_network_mrf": {
+      "payer": "bcbs_mi",
+      "url": "https://bcbsm.sapphiremrfhub.com/mrfs/202508/2025-07-01_BCBSMI_COMMERCIAL-HMO-Northwood-DME_in-network-rates.json.gz",
+      "structure_type": "standard_in_network",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "in_network",
+        "provider_references",
+        "last_updated_on",
+        "version"
+      ],
+      "in_network_count": 1922,
+      "billing_code_types": {
+        "HCPCS": 5
+      },
+      "sample_items": [
+        {
+          "index": 0,
+          "billing_code": "A4206",
+          "billing_code_type": "HCPCS",
+          "description": "Syringe with needle, sterile, 1 cc or less, each",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 1,
+          "rate_structure": {
+            "keys": [
+              "negotiated_prices",
+              "provider_references"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 0.18,
+            "service_codes": [
+              "12"
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "billing_code": "A4207",
+          "billing_code_type": "HCPCS",
+          "description": "Syringe with needle, sterile 2 cc, each",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 1,
+          "rate_structure": {
+            "keys": [
+              "negotiated_prices",
+              "provider_references"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 0.18,
+            "service_codes": [
+              "12"
+            ]
+          }
+        },
+        {
+          "index": 2,
+          "billing_code": "A4208",
+          "billing_code_type": "HCPCS",
+          "description": "Syringe with needle, sterile 3 cc, each",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 1,
+          "rate_structure": {
+            "keys": [
+              "negotiated_prices",
+              "provider_references"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 0.18,
+            "service_codes": [
+              "12"
+            ]
+          }
+        },
+        {
+          "index": 3,
+          "billing_code": "A4209",
+          "billing_code_type": "HCPCS",
+          "description": "Syringe with needle, sterile 5 cc or greater, each",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 1,
+          "rate_structure": {
+            "keys": [
+              "negotiated_prices",
+              "provider_references"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 0.31,
+            "service_codes": [
+              "12"
+            ]
+          }
+        },
+        {
+          "index": 4,
+          "billing_code": "A4215",
+          "billing_code_type": "HCPCS",
+          "description": "Needle, sterile, any size, each",
+          "keys": [
+            "negotiation_arrangement",
+            "name",
+            "billing_code_type",
+            "billing_code_type_version",
+            "billing_code",
+            "description",
+            "negotiated_rates"
+          ],
+          "negotiated_rates_count": 1,
+          "rate_structure": {
+            "keys": [
+              "negotiated_prices",
+              "provider_references"
+            ],
+            "has_provider_groups": false,
+            "has_provider_references": true,
+            "negotiated_prices_count": 1
+          },
+          "price_structure": {
+            "keys": [
+              "negotiated_type",
+              "negotiated_rate",
+              "expiration_date",
+              "service_code",
+              "billing_class",
+              "billing_code_modifier"
+            ],
+            "has_negotiated_rate": true,
+            "has_negotiated_price": false,
+            "negotiated_rate_value": 0.15,
+            "service_codes": [
+              "12"
+            ]
+          }
+        }
+      ],
+      "rate_structure": {},
+      "provider_structure": {},
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "in_network",
+          "provider_references",
+          "last_updated_on",
+          "version"
+        ],
+        "key_count": 6,
+        "children": {
+          "in_network": {
+            "type": "array",
+            "length": 1922,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "negotiation_arrangement",
+                "name",
+                "billing_code_type",
+                "billing_code_type_version",
+                "billing_code",
+                "description",
+                "negotiated_rates"
+              ],
+              "key_count": 7,
+              "children": {
+                "negotiated_rates": {
+                  "type": "array",
+                  "length": 1,
+                  "sample_item": {
+                    "type": "object",
+                    "keys": [
+                      "negotiated_prices",
+                      "provider_references"
+                    ],
+                    "key_count": 2,
+                    "children": {
+                      "provider_references": {
+                        "type": "truncated",
+                        "reason": "max_depth"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "provider_references": {
+            "type": "array",
+            "length": 1048,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "provider_group_id",
+                "provider_groups"
+              ],
+              "key_count": 2,
+              "children": {}
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -5,10 +5,10 @@ from . import PayerHandler, register_handler
 
 @register_handler("bcbs_il")
 class Bcbs_IlHandler(PayerHandler):
-    """Handler for Bcbs_Il MRF files."""
+    """Handler for Bcbs_Il MRF files with embedded provider information."""
 
     def parse_in_network(self, record: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Parse bcbs_il in_network records with complex structure."""
+        """Parse BCBS IL records with embedded provider information."""
         results = []
         
         # Extract basic fields
@@ -16,17 +16,7 @@ class Bcbs_IlHandler(PayerHandler):
         billing_code_type = record.get("billing_code_type", "")
         description = record.get("description", "")
         
-        # Handle different complexity levels - use complex structure for BCBS IL
-        results = self._parse_complex_structure(record, billing_code, billing_code_type, description)
-        
-        return results
-
-    
-    def _parse_complex_structure(self, record: Dict[str, Any], billing_code: str, billing_code_type: str, description: str) -> List[Dict[str, Any]]:
-        """Parse complex structure with nested rates and provider references."""
-        results = []
-        
-        # Handle negotiated_rates - could be float or dict structure
+        # Handle negotiated_rates structure
         negotiated_rates = record.get("negotiated_rates", [])
         
         # If negotiated_rates is a float (direct rate), create simple record
@@ -39,8 +29,9 @@ class Bcbs_IlHandler(PayerHandler):
                 "negotiated_type": "",
                 "billing_class": "",
                 "service_codes": [],
-                "provider_group_id": "",
-                "provider_groups": [],
+                "provider_npi": None,  # No provider info for direct rates
+                "provider_name": None,
+                "provider_tin": None,
                 "payer_name": "bcbs_il"
             }
             results.append(normalized_record)
@@ -59,31 +50,62 @@ class Bcbs_IlHandler(PayerHandler):
                     if isinstance(service_codes, str):
                         service_codes = [service_codes]
                     
-                    # Process each provider reference
-                    for provider_ref in provider_references:
-                        # Provider references are just float IDs, not dictionaries
-                        if isinstance(provider_ref, (int, float)):
-                            provider_group_id = str(provider_ref)
-                            provider_groups = []
-                        else:
-                            # Handle dictionary format if it exists
-                            provider_group_id = provider_ref.get("provider_group_id", "")
-                            provider_groups = provider_ref.get("provider_groups", [])
-                        
-                        # Create normalized record
-                        normalized_record = {
-                            "billing_code": billing_code,
-                            "billing_code_type": billing_code_type,
-                            "description": description,
-                            "negotiated_rate": negotiated_rate,
-                            "negotiated_type": negotiated_type,
-                            "billing_class": billing_class,
-                            "service_codes": service_codes,
-                            "provider_group_id": provider_group_id,
-                            "provider_groups": provider_groups,
-                            "payer_name": "bcbs_il"
-                        }
-                        
-                        results.append(normalized_record)
+                    # Extract provider information from embedded provider_groups
+                    provider_info = self._extract_embedded_provider_info(provider_references)
+                    
+                    # Create normalized record with embedded provider info
+                    normalized_record = {
+                        "billing_code": billing_code,
+                        "billing_code_type": billing_code_type,
+                        "description": description,
+                        "negotiated_rate": negotiated_rate,
+                        "negotiated_type": negotiated_type,
+                        "billing_class": billing_class,
+                        "service_codes": service_codes,
+                        "provider_npi": provider_info.get("npi"),
+                        "provider_name": provider_info.get("name"),
+                        "provider_tin": provider_info.get("tin"),
+                        "payer_name": "bcbs_il"
+                    }
+                    
+                    results.append(normalized_record)
         
         return results
+    
+    def _extract_embedded_provider_info(self, provider_references: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Extract provider information from embedded provider_groups structure."""
+        if not provider_references:
+            return {}
+        
+        # Use first provider reference
+        ref = provider_references[0]
+        provider_groups = ref.get("provider_groups", [])
+        
+        if not provider_groups:
+            return {}
+        
+        # Use first provider group
+        provider_group = provider_groups[0]
+        
+        # Extract NPI (could be list or single value)
+        npi = provider_group.get("npi")
+        if isinstance(npi, list) and npi:
+            npi = npi[0]  # Use first NPI
+        elif not npi:
+            npi = None
+        
+        # Extract TIN
+        tin = provider_group.get("tin")
+        if isinstance(tin, dict):
+            tin = tin.get("value", "")
+        elif not tin:
+            tin = ""
+        
+        # Extract name
+        name = provider_group.get("name", "")
+        
+        return {
+            "npi": npi,
+            "name": name,
+            "tin": tin
+        }

@@ -1,0 +1,22 @@
+{
+  "bcbs_tn": {
+    "table_of_contents": {
+      "payer": "bcbs_tn",
+      "url": "https://d7k0rj9u1dp84.cloudfront.net/non_aso_directory.json",
+      "structure_type": "unknown",
+      "top_level_keys": [
+        "TOC_Files"
+      ],
+      "file_counts": {},
+      "sample_files": {},
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "TOC_Files"
+        ],
+        "key_count": 1,
+        "children": {}
+      }
+    }
+  }
+}

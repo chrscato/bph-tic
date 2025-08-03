@@ -813,7 +813,9 @@ class ProductionETLPipeline:
         
         # Extract NPI list
         npi_list = normalized.get("provider_npi", [])
-        if isinstance(npi_list, (int, str)):
+        if npi_list is None:
+            npi_list = []
+        elif isinstance(npi_list, (int, str)):
             npi_list = [str(npi_list)]
         elif isinstance(npi_list, list):
             npi_list = [str(npi) for npi in npi_list]
@@ -869,13 +871,18 @@ class ProductionETLPipeline:
         
         org_uuid = self.uuid_gen.organization_uuid(tin, org_name)
         
+        # Get NPI list safely
+        npi_list = normalized.get("provider_npi", [])
+        if npi_list is None:
+            npi_list = []
+        
         return {
             "organization_uuid": org_uuid,
             "tin": tin,
             "organization_name": org_name or f"Organization-{tin}",
             "organization_type": "Unknown",
             "parent_system": "",
-            "npi_count": len(normalized.get("provider_npi", [])),
+            "npi_count": len(npi_list),
             "primary_specialty": "",
             "is_facility": normalized.get("billing_class") == "facility",
             "headquarters_address": {
@@ -895,7 +902,7 @@ class ProductionETLPipeline:
     def create_provider_records(self, normalized: Dict[str, Any], raw_record: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Create provider records for NPIs."""
         npi_list = normalized.get("provider_npi", [])
-        if not npi_list:
+        if npi_list is None or not npi_list:
             return []
         
         if isinstance(npi_list, (int, str)):
@@ -1154,6 +1161,9 @@ def create_production_config() -> ETLConfig:
                    original=s3_prefix, 
                    env_var=env_var, 
                    value=s3_prefix)
+    
+    # Ensure s3_prefix doesn't have trailing slash to avoid double slashes
+    s3_prefix = s3_prefix.rstrip('/')
     
     s3_bucket = config['output']['s3']['bucket']
     if s3_bucket.startswith('${') and s3_bucket.endswith('}'):

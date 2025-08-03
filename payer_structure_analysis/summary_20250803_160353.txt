@@ -1,0 +1,15 @@
+================================================================================
+PAYER STRUCTURE ANALYSIS SUMMARY
+Generated: 2025-08-03 16:03:53
+================================================================================
+
+
+============================================================
+PAYER: bcbs_sc
+============================================================
+
+[TABLE OF CONTENTS STRUCTURE]
+  - Structure Type: standard_toc
+  - Top Level Keys: reporting_entity_name, reporting_entity_type, reporting_structure
+  - File Counts: {"reporting_structures": 69, "in_network_files": 21568, "allowed_amount_files": 69, "provider_reference_files": 0}
+  - Sample Plan Keys: reporting_plans, in_network_files, allowed_amount_file

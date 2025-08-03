@@ -1,0 +1,11 @@
+{
+  "total_records": 0,
+  "billing_code_types": {},
+  "billing_codes": {},
+  "provider_stats": {
+    "with_npi": 0,
+    "with_name": 0,
+    "with_tin": 0
+  },
+  "sample_records": []
+}

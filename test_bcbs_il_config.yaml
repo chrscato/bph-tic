@@ -1,0 +1,32 @@
+# Minimal BCBS IL test configuration
+cpt_whitelist:
+  - '99213'
+  - '99214'
+  - '72148'
+  - '73721'
+  - '70450'
+
+payer_endpoints:
+  bcbs_il: https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-07-23_Blue-Cross-and-Blue-Shield-of-Illinois_index.json
+
+processing:
+  batch_size: 1000
+  max_files_per_payer: 1
+  max_records_per_file: 1000
+  safety_limit_records_per_file: 1000
+  enable_streaming: true
+  chunk_size_mb: 10
+  enable_data_dumping: false
+  parallel_workers: 1
+
+output:
+  local_directory: ./test_output
+  s3:
+    bucket: commercial-rates
+    prefix: tic-mrf/test-bcbs-il
+    region: us-east-1
+
+logging:
+  level: INFO
+  output_file: test_bcbs_il.log
+  structured: true 

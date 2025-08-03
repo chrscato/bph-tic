@@ -1,0 +1,83 @@
+{
+  "bcbs_sc": {
+    "table_of_contents": {
+      "payer": "bcbs_sc",
+      "url": "file://C:/Users/chris/Downloads/bcbssc_index.json",
+      "structure_type": "standard_toc",
+      "top_level_keys": [
+        "reporting_entity_name",
+        "reporting_entity_type",
+        "reporting_structure"
+      ],
+      "file_counts": {
+        "reporting_structures": 69,
+        "in_network_files": 21568,
+        "allowed_amount_files": 69,
+        "provider_reference_files": 0
+      },
+      "sample_files": {
+        "in_network": {
+          "url": "https://d2vbl1kcu4hfid.cloudfront.net/2025-08-01_bluecross_AI_in-network-rates_CB_1_of_1.json.gz",
+          "url_display": "https://d2vbl1kcu4hfid.cloudfront.net/2025-08-01_bluecross_AI_in-network-rates_CB_1_of_1.json.gz",
+          "description": "BCBS South Carolina - PREFERRED BLUE Supplement"
+        }
+      },
+      "detailed_structure": {
+        "type": "object",
+        "keys": [
+          "reporting_entity_name",
+          "reporting_entity_type",
+          "reporting_structure"
+        ],
+        "key_count": 3,
+        "children": {
+          "reporting_structure": {
+            "type": "array",
+            "length": 69,
+            "sample_item": {
+              "type": "object",
+              "keys": [
+                "reporting_plans",
+                "in_network_files",
+                "allowed_amount_file"
+              ],
+              "key_count": 3,
+              "children": {
+                "in_network_files": {
+                  "type": "array",
+                  "length": 385,
+                  "sample_item": {
+                    "type": "truncated",
+                    "reason": "max_depth"
+                  }
+                },
+                "allowed_amount_file": {
+                  "type": "object",
+                  "keys": [
+                    "description",
+                    "location"
+                  ],
+                  "key_count": 2,
+                  "children": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "sample_structure": {
+        "keys": [
+          "reporting_plans",
+          "in_network_files",
+          "allowed_amount_file"
+        ],
+        "plan_name": "",
+        "plan_id": "",
+        "plan_market_type": ""
+      }
+    },
+    "in_network_mrf": {
+      "error": "Failed to fetch or file too large"
+    }
+  }
+}

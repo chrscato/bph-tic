@@ -1,0 +1,30 @@
+================================================================================
+PAYER STRUCTURE ANALYSIS SUMMARY
+Generated: 2025-08-03 15:22:00
+================================================================================
+
+
+============================================================
+PAYER: centene_fidelis
+============================================================
+
+[TABLE OF CONTENTS STRUCTURE]
+  - Structure Type: standard_toc
+  - Top Level Keys: reporting_entity_name, reporting_entity_type, reporting_structure
+  - File Counts: {"reporting_structures": 2, "in_network_files": 2, "allowed_amount_files": 2, "provider_reference_files": 0}
+  - Sample Plan Keys: reporting_plans, in_network_files, allowed_amount_file
+
+[IN-NETWORK MRF STRUCTURE]
+  - Structure Type: standard_in_network
+  - Total Items: 2879
+  - Billing Code Types: {'HCPCS': 3, 'CPT': 2}
+
+  Sample Item Structure:
+    - Item Keys: negotiation_arrangement, name, billing_code_type, billing_code_type_version, billing_code, description, negotiated_rates
+    - Rate Keys: negotiated_prices, provider_groups
+    - Has Provider Groups: True
+    - Has Provider References: False
+    - Provider Group Keys: npi, tin
+    - Provider Info Location: Direct in provider_group
+    - Price Keys: negotiated_type, negotiated_rate, expiration_date, service_code, billing_class
+    - Rate Field Name: negotiated_rate
