@@ -7,6 +7,7 @@ import time
 import json
 import psutil
 import logging
+import itertools
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional, Iterator
@@ -173,15 +174,26 @@ class ProductionETLPipelineQuiet:
         """Process a single payer's MRF data with progress tracking."""
         # Get MRF files list using handler
         handler = get_handler(payer_name)
-        mrf_files = handler.list_mrf_files(index_url)
-        rate_files = [f for f in mrf_files if f["type"] == "in_network_rates"]
-        
+
+        total_files = sum(
+            1
+            for f in handler.list_mrf_files(index_url)
+            if f["type"] == "in_network_rates"
+        )
         if self.config.get('max_files_per_payer'):
-            rate_files = rate_files[:self.config['max_files_per_payer']]
-        
-        total_files = len(rate_files)
-        
-        for i, file_info in enumerate(rate_files, 1):
+            total_files = min(total_files, self.config['max_files_per_payer'])
+
+        rate_files_iter = (
+            f
+            for f in handler.list_mrf_files(index_url)
+            if f["type"] == "in_network_rates"
+        )
+        if self.config.get('max_files_per_payer'):
+            rate_files_iter = itertools.islice(
+                rate_files_iter, self.config['max_files_per_payer']
+            )
+
+        for i, file_info in enumerate(rate_files_iter, 1):
             try:
                 # Update progress
                 self.progress_tracker.update(ProgressData(

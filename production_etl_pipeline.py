@@ -6,6 +6,7 @@ import uuid
 import gc
 import psutil
 import time
+import itertools
 
 # Load environment variables from .env file
 try:
@@ -372,25 +373,43 @@ class ProductionETLPipeline:
             payer_stats["index_analysis"] = index_info
             logger.info("index_analysis", payer=payer_name, analysis=index_info)
 
-            # Get ALL MRF files from index using handler
+            # Get MRF files from index using handler
             handler = get_handler(payer_name)
-            mrf_files = handler.list_mrf_files(index_url)
-            
-            # Filter to in-network rates files only
-            rate_files = [f for f in mrf_files if f["type"] == "in_network_rates"]
-            payer_stats["files_found"] = len(rate_files)
+
+            # First pass: count matching files without storing them
+            total_rate_files = sum(
+                1
+                for f in handler.list_mrf_files(index_url)
+                if f["type"] == "in_network_rates"
+            )
+            payer_stats["files_found"] = total_rate_files
 
             if self.config.max_files_per_payer:
-                rate_files = rate_files[: self.config.max_files_per_payer]
+                total_rate_files = min(
+                    total_rate_files, self.config.max_files_per_payer
+                )
 
-            if not rate_files:
+            if total_rate_files == 0:
                 logger.warning(f"No rate files found for {payer_name}")
                 return payer_stats
 
-            logger.info(f"Found {len(rate_files)} rate files for {payer_name}")
-            
+            logger.info(
+                f"Found {total_rate_files} rate files for {payer_name}"
+            )
+
+            # Second pass: process matching files as they are yielded
+            rate_files_iter = (
+                f
+                for f in handler.list_mrf_files(index_url)
+                if f["type"] == "in_network_rates"
+            )
+            if self.config.max_files_per_payer:
+                rate_files_iter = itertools.islice(
+                    rate_files_iter, self.config.max_files_per_payer
+                )
+
             # Process ALL rate files
-            for file_index, file_info in enumerate(rate_files, 1):
+            for file_index, file_info in enumerate(rate_files_iter, 1):
                 payer_stats["files_processed"] += 1
                 
                 try:
@@ -405,7 +424,7 @@ class ProductionETLPipeline:
                         force_memory_cleanup()
                     
                     file_stats = self.process_mrf_file_enhanced(
-                        payer_uuid, payer_name, file_info, handler, file_index, len(rate_files)
+                        payer_uuid, payer_name, file_info, handler, file_index, total_rate_files
                     )
                     
                     payer_stats["files_succeeded"] += 1
@@ -416,8 +435,8 @@ class ProductionETLPipeline:
                     progress.update_progress(
                         payer=payer_name,
                         files_completed=file_index,
-                        total_files=len(rate_files),
-                        records_processed=payer_stats["records_extracted"]
+                        total_files=total_rate_files,
+                        records_processed=payer_stats["records_extracted"],
                     )
                     
                     # Force garbage collection after each file
