@@ -26,7 +26,7 @@ import tempfile
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional, Iterator
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import time
@@ -82,11 +82,15 @@ def log_memory_usage(stage: str):
     logger.info("memory_usage", stage=stage, memory_mb=memory_mb)
     return memory_mb
 
-def check_memory_pressure():
-    """Check if memory usage is approaching dangerous levels."""
+def check_memory_pressure(config: "ETLConfig"):
+    """Check if memory usage exceeds configured threshold."""
     memory_mb = get_memory_usage()
-    if memory_mb > 2000:  # 2GB threshold
-        logger.warning("memory_pressure_detected", memory_mb=memory_mb)
+    if memory_mb > config.memory_threshold_mb:
+        logger.warning(
+            "memory_pressure_detected",
+            memory_mb=memory_mb,
+            threshold_mb=config.memory_threshold_mb,
+        )
         return True
     return False
 
@@ -153,6 +157,11 @@ class ETLConfig:
     max_files_per_payer: Optional[int] = None
     max_records_per_file: Optional[int] = None
     safety_limit_records_per_file: int = 100000  # Hard limit to prevent crashes
+
+    # Memory management
+    memory_threshold_mb: int = field(
+        default_factory=lambda: int(psutil.virtual_memory().total / 1024 / 1024 * 0.8)
+    )
     
     # Output configuration
     local_output_dir: str = "ortho_radiology_data_default"
@@ -313,7 +322,7 @@ class ProductionETLPipeline:
                     log_memory_usage(f"before_payer_{payer_name}")
                     
                     # Check memory pressure before starting payer
-                    if check_memory_pressure():
+                    if check_memory_pressure(self.config):
                         logger.warning("memory_pressure_before_payer", payer=payer_name)
                         force_memory_cleanup()
                     
@@ -419,7 +428,7 @@ class ProductionETLPipeline:
                     log_memory_usage(f"before_file_{file_index}")
                     
                     # Check memory pressure before starting file
-                    if check_memory_pressure():
+                    if check_memory_pressure(self.config):
                         logger.warning("memory_pressure_before_file", 
                                      file_index=file_index, 
                                      file_url=file_info["url"])
@@ -533,7 +542,7 @@ class ProductionETLPipeline:
                 
                 # Check memory pressure every 100 records
                 if file_stats["records_extracted"] % 100 == 0:
-                    if check_memory_pressure():
+                    if check_memory_pressure(self.config):
                         # Force cleanup and write current batches immediately
                         if rate_batch:
                             upload_stats = self.write_batches_to_s3(
@@ -621,7 +630,7 @@ class ProductionETLPipeline:
                     provider_batch.extend(provider_records)
                 
                 # Write batches when full or when memory pressure detected
-                if len(rate_batch) >= batch_size or check_memory_pressure():
+                if len(rate_batch) >= batch_size or check_memory_pressure(self.config):
                     upload_stats = self.write_batches_to_s3(
                         rate_batch, org_batch, provider_batch, 
                         payer_name, filename_base, file_stats["s3_uploads"]
