@@ -64,6 +64,8 @@ credentials.json
 # Jupyter Notebook
 .ipynb_checkpoints
 *.ipynb
+# Exception for specific notebooks
+!scripts\transform_visual.ipynb
 
 # Distribution / packaging
 .Python
