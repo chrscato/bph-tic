@@ -246,7 +246,8 @@ class ProductionETLPipeline:
         self.uuid_gen = UUIDGenerator()
         self.validator = DataQualityValidator()
         self.s3_client = boto3.client('s3') if config.s3_bucket else None
-        
+        self.local_parquet_writers: Dict[Path, pq.ParquetWriter] = {}
+
         # Initialize local temp directory for S3 uploads
         if self.s3_client:
             self.temp_dir = tempfile.mkdtemp(prefix="etl_pipeline_")
@@ -284,6 +285,15 @@ class ProductionETLPipeline:
             import shutil
             shutil.rmtree(self.temp_dir, ignore_errors=True)
             logger.info("cleaned_temp_directory", temp_dir=self.temp_dir)
+
+    def close_parquet_writers(self):
+        """Close all open parquet writers."""
+        for writer in self.local_parquet_writers.values():
+            try:
+                writer.close()
+            except Exception:
+                pass
+        self.local_parquet_writers.clear()
     
     def process_all_payers(self):
         """Process all configured payers with full index processing."""
@@ -324,15 +334,18 @@ class ProductionETLPipeline:
                     error_msg = f"Failed processing {payer_name}: {str(e)}"
                     logger.error("payer_processing_failed", payer=payer_name, error=str(e))
                     self.stats["errors"].append(error_msg)
-            
+
             # Generate final outputs if not using S3
             if not self.s3_client:
+                self.close_parquet_writers()
                 self.generate_aggregated_tables()
             
             self.log_final_statistics()
             
         finally:
-            # Always cleanup temp directory
+            # Always close writers and cleanup temp directory
+            if not self.s3_client:
+                self.close_parquet_writers()
             self.cleanup_temp_directory()
     
     def process_payer(self, payer_name: str, index_url: str) -> Dict[str, Any]:
@@ -891,16 +904,13 @@ class ProductionETLPipeline:
         """Append records to parquet file (local fallback)."""
         if not records:
             return
-        
-        df = pd.DataFrame(records)
-        
-        if file_path.exists():
-            existing_df = pd.read_parquet(file_path)
-            combined_df = pd.concat([existing_df, df], ignore_index=True)
-            combined_df.to_parquet(file_path, index=False)
-        else:
-            df.to_parquet(file_path, index=False)
-        
+        table = pa.Table.from_pylist(records)
+        writer = self.local_parquet_writers.get(file_path)
+        if writer is None:
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            writer = pq.ParquetWriter(file_path, table.schema)
+            self.local_parquet_writers[file_path] = writer
+        writer.write_table(table)
         logger.info("wrote_local_batch", file=str(file_path), records=len(records))
     
     def generate_aggregated_tables(self):
