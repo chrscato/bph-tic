@@ -244,6 +244,7 @@ class ProductionETLPipeline:
     
     def __init__(self, config: ETLConfig):
         self.config = config
+        self.cpt_whitelist_set = set(config.cpt_whitelist)
         self.uuid_gen = UUIDGenerator()
         self.validator = DataQualityValidator()
         self.s3_client = boto3.client('s3') if config.s3_bucket else None
@@ -530,8 +531,8 @@ class ProductionETLPipeline:
                 
                 # Normalize and validate
                 normalized = normalize_tic_record(
-                    raw_record, 
-                    set(self.config.cpt_whitelist), 
+                    raw_record,
+                    self.cpt_whitelist_set,
                     payer_name
                 )
                 

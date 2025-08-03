@@ -113,6 +113,7 @@ class ProductionETLPipelineQuiet:
     
     def __init__(self, config: Dict[str, Any], progress_file: str, verbosity: str = "progress"):
         self.config = config
+        self.cpt_whitelist_set = set(config['cpt_whitelist'])
         self.progress_tracker = ProgressTracker(progress_file, verbosity)
         self.s3_client = boto3.client('s3') if config.get('s3_bucket') else None
         
@@ -237,8 +238,8 @@ class ProductionETLPipelineQuiet:
             # Process record
             try:
                 normalized = normalize_tic_record(
-                    raw_record, 
-                    set(self.config['cpt_whitelist']), 
+                    raw_record,
+                    self.cpt_whitelist_set,
                     payer_name
                 )
                 
