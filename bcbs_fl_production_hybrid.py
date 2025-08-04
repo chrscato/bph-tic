@@ -496,11 +496,17 @@ class HybridProcessor:
     def process_mrf_file(self, file_info: Dict[str, Any], handler, payer_name: str,
                         payer_uuid: str, cpt_whitelist: set) -> Dict[str, Any]:
         """Process a single MRF file with early validation and efficient batching."""
+        # Set timeouts
+        FILE_PROCESSING_TIMEOUT = 900    # 15 minutes max per file
+        INITIAL_PROGRESS_TIMEOUT = 60    # Expect first record within 1 minute
+        PROGRESS_STALL_TIMEOUT = 300     # Skip if no new records for 5 minutes
+        
         stats = {
             "records_processed": 0,
             "records_normalized": 0,
             "batches_uploaded": 0,
-            "start_time": time.time()
+            "start_time": time.time(),
+            "last_progress": time.time()
         }
         
         try:
@@ -568,21 +574,82 @@ class HybridProcessor:
                            url=file_info["url"])
                 raise
             
-            # Process in-network items
+            # Process in-network items with detailed logging
             in_network = mrf_data.get('in_network', [])
+            logger.info("processing_in_network_items",
+                       total_items=len(in_network),
+                       provider_refs=len(mrf_data.get('provider_references', [])))
+            
+            # Log sample of first item for debugging
+            if in_network:
+                sample_item = in_network[0]
+                logger.info("first_item_sample",
+                           billing_code=sample_item.get('billing_code'),
+                           negotiation_arrangement=sample_item.get('negotiation_arrangement'),
+                           keys=list(sample_item.keys()))
+            
             current_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             batch_num = 0
             
             for item_idx, item in enumerate(in_network):
                 try:
                     parsed_records = handler.parse_in_network(item)
+                    logger.info("item_parsed",
+                              item_idx=item_idx,
+                              billing_code=item.get('billing_code', 'N/A'),
+                              parsed_count=len(parsed_records) if parsed_records else 0,
+                              negotiation_arrangement=item.get('negotiation_arrangement'))
                     
                     for parsed in parsed_records:
-                        normalized = normalize_tic_record(parsed, cpt_whitelist, payer_name)
-                        if not normalized:
+                        try:
+                            normalized = normalize_tic_record(parsed, cpt_whitelist, payer_name)
+                            if normalized:
+                                logger.info("record_normalized",
+                                          item_idx=item_idx,
+                                          billing_code=normalized.get('billing_code'),
+                                          rate=normalized.get('negotiated_rate'))
+                            else:
+                                logger.warning("normalization_skipped",
+                                             item_idx=item_idx,
+                                             billing_code=parsed.get('billing_code'),
+                                             reason="normalize_tic_record returned None")
+                                continue
+                        except Exception as e:
+                            logger.error("normalization_failed",
+                                       item_idx=item_idx,
+                                       billing_code=parsed.get('billing_code'),
+                                       error=str(e))
                             continue
                             
                         stats["records_normalized"] += 1
+                        stats["last_progress"] = time.time()
+                        
+                        # Check timeouts
+                        time_elapsed = time.time() - stats["start_time"]
+                        time_since_progress = time.time() - stats["last_progress"]
+                        
+                        # Skip file if taking too long overall
+                        if time_elapsed > FILE_PROCESSING_TIMEOUT:
+                            logger.warning("file_processing_timeout",
+                                       file_url=file_info["url"],
+                                       time_elapsed=f"{time_elapsed/60:.1f}m",
+                                       records_processed=stats["records_processed"])
+                            return stats
+                        
+                        # Skip file if no initial progress in first minute
+                        if stats["records_normalized"] == 0 and time_elapsed > INITIAL_PROGRESS_TIMEOUT:
+                            logger.warning("no_initial_progress_timeout",
+                                       file_url=file_info["url"],
+                                       time_elapsed=f"{time_elapsed/60:.1f}m")
+                            return stats
+                            
+                        # Skip file if stalled (no progress for 5 minutes)
+                        if time_since_progress > PROGRESS_STALL_TIMEOUT and stats["records_normalized"] > 0:
+                            logger.warning("progress_stalled",
+                                       file_url=file_info["url"],
+                                       time_since_last_record=f"{time_since_progress/60:.1f}m",
+                                       records_processed=stats["records_processed"])
+                            return stats
                         
                         # Early validation phase
                         if stats["records_normalized"] <= self.early_validation_count:
