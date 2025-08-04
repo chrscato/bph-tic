@@ -1,0 +1,616 @@
+#!/usr/bin/env python3
+"""
+Hybrid production pipeline that combines test script simplicity with production efficiency.
+Features early validation and efficient batch processing.
+"""
+
+import sys
+import os
+import json
+import pandas as pd
+import boto3
+import hashlib
+import psutil
+import gc
+from pathlib import Path
+from datetime import datetime, timezone
+import logging
+import tempfile
+from typing import Dict, List, Any, Optional
+import uuid
+from dotenv import load_dotenv
+import time
+import threading
+import queue
+from concurrent.futures import ThreadPoolExecutor
+import structlog
+import requests
+import gzip
+import shutil
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent / "src"))
+
+from tic_mrf_scraper.payers.bcbs_fl import BCBSFLHandler
+from tic_mrf_scraper.fetch.blobs import list_mrf_blobs_enhanced
+from tic_mrf_scraper.transform.normalize import normalize_tic_record
+
+# Configure structured logging
+structlog.configure(
+    processors=[
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.stdlib.add_log_level,
+        structlog.processors.format_exc_info,
+        structlog.processors.JSONRenderer()
+    ],
+    wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+    logger_factory=structlog.PrintLoggerFactory(),
+)
+
+logger = structlog.get_logger()
+
+def log_memory_stats(stage: str):
+    """Log detailed memory statistics."""
+    process = psutil.Process()
+    memory = process.memory_info()
+    logger.info("memory_stats",
+                stage=stage,
+                rss_mb=memory.rss / 1024 / 1024,
+                vms_mb=memory.vms / 1024 / 1024,
+                percent=process.memory_percent(),
+                system_percent=psutil.virtual_memory().percent)
+
+def check_memory_pressure(threshold_mb: int) -> bool:
+    """Less aggressive memory check."""
+    memory_mb = psutil.Process().memory_info().rss / (1024 * 1024)
+    if memory_mb > threshold_mb * 0.95:  # Only act at 95% of threshold
+        logger.warning("memory_pressure_detected",
+                      current_mb=memory_mb,
+                      threshold_mb=threshold_mb)
+        return True
+    return False
+
+class UUIDGenerator:
+    """UUID generation for entity identification."""
+    
+    @staticmethod
+    def generate_uuid(namespace: str, *components: str) -> str:
+        content = "|".join(str(c) for c in components)
+        namespace_uuid = uuid.uuid5(uuid.NAMESPACE_DNS, f"healthcare.{namespace}")
+        return str(uuid.uuid5(namespace_uuid, content))
+    
+    @staticmethod
+    def payer_uuid(payer_name: str, parent_org: str = "") -> str:
+        return UUIDGenerator.generate_uuid("payers", payer_name, parent_org)
+    
+    @staticmethod
+    def organization_uuid(tin: str, org_name: str = "") -> str:
+        return UUIDGenerator.generate_uuid("organizations", tin, org_name)
+    
+    @staticmethod
+    def provider_uuid(npi: str) -> str:
+        return UUIDGenerator.generate_uuid("providers", npi)
+    
+    @staticmethod
+    def rate_uuid(payer_uuid: str, org_uuid: str, service_code: str, 
+                  rate: float, effective_date: str) -> str:
+        return UUIDGenerator.generate_uuid(
+            "rates", payer_uuid, org_uuid, service_code, 
+            f"{rate:.2f}", effective_date
+        )
+
+class RecordCreator:
+    """Handles creation of standardized records."""
+    
+    def __init__(self, uuid_gen: UUIDGenerator):
+        self.uuid_gen = uuid_gen
+    
+    def create_rate_record(self, payer_uuid: str, normalized: Dict[str, Any], 
+                          file_info: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a structured rate record."""
+        
+        # Generate organization UUID
+        org_uuid = self.uuid_gen.organization_uuid(
+            normalized.get("provider_tin", ""), 
+            normalized.get("provider_name", "")
+        )
+        
+        # Generate rate UUID - handle both service_code and service_codes
+        service_code = normalized.get("service_code", "")
+        if not service_code and normalized.get("service_codes"):
+            service_codes = normalized["service_codes"]
+            service_code = service_codes[0] if service_codes else ""
+        
+        rate_uuid = self.uuid_gen.rate_uuid(
+            payer_uuid,
+            org_uuid,
+            service_code,
+            normalized["negotiated_rate"],
+            normalized.get("expiration_date", "")
+        )
+        
+        # Extract NPI list - handle all formats
+        npi_list = normalized.get("provider_npi", [])
+        if npi_list is None:
+            npi_list = []
+        elif isinstance(npi_list, (int, str)):
+            npi_list = [str(npi_list)]
+        elif isinstance(npi_list, list):
+            npi_list = [str(npi) for npi in npi_list]
+        else:
+            npi_list = []
+        
+        # Ensure all NPIs are strings
+        npi_list = [str(npi) for npi in npi_list]
+        
+        return {
+            "rate_uuid": rate_uuid,
+            "payer_uuid": payer_uuid,
+            "organization_uuid": org_uuid,
+            "service_code": service_code,
+            "service_description": normalized.get("description", ""),
+            "billing_code_type": normalized.get("billing_code_type", ""),
+            "negotiated_rate": float(normalized["negotiated_rate"]),
+            "billing_class": normalized.get("billing_class", ""),
+            "rate_type": normalized.get("negotiated_type", "negotiated"),
+            "service_codes": normalized.get("service_codes", []),
+            "plan_details": {
+                "plan_name": file_info.get("plan_name", ""),
+                "plan_id": file_info.get("plan_id", ""),
+                "plan_type": file_info.get("plan_market_type", ""),
+                "market_type": "Commercial"
+            },
+            "contract_period": {
+                "effective_date": None,
+                "expiration_date": normalized.get("expiration_date"),
+                "last_updated_on": None
+            },
+            "provider_network": {
+                "npi_list": npi_list,
+                "npi_count": len(npi_list),
+                "coverage_type": "Organization"
+            },
+            "geographic_scope": {
+                "states": [],
+                "zip_codes": [],
+                "counties": []
+            },
+            "data_lineage": {
+                "source_file_url": file_info["url"],
+                "source_file_hash": hashlib.md5(file_info["url"].encode()).hexdigest(),
+                "extraction_timestamp": datetime.now(timezone.utc),
+                "processing_version": "test-v1.0"
+            },
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        }
+    
+    def create_organization_record(self, normalized: Dict[str, Any]) -> Dict[str, Any]:
+        """Create organization record."""
+        tin = normalized.get("provider_tin", "")
+        org_name = normalized.get("provider_name", "")
+        
+        org_uuid = self.uuid_gen.organization_uuid(tin, org_name)
+        
+        # Get NPI list safely - handle all formats
+        npi_list = normalized.get("provider_npi", [])
+        if npi_list is None:
+            npi_list = []
+        elif isinstance(npi_list, (int, str)):
+            npi_list = [str(npi_list)]
+        elif isinstance(npi_list, list):
+            npi_list = [str(npi) for npi in npi_list]
+        else:
+            npi_list = []
+        
+        # Ensure all NPIs are strings
+        npi_list = [str(npi) for npi in npi_list]
+        
+        return {
+            "organization_uuid": org_uuid,
+            "tin": tin,
+            "organization_name": org_name or f"Organization-{tin}",
+            "organization_type": "Unknown",
+            "parent_system": "",
+            "npi_count": len(npi_list),
+            "primary_specialty": "",
+            "is_facility": normalized.get("billing_class") == "facility",
+            "headquarters_address": {
+                "street": "",
+                "city": "",
+                "state": "",
+                "zip": "",
+                "lat": None,
+                "lng": None
+            },
+            "service_areas": [],
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
+            "data_quality_score": 0.8
+        }
+    
+    def create_provider_records(self, normalized: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Create provider records for NPIs."""
+        # Get NPI list safely - handle all formats
+        npi_list = normalized.get("provider_npi", [])
+        if npi_list is None:
+            npi_list = []
+        elif isinstance(npi_list, (int, str)):
+            npi_list = [str(npi_list)]
+        elif isinstance(npi_list, list):
+            npi_list = [str(npi) for npi in npi_list]
+        else:
+            npi_list = []
+        
+        # Ensure all NPIs are strings
+        npi_list = [str(npi) for npi in npi_list]
+        
+        if not npi_list:
+            return []
+        
+        org_uuid = self.uuid_gen.organization_uuid(
+            normalized.get("provider_tin", ""), 
+            normalized.get("provider_name", "")
+        )
+        
+        provider_records = []
+        for npi in npi_list:
+            npi_str = str(npi)
+            provider_uuid = self.uuid_gen.provider_uuid(npi_str)
+            
+            provider_record = {
+                "provider_uuid": provider_uuid,
+                "npi": npi_str,
+                "organization_uuid": org_uuid,
+                "provider_name": {
+                    "first": "",
+                    "last": "",
+                    "middle": "",
+                    "suffix": ""
+                },
+                "credentials": [],
+                "primary_specialty": "",
+                "secondary_specialties": [],
+                "provider_type": "Individual",
+                "gender": "Unknown",
+                "addresses": [],
+                "is_active": True,
+                "enumeration_date": None,
+                "last_updated": None,
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc)
+            }
+            provider_records.append(provider_record)
+        
+        return provider_records
+
+class S3Uploader:
+    """Handles S3 uploads with retries and logging."""
+    
+    def __init__(self, bucket: str, prefix: str):
+        self.bucket = bucket
+        self.prefix = prefix.rstrip('/')
+        self.s3_client = boto3.client(
+            's3',
+            aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+            region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1')
+        )
+        self.upload_stats = {
+            "successful_uploads": 0,
+            "failed_uploads": 0,
+            "total_bytes": 0
+        }
+    
+    def upload_dataframe(self, df: pd.DataFrame, key: str, temp_dir: str) -> bool:
+        try:
+            temp_file = Path(temp_dir) / f"temp_{int(datetime.now().timestamp())}.parquet"
+            df.to_parquet(temp_file, index=False)
+            
+            self.s3_client.upload_file(str(temp_file), self.bucket, key)
+            
+            file_size = temp_file.stat().st_size
+            self.upload_stats["successful_uploads"] += 1
+            self.upload_stats["total_bytes"] += file_size
+            
+            temp_file.unlink()
+            
+            logger.info("s3_upload_success",
+                       key=key,
+                       size_mb=file_size / 1024 / 1024,
+                       total_uploads=self.upload_stats["successful_uploads"])
+            return True
+            
+        except Exception as e:
+            self.upload_stats["failed_uploads"] += 1
+            logger.error("s3_upload_failed", key=key, error=str(e))
+            return False
+
+def get_system_config() -> Dict[str, Any]:
+    """Automatically determine optimal settings based on system RAM."""
+    total_ram_mb = psutil.virtual_memory().total / (1024 * 1024)
+    
+    # Log system detection
+    logger.info("system_detection", 
+                total_ram_gb=f"{total_ram_mb/1024:.1f}GB",
+                system_type="high_memory" if total_ram_mb >= 30000 else
+                           "medium_memory" if total_ram_mb >= 14000 else
+                           "low_memory")
+    
+    if total_ram_mb >= 30000:  # 32GB or higher system
+        return {
+            'initial_batch': 1000,
+            'main_batch': 10000,
+            'memory_threshold': 0.9,  # 90% threshold
+            'system_type': 'high_memory'
+        }
+    elif total_ram_mb >= 14000:  # 16GB system
+        return {
+            'initial_batch': 500,
+            'main_batch': 5000,
+            'memory_threshold': 0.8,  # 80% threshold
+            'system_type': 'medium_memory'
+        }
+    else:  # 8GB or less
+        return {
+            'initial_batch': 250,
+            'main_batch': 2500,
+            'memory_threshold': 0.7,  # 70% threshold
+            'system_type': 'low_memory'
+        }
+
+class HybridProcessor:
+    """Combines test script simplicity with production efficiency."""
+    
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self.uuid_gen = UUIDGenerator()
+        self.record_creator = RecordCreator(self.uuid_gen)
+        self.s3_uploader = S3Uploader(
+            config['s3_bucket'],
+            config['s3_prefix']
+        )
+        
+        # Get system-specific settings
+        system_config = get_system_config()
+        
+        # Processing settings
+        self.early_validation_count = 5  # Upload first 5 records immediately
+        self.initial_batch_size = system_config['initial_batch']
+        self.main_batch_size = system_config['main_batch']
+        self.memory_threshold_mb = int(psutil.virtual_memory().total / 1024 / 1024 * system_config['memory_threshold'])
+        
+        logger.info("processor_configuration",
+                   initial_batch_size=self.initial_batch_size,
+                   main_batch_size=self.main_batch_size,
+                   memory_threshold_gb=f"{self.memory_threshold_mb/1024:.1f}GB",
+                   system_type=system_config['system_type'])
+        
+        # Initialize collectors
+        self.reset_collectors()
+    
+    def reset_collectors(self):
+        """Reset data collectors."""
+        self.rate_batch = []
+        self.org_batch = []
+        self.provider_batch = []
+        self.seen_orgs = set()
+    
+    def process_record(self, normalized: Dict[str, Any], file_info: Dict[str, Any],
+                      payer_uuid: str) -> bool:
+        """Process a single normalized record."""
+        try:
+            # Create rate record
+            rate_record = self.record_creator.create_rate_record(
+                payer_uuid, normalized, file_info
+            )
+            self.rate_batch.append(rate_record)
+            
+            # Create organization record if new
+            org_uuid = rate_record["organization_uuid"]
+            if org_uuid not in self.seen_orgs:
+                org_record = self.record_creator.create_organization_record(normalized)
+                self.org_batch.append(org_record)
+                self.seen_orgs.add(org_uuid)
+            
+            # Create provider records
+            provider_records = self.record_creator.create_provider_records(normalized)
+            self.provider_batch.extend(provider_records)
+            
+            return True
+        except Exception as e:
+            logger.error("record_processing_failed", error=str(e))
+            return False
+    
+    def upload_batch(self, timestamp: str, current_date: str, 
+                    payer_name: str, batch_num: int) -> bool:
+        """Upload current batch to S3."""
+        try:
+            # Convert to DataFrames
+            rates_df = pd.DataFrame(self.rate_batch) if self.rate_batch else None
+            orgs_df = pd.DataFrame(self.org_batch) if self.org_batch else None
+            providers_df = pd.DataFrame(self.provider_batch) if self.provider_batch else None
+            
+            # Upload each non-empty DataFrame
+            if rates_df is not None:
+                key = f"{self.config['s3_prefix']}/rates/payer={payer_name}/date={current_date}/rates_batch_{batch_num:04d}_{timestamp}.parquet"
+                self.s3_uploader.upload_dataframe(rates_df, key, self.config['temp_dir'])
+            
+            if orgs_df is not None:
+                key = f"{self.config['s3_prefix']}/organizations/payer={payer_name}/date={current_date}/orgs_batch_{batch_num:04d}_{timestamp}.parquet"
+                self.s3_uploader.upload_dataframe(orgs_df, key, self.config['temp_dir'])
+            
+            if providers_df is not None:
+                key = f"{self.config['s3_prefix']}/providers/payer={payer_name}/date={current_date}/providers_batch_{batch_num:04d}_{timestamp}.parquet"
+                self.s3_uploader.upload_dataframe(providers_df, key, self.config['temp_dir'])
+            
+            # Reset collectors
+            self.reset_collectors()
+            return True
+            
+        except Exception as e:
+            logger.error("batch_upload_failed", error=str(e))
+            return False
+    
+    def process_mrf_file(self, file_info: Dict[str, Any], handler, payer_name: str,
+                        payer_uuid: str, cpt_whitelist: set) -> Dict[str, Any]:
+        """Process a single MRF file with early validation and efficient batching."""
+        stats = {
+            "records_processed": 0,
+            "records_normalized": 0,
+            "batches_uploaded": 0,
+            "start_time": time.time()
+        }
+        
+        try:
+            # Download and parse file
+            response = requests.get(file_info["url"], timeout=300)
+            content = (gzip.decompress(response.content).decode('utf-8') 
+                      if file_info["url"].endswith('.gz') 
+                      else response.text)
+            mrf_data = json.loads(content)
+            
+            # Process in-network items
+            in_network = mrf_data.get('in_network', [])
+            current_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            batch_num = 0
+            
+            for item_idx, item in enumerate(in_network):
+                try:
+                    parsed_records = handler.parse_in_network(item)
+                    
+                    for parsed in parsed_records:
+                        normalized = normalize_tic_record(parsed, cpt_whitelist, payer_name)
+                        if not normalized:
+                            continue
+                            
+                        stats["records_normalized"] += 1
+                        
+                        # Early validation phase
+                        if stats["records_normalized"] <= self.early_validation_count:
+                            self.process_record(normalized, file_info, payer_uuid)
+                            
+                            # Upload immediately for validation
+                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                            self.upload_batch(timestamp, current_date, payer_name, batch_num)
+                            batch_num += 1
+                            stats["batches_uploaded"] += 1
+                            
+                            logger.info("early_validation_upload",
+                                      record_num=stats["records_normalized"])
+                            
+                        else:
+                            # Regular processing phase
+                            self.process_record(normalized, file_info, payer_uuid)
+                            
+                            # Determine batch size
+                            current_batch_size = (
+                                self.initial_batch_size 
+                                if stats["records_normalized"] < 10000
+                                else self.main_batch_size
+                            )
+                            
+                            # Upload batch if full
+                            if len(self.rate_batch) >= current_batch_size:
+                                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                                self.upload_batch(timestamp, current_date, payer_name, batch_num)
+                                batch_num += 1
+                                stats["batches_uploaded"] += 1
+                                
+                                # Check memory pressure
+                                if check_memory_pressure(self.memory_threshold_mb):
+                                    gc.collect()
+                                    log_memory_stats("post_batch_upload")
+                        
+                        stats["records_processed"] += 1
+                        
+                except Exception as e:
+                    logger.error("item_processing_failed",
+                               item_idx=item_idx,
+                               error=str(e))
+                    continue
+            
+            # Upload final batch
+            if self.rate_batch:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                self.upload_batch(timestamp, current_date, payer_name, batch_num)
+                stats["batches_uploaded"] += 1
+            
+            stats["processing_time"] = time.time() - stats["start_time"]
+            logger.info("file_processing_completed", stats=stats)
+            return stats
+            
+        except Exception as e:
+            logger.error("file_processing_failed", error=str(e))
+            return stats
+
+def main():
+    """Main entry point."""
+    # Load configuration
+    config = {
+        's3_bucket': os.getenv('S3_BUCKET', 'commercial-rates'),
+        's3_prefix': os.getenv('S3_PREFIX', 'healthcare-rates-test'),
+        'temp_dir': tempfile.mkdtemp(prefix="hybrid_processor_"),
+        'cpt_whitelist': {
+            "99213", "99214", "72148", "73721", "70450",  # Common codes
+            "0001U", "0002M", "0003M", "0004M", "0004U",  # Test codes
+            "0008U", "0009U", "001", "0010U", "0016U"     # Additional codes
+        }
+    }
+    
+    try:
+        # Initialize processor
+        processor = HybridProcessor(config)
+        
+        # Initialize handler
+        handler = BCBSFLHandler()
+        logger.info("handler_initialized", handler_type=type(handler).__name__)
+        
+        # Get BCBS FL files
+        bcbs_fl_url = "https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json"
+        mrf_files = list(list_mrf_blobs_enhanced(bcbs_fl_url))
+        logger.info("files_discovered", count=len(mrf_files))
+        
+        if not mrf_files:
+            logger.error("no_files_found")
+            return
+        
+        # Process files
+        payer_name = "bcbs_fl"
+        payer_uuid = processor.uuid_gen.payer_uuid(payer_name)
+        
+        total_stats = {
+            "files_processed": 0,
+            "total_records": 0,
+            "total_batches": 0,
+            "start_time": time.time()
+        }
+        
+        for file_idx, file_info in enumerate(mrf_files):
+            logger.info("processing_file",
+                       file_num=file_idx + 1,
+                       total_files=len(mrf_files),
+                       url=file_info["url"])
+            
+            stats = processor.process_mrf_file(
+                file_info, handler, payer_name, payer_uuid, config['cpt_whitelist']
+            )
+            
+            total_stats["files_processed"] += 1
+            total_stats["total_records"] += stats["records_processed"]
+            total_stats["total_batches"] += stats["batches_uploaded"]
+            
+            log_memory_stats(f"after_file_{file_idx + 1}")
+        
+        total_stats["total_time"] = time.time() - total_stats["start_time"]
+        logger.info("processing_completed", stats=total_stats)
+        
+    finally:
+        # Cleanup
+        shutil.rmtree(config['temp_dir'], ignore_errors=True)
+
+if __name__ == "__main__":
+    main()

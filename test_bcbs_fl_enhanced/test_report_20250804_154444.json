@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-08-04T15:44:44.926136",
+  "source_url": "https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json",
+  "test_file_url": "https://bcbsfl.mrf.bcbs.com/2025-07_020_02E0_in-network-rates_1_of_2.json.gz?&Expires=1755784849&Signature=ITQ1XJtdrO-VhZVj~MCobBMi25rdsmc4Nps4J753iI5B5lI~qt-W2Atwb4ni0YsLlWQfUsM~MeJnaPfHgXVC1Vfuamqm3NA5-YPrqsyiOOXg1oIkdCibuzZbcM-zV0Tc46KixLo56UI11rxHCIR6l~HtgnWDsUvpNdALE0nBxe7-eccusvFIV7~hhe2ja7iciWH0b2BU4ML9iEUb6qJYzX2fh41l-L6hHWQ81-f2KEU~iq1rJbtM0DqGWUdoLvB3mCe3dWXWnPk5KF3TMLCTv5iKMo1JpxyqWOIdwcp7QUEq243MgUc8GvWnv1KmO1w5Jzw7tqz03lun2n1YNczUlQ__&Key-Pair-Id=K27TQMT39R1C8A",
+  "processing_summary": {
+    "items_processed": 20,
+    "rates_created": 235,
+    "organizations_created": 138,
+    "providers_created": 235
+  },
+  "output_files": {
+    "local": [
+      "test_bcbs_fl_enhanced\\rates_20250804_154444.parquet",
+      "test_bcbs_fl_enhanced\\organizations_20250804_154444.parquet",
+      "test_bcbs_fl_enhanced\\providers_20250804_154444.parquet"
+    ],
+    "s3": {
+      "bucket": null,
+      "prefix": "healthcare-rates-test",
+      "keys": []
+    }
+  }
+}

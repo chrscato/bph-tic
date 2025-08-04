@@ -16,6 +16,7 @@ import logging
 import structlog
 import yaml
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import argparse
 
 # Load environment variables from .env file
 try:
@@ -48,7 +49,7 @@ logger = structlog.get_logger()
 class ConsolidationConfig:
     """Configuration for S3 batch consolidation."""
     s3_bucket: str
-    s3_prefix: str = "commercial-rates/tic-mrf"
+    s3_prefix: str = "commercial-rates/healthcare-rates-test"
     consolidated_prefix: str = "commercial-rates/tic-mrf/consolidated"
     temp_dir: Optional[str] = None
     max_workers: int = 4
@@ -85,12 +86,39 @@ class S3BatchConsolidator:
                    s3_prefix=config.s3_prefix,
                    consolidated_prefix=config.consolidated_prefix,
                    temp_dir=str(self.temp_dir))
+
+    def list_all_files(self):
+        """Debug function to list all files in the prefix."""
+        logger.info("listing_all_files_in_prefix", prefix=self.config.s3_prefix)
+        
+        try:
+            paginator = self.s3_client.get_paginator('list_objects_v2')
+            page_iterator = paginator.paginate(
+                Bucket=self.config.s3_bucket,
+                Prefix=self.config.s3_prefix
+            )
+            
+            all_files = []
+            for page in page_iterator:
+                if 'Contents' in page:
+                    for obj in page['Contents']:
+                        all_files.append(obj['Key'])
+            
+            logger.info("found_files", count=len(all_files), files=all_files)
+            return all_files
+            
+        except Exception as e:
+            logger.error("failed_listing_files", error=str(e))
+            return []
     
     def consolidate_all_payers(self):
         """Consolidate batch files for all payers found in S3."""
         logger.info("starting_consolidation")
         
         try:
+            # Debug: List all files first
+            self.list_all_files()
+            
             # Find all payers in the S3 structure
             payers = self.discover_payers()
             logger.info("discovered_payers", payers=payers, count=len(payers))
@@ -126,6 +154,8 @@ class S3BatchConsolidator:
             try:
                 # List objects with the pattern: {prefix}/{data_type}/payer={payer_name}/
                 prefix = f"{self.config.s3_prefix}/{data_type}/payer="
+                logger.info("checking_prefix", prefix=prefix)
+                
                 response = self.s3_client.list_objects_v2(
                     Bucket=self.config.s3_bucket,
                     Prefix=prefix,
@@ -275,6 +305,7 @@ class S3BatchConsolidator:
         try:
             # List all objects with the pattern: {prefix}/{data_type}/payer={payer_name}/date=*/{filename}
             prefix = f"{self.config.s3_prefix}/{data_type}/payer={payer_name}/"
+            logger.info("checking_batch_files", prefix=prefix)
             
             paginator = self.s3_client.get_paginator('list_objects_v2')
             page_iterator = paginator.paginate(
@@ -286,9 +317,10 @@ class S3BatchConsolidator:
                 if 'Contents' in page:
                     for obj in page['Contents']:
                         key = obj['Key']
-                        # Only include parquet files that are batch files (not final files)
-                        if key.endswith('.parquet') and 'batch_' in key:
+                        # Include all parquet files that aren't final consolidated files
+                        if key.endswith('.parquet') and '_final.parquet' not in key:
                             batch_files.append(key)
+                            logger.info("found_batch_file", key=key)
         
         except Exception as e:
             logger.error("failed_listing_batch_files", 
@@ -425,24 +457,35 @@ class S3BatchConsolidator:
             logger.error("failed_to_upload_stats", error=str(e))
 
 
-def create_consolidation_config() -> ConsolidationConfig:
-    """Create consolidation configuration from environment and defaults."""
+def create_consolidation_config(args) -> ConsolidationConfig:
+    """Create consolidation configuration from arguments and environment variables."""
     return ConsolidationConfig(
-        s3_bucket=os.getenv("S3_BUCKET", "commercial-rates"),
-        s3_prefix=os.getenv("S3_PREFIX", "tic-mrf"),
-        consolidated_prefix=os.getenv("CONSOLIDATED_PREFIX", "tic-mrf/consolidated"),
-        max_workers=int(os.getenv("MAX_WORKERS", "4")),
-        chunk_size=int(os.getenv("CHUNK_SIZE", "1000")),
-        cleanup_original_files=os.getenv("CLEANUP_ORIGINAL_FILES", "false").lower() == "true",
-        dry_run=os.getenv("DRY_RUN", "false").lower() == "true"
+        s3_bucket=args.bucket or os.getenv("S3_BUCKET", "commercial-rates"),
+        s3_prefix=args.prefix or os.getenv("S3_PREFIX", "tic-mrf"),
+        consolidated_prefix=args.consolidated_prefix or os.getenv("CONSOLIDATED_PREFIX", "tic-mrf/consolidated"),
+        max_workers=int(args.max_workers or os.getenv("MAX_WORKERS", "4")),
+        chunk_size=int(args.chunk_size or os.getenv("CHUNK_SIZE", "1000")),
+        cleanup_original_files=args.cleanup or os.getenv("CLEANUP_ORIGINAL_FILES", "false").lower() == "true",
+        dry_run=args.dry_run or os.getenv("DRY_RUN", "false").lower() == "true"
     )
 
 
 def main():
     """Main entry point for S3 batch consolidation."""
+    parser = argparse.ArgumentParser(description="S3 Batch Consolidation Tool")
+    parser.add_argument("--bucket", help="S3 bucket name (overrides S3_BUCKET env var)")
+    parser.add_argument("--prefix", help="S3 prefix path (overrides S3_PREFIX env var)")
+    parser.add_argument("--consolidated-prefix", help="Output prefix for consolidated files (overrides CONSOLIDATED_PREFIX env var)")
+    parser.add_argument("--max-workers", type=int, help="Maximum number of worker threads (overrides MAX_WORKERS env var)")
+    parser.add_argument("--chunk-size", type=int, help="Number of files to process in memory at once (overrides CHUNK_SIZE env var)")
+    parser.add_argument("--cleanup", action="store_true", help="Delete original files after consolidation (overrides CLEANUP_ORIGINAL_FILES env var)")
+    parser.add_argument("--dry-run", action="store_true", help="List files without processing (overrides DRY_RUN env var)")
+    
+    args = parser.parse_args()
+    
     try:
         # Load configuration
-        config = create_consolidation_config()
+        config = create_consolidation_config(args)
         
         # Initialize consolidator
         consolidator = S3BatchConsolidator(config)
@@ -456,4 +499,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

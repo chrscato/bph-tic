@@ -166,15 +166,13 @@ class NPPESDataManager:
         
         logger.info(f"Found {len(all_files)} total files in S3")
         
-        # Filter for provider files in the partitioned structure
-        # Expected structure: {prefix}/providers/payer={payer}/date={date}/*.parquet
+        # Filter for provider files in the consolidated structure
+        # Expected structure: {prefix}/consolidated/{payer}/providers*.parquet
         provider_files = []
         for file_key in all_files:
-            # Check if it's a provider file in the partitioned structure
+            # Check if it's a provider file in the consolidated structure
             if (file_key.endswith('.parquet') and 
-                'providers/' in file_key and 
-                'payer=' in file_key and 
-                'date=' in file_key):
+                'providers' in file_key.lower()):
                 provider_files.append(file_key)
         
         if not provider_files:
@@ -189,13 +187,17 @@ class NPPESDataManager:
         # Group files by payer for better logging
         payer_files = {}
         for s3_key in provider_files:
-            # Extract payer from path like: {prefix}/providers/payer=bcbs_il/date=2025-07-29/file.parquet
+            # Extract payer from path like: tic-mrf/consolidated/bcbs_il/providers.parquet
             parts = s3_key.split('/')
-            payer_part = None
-            for part in parts:
-                if part.startswith('payer='):
-                    payer_part = part.replace('payer=', '')
-                    break
+            # The payer should be the directory after 'consolidated'
+            try:
+                consolidated_index = parts.index('consolidated')
+                if len(parts) > consolidated_index + 1:
+                    payer_part = parts[consolidated_index + 1]
+                else:
+                    payer_part = None
+            except ValueError:
+                payer_part = None
             
             if payer_part:
                 if payer_part not in payer_files:
@@ -620,7 +622,7 @@ Examples:
     parser.add_argument(
         '--s3-prefix',
         type=str,
-        default='tic-mrf/providers',
+        default='tic-mrf/consolidated/',
         help='S3 prefix/path (default: tic-mrf/providers)'
     )
     
