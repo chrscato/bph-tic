@@ -576,11 +576,11 @@ class ProductionETLPipeline:
                                 break
                         continue
                 # Check safety limits
-                if file_stats["records_extracted"] >= max_records_per_file_limit:
+                if file_stats["records_extracted"] >= self.config.safety_limit_records_per_file:
                     logger.warning("reached_safety_limit", 
                                  url=file_info["url"],
                                  records_processed=file_stats["records_extracted"],
-                                 limit=max_records_per_file_limit)
+                                 limit=self.config.safety_limit_records_per_file)
                     break
                 
                 if (
