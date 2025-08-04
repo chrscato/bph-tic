@@ -671,6 +671,10 @@ class ProductionETLPipeline:
                     if quality_flags["is_validated"]:
                         file_stats["records_validated"] += 1
                         rate_batch.append(rate_record)
+                        logger.info("added_to_batch", 
+                                  batch_size=len(rate_batch),
+                                  target_size=batch_size,
+                                  record_type="rate")
                         
                         # Create organization record if new
                         org_uuid = rate_record["organization_uuid"]
@@ -686,6 +690,12 @@ class ProductionETLPipeline:
                     
                     # Write batches when full or when memory pressure detected
                     if len(rate_batch) >= batch_size or check_memory_pressure(self.config):
+                        logger.info("attempting_batch_upload",
+                                  rate_batch_size=len(rate_batch),
+                                  org_batch_size=len(org_batch),
+                                  provider_batch_size=len(provider_batch),
+                                  memory_pressure=check_memory_pressure(self.config),
+                                  s3_client_exists=bool(self.s3_client))
                         upload_stats = self.write_batches_to_s3(
                             rate_batch, org_batch, provider_batch, 
                             payer_name, filename_base, file_stats["s3_uploads"]
@@ -721,6 +731,11 @@ class ProductionETLPipeline:
                            provider_batch: List[Dict], payer_name: str, 
                            filename_base: str, batch_number: int) -> Dict[str, Any]:
         """Write batches directly to S3 with organized paths."""
+        logger.info("write_batches_to_s3_called",
+                   has_s3_client=bool(self.s3_client),
+                   rate_batch_size=len(rate_batch),
+                   org_batch_size=len(org_batch),
+                   provider_batch_size=len(provider_batch))
         upload_stats = {"files_uploaded": 0, "bytes_uploaded": 0}
         
         if not self.s3_client:

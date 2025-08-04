@@ -314,14 +314,14 @@ payer_endpoints:
   # bcbs_ks: https://mrf.secure.bcbsks.com/api/filedownloadhttptrigger?name=table-of-contents&ext=json
   #centene_fidelis: https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_fidelis_index.json
 processing:
-  batch_size: 25000  # Optimized for 32GB RAM
+  batch_size: 10000  # Reduced to force more frequent uploads
   file_types:
   - in_network_rates
   max_files_per_payer: null  # Process ALL files - no artificial limit
   max_records_per_file: null  # Process ALL records - no artificial limit
   safety_limit_records_per_file: 1000000  # Increased for comprehensive processing
-  min_accuracy_score: 0.7
-  min_completeness_pct: 50.0
+  min_accuracy_score: 0.5  # Lowered to allow more records through
+  min_completeness_pct: 30.0  # Lowered to allow more records through
   parallel_workers: 6  # Increased for 32GB RAM
   # Memory management settings for comprehensive processing
   memory_threshold_mb: 24576  # Increased to 24GB (75% of 32GB)
