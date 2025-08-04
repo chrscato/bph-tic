@@ -1,0 +1,14 @@
+# SSH to your VM
+ssh root@165.22.2.198
+
+# On the VM, run:
+cd ~/bph-tic
+git fetch origin
+git reset --hard origin/master
+git clean -fd
+chmod +x deploy.sh redeploy.sh
+./deploy.sh stop
+docker-compose down -v
+docker system prune -f
+./deploy.sh start
+./deploy.sh logs
