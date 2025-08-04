@@ -501,6 +501,9 @@ class HybridProcessor:
         INITIAL_PROGRESS_TIMEOUT = 60    # Expect first record within 1 minute
         PROGRESS_STALL_TIMEOUT = 180     # Skip if no progress for 3 minutes
         
+        # Get system memory info
+        total_ram_mb = psutil.virtual_memory().total / (1024 * 1024)
+        
         # Pareto-optimized limits (focus on files we can process efficiently)
         MAX_FILE_SIZE_MB = 4000         # 4GB limit for better throughput
         MEMORY_HEADROOM_PCT = 25        # 25% memory headroom
@@ -513,7 +516,7 @@ class HybridProcessor:
         })
             
         logger.info("memory_configuration",
-                   total_ram_gb=f"{total_ram/1024:.1f}GB",
+                   total_ram_gb=f"{total_ram_mb/1024:.1f}GB",
                    max_file_size_gb=f"{MAX_FILE_SIZE_MB/1024:.1f}GB",
                    headroom_pct=MEMORY_HEADROOM_PCT)
         
