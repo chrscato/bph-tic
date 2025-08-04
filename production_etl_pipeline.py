@@ -575,126 +575,127 @@ class ProductionETLPipeline:
                                 logger.warning(f"Processing thread died for {file_info['url']}")
                                 break
                         continue
-                # Check safety limits
-                if file_stats["records_extracted"] >= self.config.safety_limit_records_per_file:
-                    logger.warning("reached_safety_limit", 
-                                 url=file_info["url"],
-                                 records_processed=file_stats["records_extracted"],
-                                 limit=self.config.safety_limit_records_per_file)
-                    break
-                
-                if (
-                    self.config.max_records_per_file is not None
-                    and file_stats["records_extracted"] >= self.config.max_records_per_file
-                ):
-                    break
+                    
+                    # Check safety limits
+                    if file_stats["records_extracted"] >= self.config.safety_limit_records_per_file:
+                        logger.warning("reached_safety_limit", 
+                                     url=file_info["url"],
+                                     records_processed=file_stats["records_extracted"],
+                                     limit=self.config.safety_limit_records_per_file)
+                        break
+                    
+                    if (
+                        self.config.max_records_per_file is not None
+                        and file_stats["records_extracted"] >= self.config.max_records_per_file
+                    ):
+                        break
 
-                file_stats["records_extracted"] += 1
-                
-                # Check memory pressure every 100 records
-                if file_stats["records_extracted"] % 100 == 0:
-                    if check_memory_pressure(self.config):
-                        # Force cleanup and write current batches immediately
-                        if rate_batch:
-                            upload_stats = self.write_batches_to_s3(
-                                rate_batch, org_batch, provider_batch, 
-                                payer_name, filename_base, file_stats["s3_uploads"]
-                            )
-                            file_stats["s3_uploads"] += upload_stats["files_uploaded"]
-                            self.stats["s3_uploads"] += upload_stats["files_uploaded"]
-                            
-                            # Clear batches to free memory and reset dedup cache
-                            rate_batch, org_batch, provider_batch = [], [], []
-                            dedup_cache.reset()
-                            force_memory_cleanup()
-                
-                # Normalize and validate
-                normalized = normalize_tic_record(
-                    raw_record,
-                    self.cpt_whitelist_set,
-                    payer_name
-                )
-                
-                # Debug normalization for first few records
-                if file_stats["records_extracted"] < 5:
-                    logger.info("debug_normalization",
-                              record_extracted=file_stats["records_extracted"],
-                              raw_record_keys=list(raw_record.keys()),
-                              normalized_keys=list(normalized.keys()) if normalized else None,
-                              is_normalized=bool(normalized))
-                
-                if not normalized:
-                    continue
-                
-                # Create structured records
-                rate_record = self.create_rate_record(
-                    payer_uuid, normalized, file_info, raw_record
-                )
-                
-                # Debug record creation for first few records
-                if file_stats["records_extracted"] < 5:
-                    logger.info("debug_record_creation",
-                              record_extracted=file_stats["records_extracted"],
-                              normalized_keys=list(normalized.keys()),
-                              rate_record_keys=list(rate_record.keys()),
-                              has_payer_uuid=bool(rate_record.get("payer_uuid")),
-                              has_org_uuid=bool(rate_record.get("organization_uuid")),
-                              npi_list=rate_record.get("provider_network", {}).get("npi_list", []))
-                
-                # Validate quality
-                quality_flags = self.validator.validate_rate_record(rate_record)
-                rate_record["quality_flags"] = quality_flags
-                
-                # Debug logging for first few records
-                if file_stats["records_extracted"] < 5:
-                    logger.info("debug_validation", 
-                              record_keys=list(rate_record.keys()),
-                              has_payer_uuid=bool(rate_record.get("payer_uuid")),
-                              has_org_uuid=bool(rate_record.get("organization_uuid")),
-                              npi_list=rate_record.get("provider_network", {}).get("npi_list", []),
-                              is_validated=quality_flags["is_validated"],
-                              validation_notes=quality_flags["validation_notes"])
-                
-                # Additional debug for validation failures
-                if not quality_flags["is_validated"] and file_stats["records_extracted"] < 10:
-                    logger.warning("debug_validation_failure",
-                                 record_extracted=file_stats["records_extracted"],
-                                 validation_notes=quality_flags["validation_notes"],
-                                 has_payer_uuid=bool(rate_record.get("payer_uuid")),
-                                 has_org_uuid=bool(rate_record.get("organization_uuid")),
-                                 npi_count=len(rate_record.get("provider_network", {}).get("npi_list", [])))
-                
-                if quality_flags["is_validated"]:
-                    file_stats["records_validated"] += 1
-                    rate_batch.append(rate_record)
+                    file_stats["records_extracted"] += 1
                     
-                    # Create organization record if new
-                    org_uuid = rate_record["organization_uuid"]
-                    if org_uuid not in dedup_cache:
-                        org_record = self.create_organization_record(normalized, raw_record)
-                        org_batch.append(org_record)
-                        dedup_cache.add(org_uuid)
-                        file_stats["organizations_created"] += 1
+                    # Check memory pressure every 100 records
+                    if file_stats["records_extracted"] % 100 == 0:
+                        if check_memory_pressure(self.config):
+                            # Force cleanup and write current batches immediately
+                            if rate_batch:
+                                upload_stats = self.write_batches_to_s3(
+                                    rate_batch, org_batch, provider_batch, 
+                                    payer_name, filename_base, file_stats["s3_uploads"]
+                                )
+                                file_stats["s3_uploads"] += upload_stats["files_uploaded"]
+                                self.stats["s3_uploads"] += upload_stats["files_uploaded"]
+                                
+                                # Clear batches to free memory and reset dedup cache
+                                rate_batch, org_batch, provider_batch = [], [], []
+                                dedup_cache.reset()
+                                force_memory_cleanup()
                     
-                    # Create provider records
-                    provider_records = self.create_provider_records(normalized, raw_record)
-                    provider_batch.extend(provider_records)
-                
-                # Write batches when full or when memory pressure detected
-                if len(rate_batch) >= batch_size or check_memory_pressure(self.config):
-                    upload_stats = self.write_batches_to_s3(
-                        rate_batch, org_batch, provider_batch, 
-                        payer_name, filename_base, file_stats["s3_uploads"]
+                    # Normalize and validate
+                    normalized = normalize_tic_record(
+                        raw_record,
+                        self.cpt_whitelist_set,
+                        payer_name
                     )
-                    file_stats["s3_uploads"] += upload_stats["files_uploaded"]
-                    self.stats["s3_uploads"] += upload_stats["files_uploaded"]
                     
-                    # Clear batches to free memory and reset dedup cache
-                    rate_batch, org_batch, provider_batch = [], [], []
-                    dedup_cache.reset()
+                    # Debug normalization for first few records
+                    if file_stats["records_extracted"] < 5:
+                        logger.info("debug_normalization",
+                                  record_extracted=file_stats["records_extracted"],
+                                  raw_record_keys=list(raw_record.keys()),
+                                  normalized_keys=list(normalized.keys()) if normalized else None,
+                                  is_normalized=bool(normalized))
+                    
+                    if not normalized:
+                        continue
+                    
+                    # Create structured records
+                    rate_record = self.create_rate_record(
+                        payer_uuid, normalized, file_info, raw_record
+                    )
+                    
+                    # Debug record creation for first few records
+                    if file_stats["records_extracted"] < 5:
+                        logger.info("debug_record_creation",
+                                  record_extracted=file_stats["records_extracted"],
+                                  normalized_keys=list(normalized.keys()),
+                                  rate_record_keys=list(rate_record.keys()),
+                                  has_payer_uuid=bool(rate_record.get("payer_uuid")),
+                                  has_org_uuid=bool(rate_record.get("organization_uuid")),
+                                  npi_list=rate_record.get("provider_network", {}).get("npi_list", []))
+                    
+                    # Validate quality
+                    quality_flags = self.validator.validate_rate_record(rate_record)
+                    rate_record["quality_flags"] = quality_flags
+                    
+                    # Debug logging for first few records
+                    if file_stats["records_extracted"] < 5:
+                        logger.info("debug_validation", 
+                                  record_keys=list(rate_record.keys()),
+                                  has_payer_uuid=bool(rate_record.get("payer_uuid")),
+                                  has_org_uuid=bool(rate_record.get("organization_uuid")),
+                                  npi_list=rate_record.get("provider_network", {}).get("npi_list", []),
+                                  is_validated=quality_flags["is_validated"],
+                                  validation_notes=quality_flags["validation_notes"])
+                    
+                    # Additional debug for validation failures
+                    if not quality_flags["is_validated"] and file_stats["records_extracted"] < 10:
+                        logger.warning("debug_validation_failure",
+                                     record_extracted=file_stats["records_extracted"],
+                                     validation_notes=quality_flags["validation_notes"],
+                                     has_payer_uuid=bool(rate_record.get("payer_uuid")),
+                                     has_org_uuid=bool(rate_record.get("organization_uuid")),
+                                     npi_count=len(rate_record.get("provider_network", {}).get("npi_list", [])))
+                    
+                    if quality_flags["is_validated"]:
+                        file_stats["records_validated"] += 1
+                        rate_batch.append(rate_record)
+                        
+                        # Create organization record if new
+                        org_uuid = rate_record["organization_uuid"]
+                        if org_uuid not in dedup_cache:
+                            org_record = self.create_organization_record(normalized, raw_record)
+                            org_batch.append(org_record)
+                            dedup_cache.add(org_uuid)
+                            file_stats["organizations_created"] += 1
+                        
+                        # Create provider records
+                        provider_records = self.create_provider_records(normalized, raw_record)
+                        provider_batch.extend(provider_records)
+                    
+                    # Write batches when full or when memory pressure detected
+                    if len(rate_batch) >= batch_size or check_memory_pressure(self.config):
+                        upload_stats = self.write_batches_to_s3(
+                            rate_batch, org_batch, provider_batch, 
+                            payer_name, filename_base, file_stats["s3_uploads"]
+                        )
+                        file_stats["s3_uploads"] += upload_stats["files_uploaded"]
+                        self.stats["s3_uploads"] += upload_stats["files_uploaded"]
+                        
+                        # Clear batches to free memory and reset dedup cache
+                        rate_batch, org_batch, provider_batch = [], [], []
+                        dedup_cache.reset()
 
-                    # Force garbage collection after each batch
-                    force_memory_cleanup()
+                        # Force garbage collection after each batch
+                        force_memory_cleanup()
             
             # Write final batches
             if rate_batch:
