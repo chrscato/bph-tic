@@ -518,12 +518,63 @@ class ProductionETLPipeline:
         
         # Process records with streaming parser
         try:
-            for raw_record in stream_parse_enhanced(
-                file_info["url"],
-                payer_name,
-                file_info.get("provider_reference_url"),
-                handler
-            ):
+            # Add timeout protection for file processing (5 minutes per file)
+            import threading
+            import queue
+            
+            # Create a queue to communicate between threads
+            result_queue = queue.Queue()
+            exception_queue = queue.Queue()
+            
+            def process_file_with_timeout():
+                try:
+                    record_count = 0
+                    for raw_record in stream_parse_enhanced(
+                        file_info["url"],
+                        payer_name,
+                        file_info.get("provider_reference_url"),
+                        handler
+                    ):
+                        result_queue.put(raw_record)
+                        record_count += 1
+                        if record_count % 1000 == 0:
+                            logger.info(f"Processed {record_count} records from {file_info['url']}")
+                    result_queue.put(None)  # Signal completion
+                except Exception as e:
+                    exception_queue.put(e)
+            
+            # Start processing in a separate thread
+            processing_thread = threading.Thread(target=process_file_with_timeout)
+            processing_thread.daemon = True
+            processing_thread.start()
+            
+            # Process records with timeout
+            timeout_seconds = 300  # 5 minutes per file
+            start_time = time.time()
+            
+            while True:
+                try:
+                    # Check for timeout
+                    if time.time() - start_time > timeout_seconds:
+                        logger.error(f"File processing timeout after {timeout_seconds} seconds: {file_info['url']}")
+                        break
+                    
+                    # Try to get next record with short timeout
+                    try:
+                        raw_record = result_queue.get(timeout=1.0)
+                        if raw_record is None:  # Processing completed
+                            break
+                    except queue.Empty:
+                        # Check if thread is still alive
+                        if not processing_thread.is_alive():
+                            # Check for exceptions
+                            try:
+                                exception = exception_queue.get_nowait()
+                                raise exception
+                            except queue.Empty:
+                                logger.warning(f"Processing thread died for {file_info['url']}")
+                                break
+                        continue
                 # Check safety limits
                 if file_stats["records_extracted"] >= max_records_per_file_limit:
                     logger.warning("reached_safety_limit", 
@@ -1144,9 +1195,9 @@ def create_production_config() -> ETLConfig:
     
     # Generate output directory name based on active payers
     if active_payers:
-        # Use first active payer as directory name
-        payer_name = active_payers[0]
-        output_dir = f"ortho_radiology_data_{payer_name}"
+        # Use all active payers for directory name
+        payer_names = "_".join(active_payers)
+        output_dir = f"ortho_radiology_data_{payer_names}"
     else:
         # Fallback if no active payers
         output_dir = "ortho_radiology_data_default"

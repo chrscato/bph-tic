@@ -1,0 +1,67 @@
+{
+  "timestamp": "2025-08-03T18:53:37.348376",
+  "source_url": "https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json",
+  "test_file_url": "https://bcbsfl.mrf.bcbs.com/2025-07_020_02E0_in-network-rates_1_of_2.json.gz?&Expires=1755784849&Signature=ITQ1XJtdrO-VhZVj~MCobBMi25rdsmc4Nps4J753iI5B5lI~qt-W2Atwb4ni0YsLlWQfUsM~MeJnaPfHgXVC1Vfuamqm3NA5-YPrqsyiOOXg1oIkdCibuzZbcM-zV0Tc46KixLo56UI11rxHCIR6l~HtgnWDsUvpNdALE0nBxe7-eccusvFIV7~hhe2ja7iciWH0b2BU4ML9iEUb6qJYzX2fh41l-L6hHWQ81-f2KEU~iq1rJbtM0DqGWUdoLvB3mCe3dWXWnPk5KF3TMLCTv5iKMo1JpxyqWOIdwcp7QUEq243MgUc8GvWnv1KmO1w5Jzw7tqz03lun2n1YNczUlQ__&Key-Pair-Id=K27TQMT39R1C8A",
+  "processing_summary": {
+    "raw_items_processed": 20,
+    "normalized_records": 43,
+    "provider_cache_size": 3599,
+    "success_rate": 2.15
+  },
+  "data_quality": {
+    "records_with_rates": "43",
+    "records_with_providers": "43",
+    "rate_range": {
+      "min": 526.68,
+      "max": 820.8,
+      "mean": 808.0420930232559
+    }
+  },
+  "files_created": [
+    "test_bcbs_fl_fixed\\bcbs_fl_normalized_20250803_185336.parquet"
+  ],
+  "sample_records": [
+    {
+      "service_code": "0001U",
+      "billing_code_type": "CPT",
+      "description": "RED BLOOD CELL ANTIGEN, DNA, HUMAN ERYTHROCYTE ANTIGEN GENE ANALYSIS OF 35 ANTIGENS FROM 11 BLOOD GROUPS, UTILIZING WHOLE BLOOD, COMMON RBC ALLELES REPORTED",
+      "negotiated_rate": 820.8,
+      "service_codes": [],
+      "billing_class": "institutional",
+      "negotiated_type": "fee schedule",
+      "expiration_date": "9999-12-31",
+      "provider_npi": 1023007770,
+      "provider_name": null,
+      "provider_tin": "22-3928956",
+      "payer": "bcbs_fl"
+    },
+    {
+      "service_code": "0001U",
+      "billing_code_type": "CPT",
+      "description": "RED BLOOD CELL ANTIGEN, DNA, HUMAN ERYTHROCYTE ANTIGEN GENE ANALYSIS OF 35 ANTIGENS FROM 11 BLOOD GROUPS, UTILIZING WHOLE BLOOD, COMMON RBC ALLELES REPORTED",
+      "negotiated_rate": 820.8,
+      "service_codes": [],
+      "billing_class": "institutional",
+      "negotiated_type": "fee schedule",
+      "expiration_date": "9999-12-31",
+      "provider_npi": 1053301473,
+      "provider_name": null,
+      "provider_tin": "71-0839283",
+      "payer": "bcbs_fl"
+    },
+    {
+      "service_code": "0001U",
+      "billing_code_type": "CPT",
+      "description": "RED BLOOD CELL ANTIGEN, DNA, HUMAN ERYTHROCYTE ANTIGEN GENE ANALYSIS OF 35 ANTIGENS FROM 11 BLOOD GROUPS, UTILIZING WHOLE BLOOD, COMMON RBC ALLELES REPORTED",
+      "negotiated_rate": 820.8,
+      "service_codes": [],
+      "billing_class": "institutional",
+      "negotiated_type": "fee schedule",
+      "expiration_date": "9999-12-31",
+      "provider_npi": 1083088827,
+      "provider_name": null,
+      "provider_tin": "82-3441977",
+      "payer": "bcbs_fl"
+    }
+  ]
+}

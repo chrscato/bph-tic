@@ -282,9 +282,10 @@ cpt_whitelist:
 endpoints:
   #aetna_fl: file://C:\Users\chris\Downloads\2025-07-05_Aetna-Health-Inc----Florida_index.json.gz
   #anthem: https://antm-pt-prod-dataz-nogbd-nophi-us-east1.s3.amazonaws.com/anthem/2025-08-01_anthem_index.json.gz
-  #bcbs_il: https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-07-23_Blue-Cross-and-Blue-Shield-of-Illinois_index.json
+  
   # bcbs_ks: https://mrf.secure.bcbsks.com/api/filedownloadhttptrigger?name=table-of-contents&ext=json
-  #bcbs_fl: https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json
+  bcbs_fl: https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json
+  bcbs_il: https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-07-23_Blue-Cross-and-Blue-Shield-of-Illinois_index.json
   #bs_ca: file://C:\Users\ChristopherCato\Downloads\2025-08-01_Blue-Shield-of-California_index.json.gz
   #cigna: https://d25kgz5rikkq4n.cloudfront.net/cost_transparency/mrf/table-of-contents/reporting_month=2025-08/2025-08-01_cigna-health-life-insurance-company_index.json?Expires=1757891470&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9kMjVrZ3o1cmlra3E0bi5jbG91ZGZyb250Lm5ldC9jb3N0X3RyYW5zcGFyZW5jeS9tcmYvdGFibGUtb2YtY29udGVudHMvcmVwb3J0aW5nX21vbnRoPTIwMjUtMDgvMjAyNS0wOC0wMV9jaWduYS1oZWFsdGgtbGlmZS1pbnN1cmFuY2UtY29tcGFueV9pbmRleC5qc29uIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzU3ODkxNDcwfX19XX0_&Signature=fg1XUcLNsxx7RYtuB88Qo5ainXP~yQaGXqvWocH1qCuWC8YW2s1nkFDfMmc3NlbLcfjG8X3g~p-v80yvx78wi9q0GmLxLbFEQueqfaBCvEV7i-ABQmVOl6XTZnNnO5HaHRRh9i6TbikcuUlQ4JmN65jZ8AhC0aFv5DAZmwaPZrpeKU81dSf254J8LZZq9q2-~VwIuIhlF6M9Yw6eODghYKrzBC2KluX5cNFYTpivXPNdckq9tIp-JsAZbJfP-1UetqOkszdOB9fFrEylwsFrHqHwV8803wbk8q2yapm-Y2lTfZzxDHtCJX2MGI6PaPKVRcy4oWCwcE3u2XUZtqdaaw__&Key-Pair-Id=K1NVBEPVH9LWJP
   #centene_fidelis: https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_fidelis_index.json
@@ -306,13 +307,14 @@ payer_endpoints:
   #cigna: https://d25kgz5rikkq4n.cloudfront.net/cost_transparency/mrf/table-of-contents/reporting_month=2025-08/2025-08-01_cigna-health-life-insurance-company_index.json?Expires=1757891470&Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9kMjVrZ3o1cmlra3E0bi5jbG91ZGZyb250Lm5ldC9jb3N0X3RyYW5zcGFyZW5jeS9tcmYvdGFibGUtb2YtY29udGVudHMvcmVwb3J0aW5nX21vbnRoPTIwMjUtMDgvMjAyNS0wOC0wMV9jaWduYS1oZWFsdGgtbGlmZS1pbnN1cmFuY2UtY29tcGFueV9pbmRleC5qc29uIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzU3ODkxNDcwfX19XX0_&Signature=fg1XUcLNsxx7RYtuB88Qo5ainXP~yQaGXqvWocH1qCuWC8YW2s1nkFDfMmc3NlbLcfjG8X3g~p-v80yvx78wi9q0GmLxLbFEQueqfaBCvEV7i-ABQmVOl6XTZnNnO5HaHRRh9i6TbikcuUlQ4JmN65jZ8AhC0aFv5DAZmwaPZrpeKU81dSf254J8LZZq9q2-~VwIuIhlF6M9Yw6eODghYKrzBC2KluX5cNFYTpivXPNdckq9tIp-JsAZbJfP-1UetqOkszdOB9fFrEylwsFrHqHwV8803wbk8q2yapm-Y2lTfZzxDHtCJX2MGI6PaPKVRcy4oWCwcE3u2XUZtqdaaw__&Key-Pair-Id=K1NVBEPVH9LWJP
   #bs_ca: file://C:\Users\ChristopherCato\Downloads\2025-08-01_Blue-Shield-of-California_index.json.gz
   #bcbs_nc: https://mrfmftprod.bcbsnc.com/prod/etl/outbound/table-of-contents/non-aso/2025-07-29_blue-cross-and-blue-shield-of-north-carolina_index.json
-  bcbs_mi: https://bcbsm.sapphiremrfhub.com/tocs/current/blue_cross_blue_shield_of_michigan
-  #bcbs_il: https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-07-23_Blue-Cross-and-Blue-Shield-of-Illinois_index.json
-  #bcbs_fl: https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json 
+  # bcbs_mi: https://bcbsm.sapphiremrfhub.com/tocs/current/blue_cross_blue_shield_of_michigan
+  
+  bcbs_fl: https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json 
+  bcbs_il: https://app0004702110a5prdnc868.blob.core.windows.net/toc/2025-07-23_Blue-Cross-and-Blue-Shield-of-Illinois_index.json
   # bcbs_ks: https://mrf.secure.bcbsks.com/api/filedownloadhttptrigger?name=table-of-contents&ext=json
   #centene_fidelis: https://www.centene.com/content/dam/centene/Centene%20Corporate/json/DOCUMENT/2025-06-27_fidelis_index.json
 processing:
-  batch_size: 10000  # Reduced for memory safety
+  batch_size: 25000  # Optimized for 32GB RAM
   file_types:
   - in_network_rates
   max_files_per_payer: null  # Process ALL files - no artificial limit
@@ -320,16 +322,16 @@ processing:
   safety_limit_records_per_file: 1000000  # Increased for comprehensive processing
   min_accuracy_score: 0.7
   min_completeness_pct: 50.0
-  parallel_workers: 4  # Reduced for memory safety
+  parallel_workers: 6  # Increased for 32GB RAM
   # Memory management settings for comprehensive processing
-  memory_threshold_mb: 16384  # Reduced to 16GB (50% of 32GB)
+  memory_threshold_mb: 24576  # Increased to 24GB (75% of 32GB)
   max_processing_time_hours: 24  # Extended for comprehensive processing
   enable_memory_monitoring: true
   # Streaming and chunking settings
   enable_streaming: true
-  chunk_size_mb: 50  # Reduced chunk size for memory safety
+  chunk_size_mb: 100  # Increased chunk size for 32GB RAM
   enable_data_dumping: true  # Dump processed data to disk/S3 to free memory
-  dump_interval_records: 50000  # Dump every 50K records to prevent memory buildup
+  dump_interval_records: 100000  # Dump every 100K records for efficiency
 versioning:
   processing_version: tic-etl-sample-v1.0
   retention_days: 7
