@@ -358,7 +358,9 @@ def _stream_parse_large_file(url: str, payer: str, parser: TiCMRFParser, handler
             gz_file = None
             try:
                 gz_file = gzip.GzipFile(fileobj=response.raw)
-                yield from _parse_json_stream(gz_file, payer, parser, handler)
+                # Decompress the content first
+                decompressed = BytesIO(gz_file.read())
+                yield from _parse_json_stream(decompressed, payer, parser, handler)
             finally:
                 if gz_file:
                     gz_file.close()
