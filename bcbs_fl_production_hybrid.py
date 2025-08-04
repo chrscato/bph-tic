@@ -496,10 +496,26 @@ class HybridProcessor:
     def process_mrf_file(self, file_info: Dict[str, Any], handler, payer_name: str,
                         payer_uuid: str, cpt_whitelist: set) -> Dict[str, Any]:
         """Process a single MRF file with early validation and efficient batching."""
-        # Set timeouts
-        FILE_PROCESSING_TIMEOUT = 900    # 15 minutes max per file
+        # Set timeouts and limits - optimized for Pareto efficiency
+        FILE_PROCESSING_TIMEOUT = 600    # 10 minutes max per file
         INITIAL_PROGRESS_TIMEOUT = 60    # Expect first record within 1 minute
-        PROGRESS_STALL_TIMEOUT = 300     # Skip if no new records for 5 minutes
+        PROGRESS_STALL_TIMEOUT = 180     # Skip if no progress for 3 minutes
+        
+        # Pareto-optimized limits (focus on files we can process efficiently)
+        MAX_FILE_SIZE_MB = 4000         # 4GB limit for better throughput
+        MEMORY_HEADROOM_PCT = 25        # 25% memory headroom
+        
+        # Track skipped files for analysis
+        self.skipped_files = getattr(self, 'skipped_files', {
+            'too_large': [],
+            'timeout': [],
+            'memory_pressure': []
+        })
+            
+        logger.info("memory_configuration",
+                   total_ram_gb=f"{total_ram/1024:.1f}GB",
+                   max_file_size_gb=f"{MAX_FILE_SIZE_MB/1024:.1f}GB",
+                   headroom_pct=MEMORY_HEADROOM_PCT)
         
         stats = {
             "records_processed": 0,
@@ -510,27 +526,76 @@ class HybridProcessor:
         }
         
         try:
-            # Download and parse file with better error handling
+            # Check file size before downloading
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 'Accept': 'application/json, application/octet-stream'
             }
             
-            logger.info("downloading_file", url=file_info["url"])
             try:
+                # First, do a HEAD request to check file size
+                head_response = requests.head(file_info["url"], headers=headers, timeout=30)
+                file_size_mb = int(head_response.headers.get('content-length', 0)) / (1024 * 1024)
+                
+                # Check if file is too large
+                if file_size_mb > MAX_FILE_SIZE_MB:
+                    logger.warning("file_too_large",
+                                url=file_info["url"],
+                                size_mb=f"{file_size_mb:.1f}MB",
+                                limit_mb=MAX_FILE_SIZE_MB)
+                    self.skipped_files['too_large'].append({
+                        'url': file_info["url"],
+                        'size_mb': file_size_mb,
+                        'timestamp': datetime.now(timezone.utc).isoformat()
+                    })
+                    return stats
+                
+                # Check available memory - more lenient for 32GB systems
+                mem = psutil.virtual_memory()
+                available_mb = mem.available / (1024 * 1024)
+                # On 32GB systems, we need less buffer since we have more RAM
+                buffer_multiplier = 1.2 if total_ram >= 30000 else 1.5
+                required_mb = file_size_mb * buffer_multiplier
+                
+                if available_mb < required_mb * (1 + MEMORY_HEADROOM_PCT/100):
+                    logger.warning("insufficient_memory",
+                                url=file_info["url"],
+                                file_size_mb=f"{file_size_mb:.1f}MB",
+                                available_mb=f"{available_mb:.1f}MB",
+                                required_mb=f"{required_mb:.1f}MB")
+                    return stats
+                
+                logger.info("downloading_file", 
+                          url=file_info["url"],
+                          size_mb=f"{file_size_mb:.1f}MB",
+                          available_memory_mb=f"{available_mb:.1f}MB")
+                
+                # Download file with streaming and progress tracking
                 response = requests.get(
                     file_info["url"], 
                     headers=headers,
                     timeout=300,
-                    stream=True  # Stream the response
+                    stream=True
                 )
                 response.raise_for_status()
                 
-                # Read the content in chunks
+                # Read content with memory monitoring
                 chunks = []
-                for chunk in response.iter_content(chunk_size=8192):
+                total_size = 0
+                chunk_size = 8192
+                
+                for chunk in response.iter_content(chunk_size=chunk_size):
                     if chunk:
                         chunks.append(chunk)
+                        total_size += len(chunk)
+                        
+                        # Check memory every 100MB
+                        if total_size % (100 * 1024 * 1024) == 0:
+                            if check_memory_pressure(self.memory_threshold_mb):
+                                logger.warning("memory_pressure_during_download",
+                                           url=file_info["url"],
+                                           downloaded_mb=f"{total_size/1024/1024:.1f}MB")
+                                return stats
                 
                 raw_content = b''.join(chunks)
                 logger.info("download_complete", 
@@ -609,10 +674,21 @@ class HybridProcessor:
                                           billing_code=normalized.get('billing_code'),
                                           rate=normalized.get('negotiated_rate'))
                             else:
+                                # Log more details about skipped records
                                 logger.warning("normalization_skipped",
                                              item_idx=item_idx,
                                              billing_code=parsed.get('billing_code'),
+                                             billing_code_type=parsed.get('billing_code_type'),
+                                             negotiated_rate=parsed.get('negotiated_rate'),
+                                             in_whitelist=parsed.get('billing_code') in cpt_whitelist,
                                              reason="normalize_tic_record returned None")
+                                
+                                # Log every 1000th skip for monitoring
+                                if stats["records_normalized"] % 1000 == 0:
+                                    logger.info("normalization_stats",
+                                              total_processed=stats["records_processed"],
+                                              total_normalized=stats["records_normalized"],
+                                              skip_rate=f"{(stats['records_processed'] - stats['records_normalized'])/stats['records_processed']*100:.1f}%")
                                 continue
                         except Exception as e:
                             logger.error("normalization_failed",
