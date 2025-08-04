@@ -696,22 +696,20 @@ class ProductionETLPipeline:
 
                         # Force garbage collection after each batch
                         force_memory_cleanup()
-                    
-                    # Write final batches
-                    if rate_batch:
-                        upload_stats = self.write_batches_to_s3(
-                            rate_batch, org_batch, provider_batch,
-                            payer_name, filename_base, file_stats["s3_uploads"]
-                        )
-                        file_stats["s3_uploads"] += upload_stats["files_uploaded"]
-                        self.stats["s3_uploads"] += upload_stats["files_uploaded"]
-                        dedup_cache.reset()
-        
-        except Exception as e:
-            logger.error(f"Failed processing file {file_info['url']}: {str(e)}")
-            raise
-        finally:
-            dedup_cache.close()
+            except Exception as e:
+                logger.error(f"Failed processing file {file_info['url']}: {str(e)}")
+                raise
+            finally:
+                # Write final batches
+                if rate_batch:
+                    upload_stats = self.write_batches_to_s3(
+                        rate_batch, org_batch, provider_batch,
+                        payer_name, filename_base, file_stats["s3_uploads"]
+                    )
+                    file_stats["s3_uploads"] += upload_stats["files_uploaded"]
+                    self.stats["s3_uploads"] += upload_stats["files_uploaded"]
+                    dedup_cache.reset()
+                dedup_cache.close()
 
         file_stats["processing_time"] = time.time() - file_stats["start_time"]
         return file_stats
