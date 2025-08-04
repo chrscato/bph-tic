@@ -455,6 +455,44 @@ class HybridProcessor:
             logger.error("batch_upload_failed", error=str(e))
             return False
     
+    def download_with_retry(self, url: str, max_retries: int = 3, delay: int = 5) -> bytes:
+        """Download file with retries."""
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'application/json, application/octet-stream'
+        }
+        
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(
+                    url,
+                    headers=headers,
+                    timeout=300,
+                    stream=True
+                )
+                response.raise_for_status()
+                
+                chunks = []
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        chunks.append(chunk)
+                
+                content = b''.join(chunks)
+                logger.info("download_successful",
+                           attempt=attempt + 1,
+                           size_mb=len(content)/1024/1024)
+                return content
+                
+            except Exception as e:
+                logger.warning("download_attempt_failed",
+                             attempt=attempt + 1,
+                             max_retries=max_retries,
+                             error=str(e))
+                if attempt < max_retries - 1:
+                    time.sleep(delay)
+                else:
+                    raise
+    
     def process_mrf_file(self, file_info: Dict[str, Any], handler, payer_name: str,
                         payer_uuid: str, cpt_whitelist: set) -> Dict[str, Any]:
         """Process a single MRF file with early validation and efficient batching."""
@@ -466,12 +504,69 @@ class HybridProcessor:
         }
         
         try:
-            # Download and parse file
-            response = requests.get(file_info["url"], timeout=300)
-            content = (gzip.decompress(response.content).decode('utf-8') 
-                      if file_info["url"].endswith('.gz') 
-                      else response.text)
-            mrf_data = json.loads(content)
+            # Download and parse file with better error handling
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/json, application/octet-stream'
+            }
+            
+            logger.info("downloading_file", url=file_info["url"])
+            try:
+                response = requests.get(
+                    file_info["url"], 
+                    headers=headers,
+                    timeout=300,
+                    stream=True  # Stream the response
+                )
+                response.raise_for_status()
+                
+                # Read the content in chunks
+                chunks = []
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        chunks.append(chunk)
+                
+                raw_content = b''.join(chunks)
+                logger.info("download_complete", 
+                           size_mb=len(raw_content)/1024/1024,
+                           is_gzipped=file_info["url"].endswith('.gz'))
+                
+                try:
+                    # Handle gzip content
+                    if file_info["url"].endswith('.gz') or '.gz?' in file_info["url"]:
+                        try:
+                            content = gzip.decompress(raw_content).decode('utf-8')
+                        except Exception as e:
+                            logger.error("gzip_decompression_failed", error=str(e))
+                            # Try without decompression as fallback
+                            content = raw_content.decode('utf-8')
+                    else:
+                        content = raw_content.decode('utf-8')
+                    
+                    # Validate JSON before parsing
+                    if not content.strip():
+                        raise ValueError("Empty content received")
+                    
+                    if not content.strip().startswith('{'):
+                        logger.error("invalid_json_content", 
+                                   preview=content[:100] if content else "empty")
+                        raise ValueError("Content is not valid JSON")
+                    
+                    mrf_data = json.loads(content)
+                    logger.info("json_parsed_successfully", 
+                              top_level_keys=list(mrf_data.keys()))
+                    
+                except json.JSONDecodeError as e:
+                    logger.error("json_parse_failed", 
+                               error=str(e),
+                               content_preview=content[:200] if content else "empty")
+                    raise
+                
+            except requests.exceptions.RequestException as e:
+                logger.error("download_failed", 
+                           error=str(e),
+                           url=file_info["url"])
+                raise
             
             # Process in-network items
             in_network = mrf_data.get('in_network', [])
