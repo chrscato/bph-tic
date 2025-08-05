@@ -714,7 +714,12 @@ class HybridProcessor:
                     
                     for parsed in parsed_records:
                         try:
-                            normalized = normalize_tic_record(parsed, cpt_whitelist, payer_name)
+                            # In dry run, skip CPT filtering
+                            if dry_run:
+                                normalized = parsed.copy()
+                                normalized['payer_name'] = payer_name
+                            else:
+                                normalized = normalize_tic_record(parsed, cpt_whitelist, payer_name)
                             if normalized:
                                 logger.info("record_normalized",
                                           item_idx=item_idx,
@@ -832,19 +837,26 @@ class HybridProcessor:
             logger.error("file_processing_failed", error=str(e))
             return stats
 
-def main():
+def main(dry_run: bool = False):
     """Main entry point."""
     # Load configuration
     config = {
         's3_bucket': os.getenv('S3_BUCKET', 'commercial-rates'),
         's3_prefix': os.getenv('S3_PREFIX', 'healthcare-rates-test'),
         'temp_dir': tempfile.mkdtemp(prefix="hybrid_processor_"),
-        'cpt_whitelist': {
+        'cpt_whitelist': None if dry_run else {  # No whitelist in dry run
             "99213", "99214", "72148", "73721", "70450",  # Common codes
             "0001U", "0002M", "0003M", "0004M", "0004U",  # Test codes
             "0008U", "0009U", "001", "0010U", "0016U"     # Additional codes
         }
     }
+    
+    if dry_run:
+        print("\n🔍 DRY RUN MODE:")
+        print("   - Processing first 50 files")
+        print("   - No CPT code filtering")
+        print("   - Full S3 upload test")
+        print("   - S3 Prefix: healthcare-rates-test-dry-run\n")
     
     try:
         # Initialize processor
@@ -858,9 +870,13 @@ def main():
         try:
             with open("files_under_1gb.json", 'r') as f:
                 mrf_files = json.load(f)
+                if dry_run:
+                    mrf_files = mrf_files[:50]  # Take only first 50 files in dry run
+                    config['s3_prefix'] = f"{config['s3_prefix']}-dry-run"  # Use different S3 prefix
             logger.info("loaded_files_for_processing", 
                        count=len(mrf_files),
-                       max_size="1GB")
+                       max_size="1GB",
+                       dry_run=dry_run)
         except FileNotFoundError:
             logger.error("files_not_found", 
                         message="Please run bcbs_fl_size_analyzer.py first to identify files under 1GB")
@@ -980,4 +996,10 @@ def main():
         shutil.rmtree(config['temp_dir'], ignore_errors=True)
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description='Process BCBS FL files and upload to S3')
+    parser.add_argument('--dry-run', action='store_true',
+                      help='Process first 50 files with no CPT filtering')
+    args = parser.parse_args()
+    
+    main(dry_run=args.dry_run)
