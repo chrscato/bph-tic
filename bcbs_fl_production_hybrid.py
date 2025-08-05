@@ -850,7 +850,7 @@ def main():
         payer_name = "bcbs_fl"
         payer_uuid = processor.uuid_gen.payer_uuid(payer_name)
         
-        total_        stats = {
+        total_stats = {
             "files_processed": 0,
             "files_skipped_size": 0,
             "files_skipped_error": 0,

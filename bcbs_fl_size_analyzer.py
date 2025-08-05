@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 from tic_mrf_scraper.fetch.blobs import list_mrf_blobs_enhanced
 
 # Configure structured logging
+import logging
 structlog.configure(
     processors=[
         structlog.processors.TimeStamper(fmt="iso"),
