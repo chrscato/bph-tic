@@ -446,15 +446,15 @@ class HybridProcessor:
             
             # Upload each non-empty DataFrame
             if rates_df is not None:
-                key = f"{self.config['s3_prefix']}/rates/payer={payer_name}/date={current_date}/rates_batch_{batch_num:04d}_{timestamp}.parquet"
+                key = f"{self.prefix}/rates/payer={payer_name}/date={current_date}/rates_{timestamp}.parquet"
                 self.s3_uploader.upload_dataframe(rates_df, key, self.config['temp_dir'])
             
             if orgs_df is not None:
-                key = f"{self.config['s3_prefix']}/organizations/payer={payer_name}/date={current_date}/orgs_batch_{batch_num:04d}_{timestamp}.parquet"
+                key = f"{self.prefix}/organizations/payer={payer_name}/date={current_date}/organizations_{timestamp}.parquet"
                 self.s3_uploader.upload_dataframe(orgs_df, key, self.config['temp_dir'])
             
             if providers_df is not None:
-                key = f"{self.config['s3_prefix']}/providers/payer={payer_name}/date={current_date}/providers_batch_{batch_num:04d}_{timestamp}.parquet"
+                key = f"{self.prefix}/providers/payer={payer_name}/date={current_date}/providers_{timestamp}.parquet"
                 self.s3_uploader.upload_dataframe(providers_df, key, self.config['temp_dir'])
             
             # Reset collectors
@@ -542,7 +542,13 @@ class HybridProcessor:
             "records_normalized": 0,
             "batches_uploaded": 0,
             "start_time": time.time(),
-            "last_progress": time.time()
+            "last_progress": time.time(),
+            "file_size_distribution": {
+                "0-1GB": 0,
+                "1-2GB": 0,
+                "2-4GB": 0,
+                "4GB+": 0
+            }
         }
         
         try:
@@ -589,7 +595,7 @@ class HybridProcessor:
                 mem = psutil.virtual_memory()
                 available_mb = mem.available / (1024 * 1024)
                 # On 32GB systems, we need less buffer since we have more RAM
-                buffer_multiplier = 1.2 if total_ram >= 30000 else 1.5
+                buffer_multiplier = 1.2 if total_ram_mb >= 30000 else 1.5
                 required_mb = file_size_mb * buffer_multiplier
                 
                 if available_mb < required_mb * (1 + MEMORY_HEADROOM_PCT/100):
@@ -895,7 +901,7 @@ def main():
                 total_stats["files_processed_success"] += 1
             total_stats["total_records"] += stats.get("records_processed", 0)
             total_stats["total_batches"] += stats.get("batches_uploaded", 0)
-            total_stats["s3_uploads_success"] += self.s3_uploader.upload_stats["successful_uploads"]
+            total_stats["s3_uploads_success"] += processor.s3_uploader.upload_stats["successful_uploads"]
             
             # Update size distribution
             file_size_mb = int(requests.head(file_info["url"]).headers.get('content-length', 0)) / (1024 * 1024)
