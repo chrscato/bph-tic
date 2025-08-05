@@ -316,13 +316,23 @@ class S3Uploader:
             self.upload_stats["successful_uploads"] += 1
             self.upload_stats["total_bytes"] += file_size
             
-            temp_file.unlink()
-            
-            logger.info("s3_upload_success",
-                       key=key,
-                       size_mb=file_size / 1024 / 1024,
-                       total_uploads=self.upload_stats["successful_uploads"])
-            return True
+            # Verify file exists in S3
+            try:
+                self.s3_client.head_object(Bucket=self.bucket, Key=key)
+                temp_file.unlink()
+                
+                # Print clear S3 success message
+                print(f"\n✅ S3 Upload Success:")
+                print(f"   Bucket: {self.bucket}")
+                print(f"   Key: {key}")
+                print(f"   Size: {file_size / 1024 / 1024:.1f}MB")
+                print(f"   Total Successful Uploads: {self.upload_stats['successful_uploads']}")
+                return True
+            except Exception as e:
+                print(f"\n❌ S3 Upload Verification Failed:")
+                print(f"   Key: {key}")
+                print(f"   Error: {str(e)}")
+                return False
             
         except Exception as e:
             self.upload_stats["failed_uploads"] += 1
@@ -879,13 +889,64 @@ def main():
                 file_info, handler, payer_name, payer_uuid, config['cpt_whitelist']
             )
             
+            # Update all stats
             total_stats["files_processed"] += 1
-            total_stats["total_records"] += stats["records_processed"]
-            total_stats["total_batches"] += stats["batches_uploaded"]
+            if stats.get("records_processed", 0) > 0:
+                total_stats["files_processed_success"] += 1
+            total_stats["total_records"] += stats.get("records_processed", 0)
+            total_stats["total_batches"] += stats.get("batches_uploaded", 0)
+            total_stats["s3_uploads_success"] += self.s3_uploader.upload_stats["successful_uploads"]
             
+            # Update size distribution
+            file_size_mb = int(requests.head(file_info["url"]).headers.get('content-length', 0)) / (1024 * 1024)
+            if file_size_mb <= 1024:
+                total_stats["file_size_distribution"]["0-1GB"] += 1
+            elif file_size_mb <= 2048:
+                total_stats["file_size_distribution"]["1-2GB"] += 1
+            elif file_size_mb <= 4096:
+                total_stats["file_size_distribution"]["2-4GB"] += 1
+            else:
+                total_stats["file_size_distribution"]["4GB+"] += 1
+            
+            # Print clear progress summary every file
+            files_remaining = len(mrf_files) - (file_idx + 1)
+            time_elapsed = time.time() - total_stats["start_time"]
+            avg_time_per_file = time_elapsed / (file_idx + 1) if file_idx > 0 else 0
+            est_time_remaining = avg_time_per_file * files_remaining
+            
+            print(f"\n📊 Progress Summary:")
+            print(f"   Files Processed: {file_idx + 1} of {len(mrf_files)} ({(file_idx + 1)/len(mrf_files)*100:.1f}%)")
+            print(f"   Total Records: {total_stats['total_records']:,}")
+            print(f"   Total S3 Batches: {total_stats['total_batches']}")
+            print(f"   Time Elapsed: {time_elapsed/3600:.1f} hours")
+            print(f"   Est. Time Remaining: {est_time_remaining/3600:.1f} hours")
+            print(f"   Memory Usage: {psutil.Process().memory_info().rss / 1024 / 1024 / 1024:.1f}GB")
+            print(f"   Files Remaining: {files_remaining:,}")
+            
+            # Only log memory stats to JSON log
             log_memory_stats(f"after_file_{file_idx + 1}")
         
         total_stats["total_time"] = time.time() - total_stats["start_time"]
+        
+        # Print final summary
+        print(f"\n🏁 Processing Completed:")
+        print(f"   Files:")
+        print(f"      Total Processed: {total_stats['files_processed']:,}")
+        print(f"      Successfully Processed: {total_stats['files_processed_success']:,}")
+        print(f"      Failed: {total_stats['files_processed'] - total_stats['files_processed_success']:,}")
+        print(f"\n   Records and Uploads:")
+        print(f"      Total Records Processed: {total_stats['total_records']:,}")
+        print(f"      S3 Batches Created: {total_stats['total_batches']}")
+        print(f"      Successful S3 Uploads: {total_stats['s3_uploads_success']}")
+        print(f"\n   Size Distribution:")
+        print(f"      0-1GB: {total_stats['file_size_distribution']['0-1GB']:,}")
+        print(f"      1-2GB: {total_stats['file_size_distribution']['1-2GB']:,}")
+        print(f"      2-4GB: {total_stats['file_size_distribution']['2-4GB']:,}")
+        print(f"      4GB+: {total_stats['file_size_distribution']['4GB+']:,}")
+        print(f"\n   Timing:")
+        print(f"      Total Processing Time: {total_stats['total_time']/3600:.1f} hours")
+        print(f"      Average Time Per File: {total_stats['total_time']/total_stats['files_processed']/60:.1f} minutes")
+        
         logger.info("processing_completed", stats=total_stats)
         
     finally:
