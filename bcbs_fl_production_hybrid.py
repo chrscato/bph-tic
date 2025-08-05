@@ -38,8 +38,9 @@ from tic_mrf_scraper.payers.bcbs_fl import BCBSFLHandler
 from tic_mrf_scraper.fetch.blobs import list_mrf_blobs_enhanced
 from tic_mrf_scraper.transform.normalize import normalize_tic_record
 
-# Configure structured logging to file
-log_file = "bcbs_fl_processing.log"
+# Configure structured logging to file with timestamp
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+log_file = f"bcbs_fl_processing_{timestamp}.log"
 structlog.configure(
     processors=[
         structlog.processors.TimeStamper(fmt="iso"),
@@ -52,6 +53,8 @@ structlog.configure(
         file=open(log_file, 'w', encoding='utf-8')
     ),
 )
+
+print(f"\n📝 Detailed logs will be written to: {log_file}\n")
 
 # Import tqdm for progress bar
 from tqdm import tqdm
@@ -452,15 +455,15 @@ class HybridProcessor:
             
             # Upload each non-empty DataFrame
             if rates_df is not None:
-                key = f"{self.prefix}/rates/payer={payer_name}/date={current_date}/rates_{timestamp}.parquet"
+                key = f"{self.s3_uploader.prefix}/rates/payer={payer_name}/date={current_date}/rates_{timestamp}.parquet"
                 self.s3_uploader.upload_dataframe(rates_df, key, self.config['temp_dir'])
             
             if orgs_df is not None:
-                key = f"{self.prefix}/organizations/payer={payer_name}/date={current_date}/organizations_{timestamp}.parquet"
+                key = f"{self.s3_uploader.prefix}/organizations/payer={payer_name}/date={current_date}/organizations_{timestamp}.parquet"
                 self.s3_uploader.upload_dataframe(orgs_df, key, self.config['temp_dir'])
             
             if providers_df is not None:
-                key = f"{self.prefix}/providers/payer={payer_name}/date={current_date}/providers_{timestamp}.parquet"
+                key = f"{self.s3_uploader.prefix}/providers/payer={payer_name}/date={current_date}/providers_{timestamp}.parquet"
                 self.s3_uploader.upload_dataframe(providers_df, key, self.config['temp_dir'])
             
             # Reset collectors
@@ -510,7 +513,7 @@ class HybridProcessor:
                     raise
     
     def process_mrf_file(self, file_info: Dict[str, Any], handler, payer_name: str,
-                        payer_uuid: str, cpt_whitelist: set) -> Dict[str, Any]:
+                        payer_uuid: str, cpt_whitelist: set, dry_run: bool = False) -> Dict[str, Any]:
         """Process a single MRF file with early validation and efficient batching."""
         # Set timeouts and limits - optimized for Pareto efficiency
         FILE_PROCESSING_TIMEOUT = 600    # 10 minutes max per file
@@ -714,12 +717,24 @@ class HybridProcessor:
                     
                     for parsed in parsed_records:
                         try:
-                            # In dry run, skip CPT filtering
-                            if dry_run:
-                                normalized = parsed.copy()
-                                normalized['payer_name'] = payer_name
-                            else:
-                                normalized = normalize_tic_record(parsed, cpt_whitelist, payer_name)
+                            try:
+                                # In dry run, skip CPT filtering
+                                if dry_run:
+                                    normalized = parsed.copy()
+                                    normalized['payer_name'] = payer_name
+                                    # Ensure required fields exist
+                                    if 'negotiated_rate' not in normalized:
+                                        logger.error("missing_required_field",
+                                                   field="negotiated_rate",
+                                                   parsed=parsed)
+                                        continue
+                                else:
+                                    normalized = normalize_tic_record(parsed, cpt_whitelist, payer_name)
+                            except Exception as e:
+                                logger.error("normalization_error",
+                                           error=str(e),
+                                           parsed=parsed,
+                                           dry_run=dry_run)
                             if normalized:
                                 logger.info("record_normalized",
                                           item_idx=item_idx,
@@ -853,7 +868,7 @@ def main(dry_run: bool = False):
     
     if dry_run:
         print("\n🔍 DRY RUN MODE:")
-        print("   - Processing first 50 files")
+        print("   - Processing first 10 files")
         print("   - No CPT code filtering")
         print("   - Full S3 upload test")
         print("   - S3 Prefix: healthcare-rates-test-dry-run\n")
@@ -871,7 +886,7 @@ def main(dry_run: bool = False):
             with open("files_under_1gb.json", 'r') as f:
                 mrf_files = json.load(f)
                 if dry_run:
-                    mrf_files = mrf_files[:50]  # Take only first 50 files in dry run
+                    mrf_files = mrf_files[:10]  # Take only first 10 files in dry run
                     config['s3_prefix'] = f"{config['s3_prefix']}-dry-run"  # Use different S3 prefix
             logger.info("loaded_files_for_processing", 
                        count=len(mrf_files),
@@ -921,7 +936,8 @@ def main(dry_run: bool = False):
                        url=file_info["url"])
             
             stats = processor.process_mrf_file(
-                file_info, handler, payer_name, payer_uuid, config['cpt_whitelist']
+                file_info, handler, payer_name, payer_uuid, config['cpt_whitelist'],
+                dry_run=dry_run
             )
             
             # Update all stats

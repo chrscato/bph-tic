@@ -1,0 +1,95 @@
+{
+  "total_files": 3543,
+  "size_distribution": {
+    "0-1GB": 2839,
+    "1-2GB": 72,
+    "2-4GB": 68,
+    "4-6GB": 79,
+    "6GB+": 485
+  },
+  "smallest_10": [
+    {
+      "url": "https://d1hgtx7rrdl2cn.cloudfront.net/mrf/oon/FloridaBlue_HMO_allowed-amounts.json",
+      "size_gb": "0.00GB"
+    },
+    {
+      "url": "https://d1hgtx7rrdl2cn.cloudfront.net/mrf/oon/FloridaBlue_PPG_allowed-amounts.json",
+      "size_gb": "0.00GB"
+    },
+    {
+      "url": "https://d1hgtx7rrdl2cn.cloudfront.net/mrf/oon/FloridaBlue_PPI_allowed-amounts.json",
+      "size_gb": "0.00GB"
+    },
+    {
+      "url": "https://d1hgtx7rrdl2cn.cloudfront.net/mrf/oon/FloridaBlue_BCG_allowed-amounts.json",
+      "size_gb": "0.00GB"
+    },
+    {
+      "url": "https://d1hgtx7rrdl2cn.cloudfront.net/mrf/oon/FloridaBlue_SBG_allowed-amounts.json",
+      "size_gb": "0.00GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/2025-07_070_09D0_in-network-rates_02_of_02.json.gz?&Expires=1755784849&Signature=aCweaTVLaC7vWF8ypJP4lT78hCaG0xHDAHLeD9dmk636wOMcHVfbFOv3JEjfQbSax1ExabUkt7-Ag2rYyvwd7v5m9QDOJKPor6~Th6Dwnu1A4GXZbhzHOvGIpMjojqo1cEpWeJed2yAY6w~2VLp5FLqULuvovmslJtnVL4aK-cbFWTDivALY64x3-dxO46m7MG~iYqzXBu8czYGzwn4NnYbffvjA45DYY9yfd6A5itwdowlyq2agLoMKhI1P3WdN3f9B7TBSg7t-LavC5~SNEaKpNO9wqfOlKp-Jz-ftWRYQLoZOWJ61pl064GiHxkVdFbWL6OIasZLF9S6iuuD9MA__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "0.00GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/2025-07_070_09D0_in-network-rates_02_of_02.json.gz?&Expires=1755784849&Signature=aCweaTVLaC7vWF8ypJP4lT78hCaG0xHDAHLeD9dmk636wOMcHVfbFOv3JEjfQbSax1ExabUkt7-Ag2rYyvwd7v5m9QDOJKPor6~Th6Dwnu1A4GXZbhzHOvGIpMjojqo1cEpWeJed2yAY6w~2VLp5FLqULuvovmslJtnVL4aK-cbFWTDivALY64x3-dxO46m7MG~iYqzXBu8czYGzwn4NnYbffvjA45DYY9yfd6A5itwdowlyq2agLoMKhI1P3WdN3f9B7TBSg7t-LavC5~SNEaKpNO9wqfOlKp-Jz-ftWRYQLoZOWJ61pl064GiHxkVdFbWL6OIasZLF9S6iuuD9MA__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "0.00GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/2025-07_070_09D0_in-network-rates_02_of_02.json.gz?&Expires=1755784849&Signature=aCweaTVLaC7vWF8ypJP4lT78hCaG0xHDAHLeD9dmk636wOMcHVfbFOv3JEjfQbSax1ExabUkt7-Ag2rYyvwd7v5m9QDOJKPor6~Th6Dwnu1A4GXZbhzHOvGIpMjojqo1cEpWeJed2yAY6w~2VLp5FLqULuvovmslJtnVL4aK-cbFWTDivALY64x3-dxO46m7MG~iYqzXBu8czYGzwn4NnYbffvjA45DYY9yfd6A5itwdowlyq2agLoMKhI1P3WdN3f9B7TBSg7t-LavC5~SNEaKpNO9wqfOlKp-Jz-ftWRYQLoZOWJ61pl064GiHxkVdFbWL6OIasZLF9S6iuuD9MA__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "0.00GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/2025-07_070_09D0_in-network-rates_02_of_02.json.gz?&Expires=1755784849&Signature=aCweaTVLaC7vWF8ypJP4lT78hCaG0xHDAHLeD9dmk636wOMcHVfbFOv3JEjfQbSax1ExabUkt7-Ag2rYyvwd7v5m9QDOJKPor6~Th6Dwnu1A4GXZbhzHOvGIpMjojqo1cEpWeJed2yAY6w~2VLp5FLqULuvovmslJtnVL4aK-cbFWTDivALY64x3-dxO46m7MG~iYqzXBu8czYGzwn4NnYbffvjA45DYY9yfd6A5itwdowlyq2agLoMKhI1P3WdN3f9B7TBSg7t-LavC5~SNEaKpNO9wqfOlKp-Jz-ftWRYQLoZOWJ61pl064GiHxkVdFbWL6OIasZLF9S6iuuD9MA__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "0.00GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/2025-07_443_69C0_in-network-rates_01_of_02.json.gz?&Expires=1755784849&Signature=W3gPIMg5ppiGzTJmyOaJD~aSty3UXSbQZEQ44Hs0SnxAalK02HV2CUpPlEot9dQYj8MOIUIU0fu6e4VbIrXTAXSRRRBpqvFI7Ceqi~JqZfokkTfHejbErtQmljfTMXJB8lVtFBf19EV7ErMfC3ay4hyfRQojnch9JCy6xBXX5Ht2Wb1SSrs-P5vF8XU1yn4CeC-rFBEmQEoeX9wgxCpXbxV2gphAL1-0poKEuqyXfukV-z8TYDSzE8mWUacuQ160alpZVF0OTDkwKFxMCMNX9U0o~cCTYaO4avhiDNdeyC26o7IxQlit7QOL0G31yKyBvRVlXgAGrqPTfCMO9ATa0Q__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "0.00GB"
+    }
+  ],
+  "largest_10": [
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/url/2025-07_280_36B0_in-network-rates.json.gz?&Expires=1755784849&Signature=V9ufLdVdV2kbdYbbcG~woIfndQqsrF8rVeMx0zlnhVzAkW6~mfH4ZLZaksxmxWEmdMTC7oMDJuAaoDQUKJ8~-ULSrV86Lxo1J99z1Woy6x-Q15mcoMq7GgOWYcGbHdJKOmD2Yqw1~zvVirfsZWsRjtlQErJpNkpC419bb4Wq~-K5d73vRezqWP6TM~DIQm-XeS4LDpfqXMsvr8Iv2JI67NsQPdXJj1WTA1ARCAOaWJLk-0xzjbO0P-pK0lusJTJLHoZmBnhaiRUdP6~VnXjo1TgNJcJhwnDRJ5eZ7-9tysn2bExHdXWohQmMYbuyItxs8PrGvDldMWNYcudG3Qjkdg__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "70.31GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/url/2025-07_280_36B0_in-network-rates.json.gz?&Expires=1755784849&Signature=V9ufLdVdV2kbdYbbcG~woIfndQqsrF8rVeMx0zlnhVzAkW6~mfH4ZLZaksxmxWEmdMTC7oMDJuAaoDQUKJ8~-ULSrV86Lxo1J99z1Woy6x-Q15mcoMq7GgOWYcGbHdJKOmD2Yqw1~zvVirfsZWsRjtlQErJpNkpC419bb4Wq~-K5d73vRezqWP6TM~DIQm-XeS4LDpfqXMsvr8Iv2JI67NsQPdXJj1WTA1ARCAOaWJLk-0xzjbO0P-pK0lusJTJLHoZmBnhaiRUdP6~VnXjo1TgNJcJhwnDRJ5eZ7-9tysn2bExHdXWohQmMYbuyItxs8PrGvDldMWNYcudG3Qjkdg__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "70.31GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/url/2025-07_280_36B0_in-network-rates.json.gz?&Expires=1755784849&Signature=V9ufLdVdV2kbdYbbcG~woIfndQqsrF8rVeMx0zlnhVzAkW6~mfH4ZLZaksxmxWEmdMTC7oMDJuAaoDQUKJ8~-ULSrV86Lxo1J99z1Woy6x-Q15mcoMq7GgOWYcGbHdJKOmD2Yqw1~zvVirfsZWsRjtlQErJpNkpC419bb4Wq~-K5d73vRezqWP6TM~DIQm-XeS4LDpfqXMsvr8Iv2JI67NsQPdXJj1WTA1ARCAOaWJLk-0xzjbO0P-pK0lusJTJLHoZmBnhaiRUdP6~VnXjo1TgNJcJhwnDRJ5eZ7-9tysn2bExHdXWohQmMYbuyItxs8PrGvDldMWNYcudG3Qjkdg__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "70.31GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/url/2025-07_280_36B0_in-network-rates.json.gz?&Expires=1755784849&Signature=V9ufLdVdV2kbdYbbcG~woIfndQqsrF8rVeMx0zlnhVzAkW6~mfH4ZLZaksxmxWEmdMTC7oMDJuAaoDQUKJ8~-ULSrV86Lxo1J99z1Woy6x-Q15mcoMq7GgOWYcGbHdJKOmD2Yqw1~zvVirfsZWsRjtlQErJpNkpC419bb4Wq~-K5d73vRezqWP6TM~DIQm-XeS4LDpfqXMsvr8Iv2JI67NsQPdXJj1WTA1ARCAOaWJLk-0xzjbO0P-pK0lusJTJLHoZmBnhaiRUdP6~VnXjo1TgNJcJhwnDRJ5eZ7-9tysn2bExHdXWohQmMYbuyItxs8PrGvDldMWNYcudG3Qjkdg__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "70.31GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/url/2025-07_280_36B0_in-network-rates.json.gz?&Expires=1755784849&Signature=V9ufLdVdV2kbdYbbcG~woIfndQqsrF8rVeMx0zlnhVzAkW6~mfH4ZLZaksxmxWEmdMTC7oMDJuAaoDQUKJ8~-ULSrV86Lxo1J99z1Woy6x-Q15mcoMq7GgOWYcGbHdJKOmD2Yqw1~zvVirfsZWsRjtlQErJpNkpC419bb4Wq~-K5d73vRezqWP6TM~DIQm-XeS4LDpfqXMsvr8Iv2JI67NsQPdXJj1WTA1ARCAOaWJLk-0xzjbO0P-pK0lusJTJLHoZmBnhaiRUdP6~VnXjo1TgNJcJhwnDRJ5eZ7-9tysn2bExHdXWohQmMYbuyItxs8PrGvDldMWNYcudG3Qjkdg__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "70.31GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/url/2025-07_280_36B0_in-network-rates.json.gz?&Expires=1755784849&Signature=V9ufLdVdV2kbdYbbcG~woIfndQqsrF8rVeMx0zlnhVzAkW6~mfH4ZLZaksxmxWEmdMTC7oMDJuAaoDQUKJ8~-ULSrV86Lxo1J99z1Woy6x-Q15mcoMq7GgOWYcGbHdJKOmD2Yqw1~zvVirfsZWsRjtlQErJpNkpC419bb4Wq~-K5d73vRezqWP6TM~DIQm-XeS4LDpfqXMsvr8Iv2JI67NsQPdXJj1WTA1ARCAOaWJLk-0xzjbO0P-pK0lusJTJLHoZmBnhaiRUdP6~VnXjo1TgNJcJhwnDRJ5eZ7-9tysn2bExHdXWohQmMYbuyItxs8PrGvDldMWNYcudG3Qjkdg__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "70.31GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/url/2025-07_280_36F0_in-network-rates.json.gz?&Expires=1755784849&Signature=yNanVP689tdMI5~FpoA2nD8SXFbLtxELRPaBXPDKRUQ0nta~301NW5jl-z9cavS4uw5nS5QHtHVnVXc0iEEunVmQi4w8SpIv2VAv8X6eNg5HIOe6K8ccOw2zFAvjzY3VOmgHPJ8hzHOfNr0k9EbcbApoTP7hhemR6pJXsB053KKGUYaW42SVpIR3AwiEwHmUDC8ani-AbYtbNw6UUQG-Td4ln-~1D-ssRmaFICHi3zE0MzQqJJaEysxG8O2CM4pIxLjV4hzzL0OHw2ybDABEPqxtWC2d8IT1BOG7hqw5X-xa6VlDX9K0z6dFbuuyoVeGFpCtfdnHr9n3WaolaH9eaA__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "70.90GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/url/2025-07_280_36F0_in-network-rates.json.gz?&Expires=1755784849&Signature=yNanVP689tdMI5~FpoA2nD8SXFbLtxELRPaBXPDKRUQ0nta~301NW5jl-z9cavS4uw5nS5QHtHVnVXc0iEEunVmQi4w8SpIv2VAv8X6eNg5HIOe6K8ccOw2zFAvjzY3VOmgHPJ8hzHOfNr0k9EbcbApoTP7hhemR6pJXsB053KKGUYaW42SVpIR3AwiEwHmUDC8ani-AbYtbNw6UUQG-Td4ln-~1D-ssRmaFICHi3zE0MzQqJJaEysxG8O2CM4pIxLjV4hzzL0OHw2ybDABEPqxtWC2d8IT1BOG7hqw5X-xa6VlDX9K0z6dFbuuyoVeGFpCtfdnHr9n3WaolaH9eaA__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "70.90GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/url/2025-07_280_36F0_in-network-rates.json.gz?&Expires=1755784849&Signature=yNanVP689tdMI5~FpoA2nD8SXFbLtxELRPaBXPDKRUQ0nta~301NW5jl-z9cavS4uw5nS5QHtHVnVXc0iEEunVmQi4w8SpIv2VAv8X6eNg5HIOe6K8ccOw2zFAvjzY3VOmgHPJ8hzHOfNr0k9EbcbApoTP7hhemR6pJXsB053KKGUYaW42SVpIR3AwiEwHmUDC8ani-AbYtbNw6UUQG-Td4ln-~1D-ssRmaFICHi3zE0MzQqJJaEysxG8O2CM4pIxLjV4hzzL0OHw2ybDABEPqxtWC2d8IT1BOG7hqw5X-xa6VlDX9K0z6dFbuuyoVeGFpCtfdnHr9n3WaolaH9eaA__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "70.90GB"
+    },
+    {
+      "url": "https://bcbsfl.mrf.bcbs.com/url/2025-07_280_36F0_in-network-rates.json.gz?&Expires=1755784849&Signature=yNanVP689tdMI5~FpoA2nD8SXFbLtxELRPaBXPDKRUQ0nta~301NW5jl-z9cavS4uw5nS5QHtHVnVXc0iEEunVmQi4w8SpIv2VAv8X6eNg5HIOe6K8ccOw2zFAvjzY3VOmgHPJ8hzHOfNr0k9EbcbApoTP7hhemR6pJXsB053KKGUYaW42SVpIR3AwiEwHmUDC8ani-AbYtbNw6UUQG-Td4ln-~1D-ssRmaFICHi3zE0MzQqJJaEysxG8O2CM4pIxLjV4hzzL0OHw2ybDABEPqxtWC2d8IT1BOG7hqw5X-xa6VlDX9K0z6dFbuuyoVeGFpCtfdnHr9n3WaolaH9eaA__&Key-Pair-Id=K27TQMT39R1C8A",
+      "size_gb": "70.90GB"
+    }
+  ],
+  "timestamp": "2025-08-05T02:18:57.529038+00:00"
+}
