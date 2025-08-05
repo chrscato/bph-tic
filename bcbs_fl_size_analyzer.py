@@ -123,16 +123,25 @@ def analyze_files():
                 distribution=size_ranges,
                 report_file=str(report_file))
 
-    # Return the 10 smallest files with their full info
-    return [f["original_info"] for f in sorted_files[:10]]
+    # Return all files under 1GB with their full info
+    under_1gb = [f for f in sorted_files if f["size_gb"] <= 1]
+    logger.info("files_under_1gb", 
+                count=len(under_1gb),
+                total_size_gb=f"{sum(f['size_gb'] for f in under_1gb):.1f}GB",
+                smallest_size_mb=f"{under_1gb[0]['size_mb']:.1f}MB",
+                largest_size_mb=f"{under_1gb[-1]['size_mb']:.1f}MB")
+    
+    return [f["original_info"] for f in under_1gb]
 
 if __name__ == "__main__":
     smallest_10 = analyze_files()
     
-    # Save the 10 smallest files for processing
-    with open("smallest_10_files.json", 'w') as f:
+    # Save all files under 1GB for processing
+    output_file = "files_under_1gb.json"
+    with open(output_file, 'w') as f:
         json.dump(smallest_10, f, indent=2)
     
-    logger.info("saved_smallest_files", 
+    logger.info("saved_files_for_processing", 
                 count=len(smallest_10),
-                output_file="smallest_10_files.json")
+                max_size_gb="1GB",
+                output_file=output_file)

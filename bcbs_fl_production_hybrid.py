@@ -832,14 +832,16 @@ def main():
         handler = BCBSFLHandler()
         logger.info("handler_initialized", handler_type=type(handler).__name__)
         
-        # Load the 10 smallest files to process
+        # Load all files under 1GB to process
         try:
-            with open("smallest_10_files.json", 'r') as f:
+            with open("files_under_1gb.json", 'r') as f:
                 mrf_files = json.load(f)
-            logger.info("loaded_smallest_files", count=len(mrf_files))
+            logger.info("loaded_files_for_processing", 
+                       count=len(mrf_files),
+                       max_size="1GB")
         except FileNotFoundError:
-            logger.error("smallest_files_not_found", 
-                        message="Please run bcbs_fl_size_analyzer.py first to identify smallest files")
+            logger.error("files_not_found", 
+                        message="Please run bcbs_fl_size_analyzer.py first to identify files under 1GB")
             return
         
         if not mrf_files:
