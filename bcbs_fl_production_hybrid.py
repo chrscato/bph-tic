@@ -12,6 +12,7 @@ import boto3
 import hashlib
 import psutil
 import gc
+import yaml  # Added for reading production config
 from pathlib import Path
 from datetime import datetime, timezone
 import logging
@@ -854,17 +855,21 @@ class HybridProcessor:
 
 def main(dry_run: bool = False):
     """Main entry point."""
-    # Load configuration
+    # Load configuration and whitelist from production config
+    with open('production_config.yaml', 'r') as f:
+        prod_config = yaml.safe_load(f)
+        
     config = {
         's3_bucket': os.getenv('S3_BUCKET', 'commercial-rates'),
         's3_prefix': os.getenv('S3_PREFIX', 'healthcare-rates-test'),
         'temp_dir': tempfile.mkdtemp(prefix="hybrid_processor_"),
-        'cpt_whitelist': None if dry_run else {  # No whitelist in dry run
-            "99213", "99214", "72148", "73721", "70450",  # Common codes
-            "0001U", "0002M", "0003M", "0004M", "0004U",  # Test codes
-            "0008U", "0009U", "001", "0010U", "0016U"     # Additional codes
-        }
+        'cpt_whitelist': None if dry_run else set(prod_config['cpt_whitelist'])  # Use full production whitelist
     }
+    
+    if not dry_run:
+        logger.info("loaded_whitelist", 
+                   code_count=len(config['cpt_whitelist']),
+                   sample_codes=list(config['cpt_whitelist'])[:5])
     
     if dry_run:
         print("\n🔍 DRY RUN MODE:")
