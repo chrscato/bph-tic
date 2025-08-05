@@ -505,8 +505,15 @@ class HybridProcessor:
         total_ram_mb = psutil.virtual_memory().total / (1024 * 1024)
         
         # Pareto-optimized limits (focus on files we can process efficiently)
-        MAX_FILE_SIZE_MB = 4000         # 4GB limit for better throughput
+        MAX_FILE_SIZE_MB = 5500         # 5.5GB limit for better throughput
         MEMORY_HEADROOM_PCT = 25        # 25% memory headroom
+        
+        # Log file size before skipping
+        def log_file_size(size_mb: float, action: str):
+            logger.info("file_size_check",
+                       size_gb=f"{size_mb/1024:.1f}GB",
+                       action=action,
+                       max_size_gb=f"{MAX_FILE_SIZE_MB/1024:.1f}GB")
         
         # Track skipped files for analysis
         self.skipped_files = getattr(self, 'skipped_files', {
@@ -541,11 +548,26 @@ class HybridProcessor:
                 file_size_mb = int(head_response.headers.get('content-length', 0)) / (1024 * 1024)
                 
                 # Check if file is too large
+                # Track file size distribution
+                if file_size_mb <= 1024:
+                    stats["file_size_distribution"]["0-1GB"] += 1
+                elif file_size_mb <= 2048:
+                    stats["file_size_distribution"]["1-2GB"] += 1
+                elif file_size_mb <= 4096:
+                    stats["file_size_distribution"]["2-4GB"] += 1
+                else:
+                    stats["file_size_distribution"]["4GB+"] += 1
+
+                # Log all file sizes for analysis
+                log_file_size(file_size_mb, "checking")
+                
                 if file_size_mb > MAX_FILE_SIZE_MB:
+                    log_file_size(file_size_mb, "skipping")
                     logger.warning("file_too_large",
                                 url=file_info["url"],
                                 size_mb=f"{file_size_mb:.1f}MB",
                                 limit_mb=MAX_FILE_SIZE_MB)
+                    stats["files_skipped_size"] += 1
                     self.skipped_files['too_large'].append({
                         'url': file_info["url"],
                         'size_mb': file_size_mb,
@@ -810,10 +832,15 @@ def main():
         handler = BCBSFLHandler()
         logger.info("handler_initialized", handler_type=type(handler).__name__)
         
-        # Get BCBS FL files
-        bcbs_fl_url = "https://d1hgtx7rrdl2cn.cloudfront.net/mrf/toc/FloridaBlue_Health-Insurance-Issuer_index.json"
-        mrf_files = list(list_mrf_blobs_enhanced(bcbs_fl_url))
-        logger.info("files_discovered", count=len(mrf_files))
+        # Load the 10 smallest files to process
+        try:
+            with open("smallest_10_files.json", 'r') as f:
+                mrf_files = json.load(f)
+            logger.info("loaded_smallest_files", count=len(mrf_files))
+        except FileNotFoundError:
+            logger.error("smallest_files_not_found", 
+                        message="Please run bcbs_fl_size_analyzer.py first to identify smallest files")
+            return
         
         if not mrf_files:
             logger.error("no_files_found")
@@ -823,11 +850,21 @@ def main():
         payer_name = "bcbs_fl"
         payer_uuid = processor.uuid_gen.payer_uuid(payer_name)
         
-        total_stats = {
+        total_        stats = {
             "files_processed": 0,
+            "files_skipped_size": 0,
+            "files_skipped_error": 0,
+            "files_processed_success": 0,
             "total_records": 0,
             "total_batches": 0,
-            "start_time": time.time()
+            "s3_uploads_success": 0,
+            "start_time": time.time(),
+            "file_size_distribution": {
+                "0-1GB": 0,
+                "1-2GB": 0,
+                "2-4GB": 0,
+                "4GB+": 0
+            }
         }
         
         for file_idx, file_info in enumerate(mrf_files):
