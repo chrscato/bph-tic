@@ -38,7 +38,8 @@ from tic_mrf_scraper.payers.bcbs_fl import BCBSFLHandler
 from tic_mrf_scraper.fetch.blobs import list_mrf_blobs_enhanced
 from tic_mrf_scraper.transform.normalize import normalize_tic_record
 
-# Configure structured logging
+# Configure structured logging to file
+log_file = "bcbs_fl_processing.log"
 structlog.configure(
     processors=[
         structlog.processors.TimeStamper(fmt="iso"),
@@ -47,8 +48,13 @@ structlog.configure(
         structlog.processors.JSONRenderer()
     ],
     wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
-    logger_factory=structlog.PrintLoggerFactory(),
+    logger_factory=structlog.WriteLoggerFactory(
+        file=open(log_file, 'w', encoding='utf-8')
+    ),
 )
+
+# Import tqdm for progress bar
+from tqdm import tqdm
 
 logger = structlog.get_logger()
 
@@ -321,12 +327,12 @@ class S3Uploader:
                 self.s3_client.head_object(Bucket=self.bucket, Key=key)
                 temp_file.unlink()
                 
-                # Print clear S3 success message
-                print(f"\n✅ S3 Upload Success:")
-                print(f"   Bucket: {self.bucket}")
-                print(f"   Key: {key}")
-                print(f"   Size: {file_size / 1024 / 1024:.1f}MB")
-                print(f"   Total Successful Uploads: {self.upload_stats['successful_uploads']}")
+                # Only log S3 success to file
+                logger.info("s3_upload_success",
+                          bucket=self.bucket,
+                          key=key,
+                          size_mb=f"{file_size / 1024 / 1024:.1f}MB",
+                          total_uploads=self.upload_stats['successful_uploads'])
                 return True
             except Exception as e:
                 print(f"\n❌ S3 Upload Verification Failed:")
@@ -885,7 +891,14 @@ def main():
             }
         }
         
+        # Initialize progress bar
+        pbar = tqdm(total=len(mrf_files), desc="Processing Files", unit="file")
+        
+        # Initialize success counter for progress bar
+        success_count = 0
+        
         for file_idx, file_info in enumerate(mrf_files):
+            # Log to file only
             logger.info("processing_file",
                        file_num=file_idx + 1,
                        total_files=len(mrf_files),
@@ -914,22 +927,29 @@ def main():
             else:
                 total_stats["file_size_distribution"]["4GB+"] += 1
             
-            # Print clear progress summary every file
-            files_remaining = len(mrf_files) - (file_idx + 1)
-            time_elapsed = time.time() - total_stats["start_time"]
-            avg_time_per_file = time_elapsed / (file_idx + 1) if file_idx > 0 else 0
-            est_time_remaining = avg_time_per_file * files_remaining
+            # Update progress bar
+            if stats.get("records_processed", 0) > 0:
+                success_count += 1
             
-            print(f"\n📊 Progress Summary:")
-            print(f"   Files Processed: {file_idx + 1} of {len(mrf_files)} ({(file_idx + 1)/len(mrf_files)*100:.1f}%)")
-            print(f"   Total Records: {total_stats['total_records']:,}")
-            print(f"   Total S3 Batches: {total_stats['total_batches']}")
-            print(f"   Time Elapsed: {time_elapsed/3600:.1f} hours")
-            print(f"   Est. Time Remaining: {est_time_remaining/3600:.1f} hours")
-            print(f"   Memory Usage: {psutil.Process().memory_info().rss / 1024 / 1024 / 1024:.1f}GB")
-            print(f"   Files Remaining: {files_remaining:,}")
+            # Update progress bar description with success rate
+            success_rate = (success_count / (file_idx + 1)) * 100
+            pbar.set_description(f"Processing Files [Success: {success_rate:.1f}%]")
+            pbar.update(1)
             
-            # Only log memory stats to JSON log
+            # Every 100 files or when requested, show summary
+            if (file_idx + 1) % 100 == 0:
+                time_elapsed = time.time() - total_stats["start_time"]
+                avg_time_per_file = time_elapsed / (file_idx + 1) if file_idx > 0 else 0
+                est_time_remaining = avg_time_per_file * (len(mrf_files) - (file_idx + 1))
+                
+                print(f"\n\n📊 Processing Summary (File {file_idx + 1} of {len(mrf_files)}):")
+                print(f"   Success Rate: {success_rate:.1f}%")
+                print(f"   Records Processed: {total_stats['total_records']:,}")
+                print(f"   S3 Uploads: {total_stats['s3_uploads_success']:,}")
+                print(f"   Time Remaining: {est_time_remaining/3600:.1f} hours")
+                print(f"   Memory Usage: {psutil.Process().memory_info().rss / 1024 / 1024 / 1024:.1f}GB\n")
+            
+            # Log memory stats to file only
             log_memory_stats(f"after_file_{file_idx + 1}")
         
         total_stats["total_time"] = time.time() - total_stats["start_time"]
